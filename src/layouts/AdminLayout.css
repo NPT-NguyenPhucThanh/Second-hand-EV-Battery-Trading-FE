@@ -1,0 +1,31 @@
+.content {
+   padding: 20px;
+} 
+
+.header {
+   display: flex;
+   border-bottom: 1px solid #ddd;
+   background: #fff ;
+}
+
+.header__logo {
+   width: 200px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-right: 1px solid #ddd;
+}
+
+.header__nav {
+   padding: 10px;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+    flex: 1;
+}
+
+.header__nav-left{
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+}
