@@ -1,22 +1,31 @@
-import React from "react";
+import React, { act } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard";
 import NotFound from "../pages/404page/NotFound";
-
+import MemberLayout from "../layouts/MemberLayout";
+import Home from "../pages/home/pages/Home";
+import Login from "../pages/auth/Login";
 export const routes = [
   {
     path: "/admin",
     element: <AdminLayout />,
-    children: [
-      { path: "/admin", element: <Dashboard /> },
-    ],
+    children: [{ path: "/admin", element: <Dashboard /> }],
   },
   {
     path: "*",
     element: <NotFound />,
-  }
+  },
+  {
+    path: "/",
+    element: <MemberLayout />,
+    children: [{ path: "/", element: <Home /> }],
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
 ];
 
 const router = createBrowserRouter(routes);
