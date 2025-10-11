@@ -13,8 +13,9 @@ export default function Notify() {
             <BellOutlined />
           </div>
           <div className="notify__item-content">
-            <div className="notify__item-title">Item 1</div>
-            <div className="notify__item-time">8 phut truoc</div>
+            <div className="notify__item-title">Title</div>
+            <div className="notify__item-desc">Description</div>
+            <div className="notify__item-time">8 phút trước</div>
           </div>
         </div>
       ),
