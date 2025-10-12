@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Table, Button, Modal, Upload, Form, Select, Input } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { vehicleInspection } from "../../dataAdmin";
+import AdminBreadcrumb from '../../components/admin/AdminBreadcrumb';
 
 export default function VehicleInspection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function VehicleInspection() {
 
   return (
     <>
+    <AdminBreadcrumb />
       <Table columns={columns} dataSource={vehicleInspection} rowKey="productid" />
 
       <Modal

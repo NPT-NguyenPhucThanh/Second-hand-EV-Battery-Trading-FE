@@ -4,23 +4,35 @@ import { Row, Col } from 'antd';
 import { CarOutlined, UserAddOutlined, ShoppingOutlined, WarningOutlined  } from '@ant-design/icons';
 import LineChart from '../../components/admin/LineChart';
 import PieChart from '../../components/admin/PieChart';
+import { Link } from "react-router-dom";
 import { revenueData, newUserData, carStatusData, transactionStatusData } from '../../dataAdmin';
+import AdminBreadcrumb from '../../components/admin/AdminBreadcrumb';
+
 
 export default function Dashboard() {
   return (
     <>
+    <AdminBreadcrumb />
     <Row gutter={[20, 20]}>
         <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
+        <Link to="/admin/posts">
         <CardItem title="Bài đăng chờ duyệt" value={5} icon={<CarOutlined style={{ color: 'red' }} />} />
+        </Link>
         </Col>
         <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
+         <Link to="/admin/users">
         <CardItem title="Người dùng mới trong tháng" value={10} icon={<UserAddOutlined style={{ color: 'green' }} />} />
+        </Link>
         </Col>
         <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
+        <Link to="/admin/transactions">
         <CardItem title="Giao dịch đang xử lý" value={3} icon={<ShoppingOutlined style={{ color: 'blue' }} />}  />
+        </Link>
         </Col>
         <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
+        <Link to="/admin/disputes">
         <CardItem title="Khiếu nại cần xử lý" value={1} icon={<WarningOutlined style={{ color: 'orange' }} />} />
+        </Link>
         </Col>
     </Row>
 

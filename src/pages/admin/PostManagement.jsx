@@ -3,12 +3,14 @@ import { Button, Tag } from "antd";
 import { useState } from "react";
 import { Modal, Input } from "antd";
 import { post } from "../../dataAdmin";
+import AdminBreadcrumb from '../../components/admin/AdminBreadcrumb';
 
 export default function PostManagement() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [note, setNote] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
   const columns = [
+    { title: "Mã", dataIndex: "id", key: "id" },
     { title: "Tiêu đề", dataIndex: "title", key: "title" },
     { title: "Người tạo", dataIndex: "createdBy", key: "createdBy" },
     { title: "Ngày tạo", dataIndex: "createAt", key: "createAt" },
@@ -39,6 +41,7 @@ export default function PostManagement() {
 
   return (
     <>
+    <AdminBreadcrumb />
       <Table columns={columns} dataSource={post} pagination={{ pageSize: 7 }} scroll={{ x: "max-content" }} />
       <Modal open={isModalVisible} onCancel={() => setIsModalVisible(false)} title={selectedPost?.title} footer={null} width={700}>
         {selectedPost && (

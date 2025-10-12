@@ -52,3 +52,7 @@
   margin-left: 200px; 
   overflow-y: auto;
 }
+
+.header__nav-right{
+   margin-right: 50px;
+}

@@ -1,6 +1,7 @@
 import React, {  useState } from "react";
 import { Table, Button, Modal, Input, Tag } from "antd";
-import { orders } from "../../dataAdmin"; // Dữ liệu giả lập
+import { orders } from "../../dataAdmin";
+import AdminBreadcrumb from '../../components/admin/AdminBreadcrumb';
 
 export default function TransactionManagement() {
 
@@ -47,7 +48,7 @@ export default function TransactionManagement() {
 
   return (
     <>
-      <h2 className="text-xl font-semibold mb-4">Duyệt giao dịch xe</h2>
+    <AdminBreadcrumb />
       <Table
         dataSource={orders}
         columns={columns}

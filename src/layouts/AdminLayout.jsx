@@ -19,7 +19,7 @@ export default function AdminLayout() {
             <div className='header__collapse'>
             </div>
             <div className='header__search'>
-                <SearchOutlined />
+             
             </div>
             </div>
             <div className='header__nav-right'>

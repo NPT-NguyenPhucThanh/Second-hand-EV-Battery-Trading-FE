@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Table, Button, Tag, Select, Space, Modal, message } from "antd";
-import { productsData } from "../../dataAdmin"; // file giả lập dữ liệu
+import { productsData } from "../../dataAdmin";
+import AdminBreadcrumb from '../../components/admin/AdminBreadcrumb';
 
 export default function VehicleStorage() {
   const [products, setProducts] = useState(productsData);
@@ -11,7 +12,6 @@ export default function VehicleStorage() {
     status: null,
   });
 
-  // Hàm lọc
   const filteredData = products.filter(
     (p) =>
       p.in_warehouse &&
@@ -20,6 +20,7 @@ export default function VehicleStorage() {
   );
 
   const columns = [
+     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Tên xe", dataIndex: "productname", key: "productname" },
     { title: "Model", dataIndex: "model", key: "model" },
     { title: "Loại", dataIndex: "type", key: "type" },
@@ -56,7 +57,7 @@ export default function VehicleStorage() {
 
   return (
     <>
-      <h2>🚗 Quản lý kho xe</h2>
+    <AdminBreadcrumb />
 
       <Space style={{ marginBottom: 16 }}>
         <Select

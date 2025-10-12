@@ -1,8 +1,7 @@
 import { Menu } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   PieChartOutlined,
-  ShoppingCartOutlined,
   WarningOutlined,
   DollarOutlined,
   TransactionOutlined,
@@ -10,65 +9,77 @@ import {
   UserOutlined,
   AuditOutlined,
   CarOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 
 export default function MenuSider() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectedKey = location.pathname;
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   const items = [
     {
       label: <Link to="/admin">Bảng điều khiển</Link>,
       icon: <PieChartOutlined />,
-      key: "dashboard",
+      key: "/admin",
+    },
+    {
+      label: <Link to="/admin/users">Quản lý người dùng</Link>,
+      icon: <UserOutlined />,
+      key: "/admin/users",
     },
     {
       label: <Link to="/admin/posts">Quản lý bài đăng</Link>,
       icon: <FileTextOutlined />,
-      key: "posts",
+      key: "/admin/posts",
     },
     {
       label: <Link to="/admin/vehicle-inspection">Kiểm định xe</Link>,
       icon: <AuditOutlined />,
-      key: "audit",
+      key: "/admin/vehicle-inspection",
     },
     {
       label: <Link to="/admin/vehicle-storage">Quản lý kho xe</Link>,
       icon: <CarOutlined />,
-      key: "vehicle-storage",
+      key: "/admin/vehicle-storage",
     },
     {
       label: <Link to="/admin/transactions">Quản lý giao dịch</Link>,
       icon: <TransactionOutlined />,
-      key: "transactions",
-    },
-
-     {
-      label: <Link to="/admin/users">Quản lý người dùng</Link>,
-      icon: <UserOutlined />,
-      key: "users",
+      key: "/admin/transactions",
     },
     {
-      label: <Link to="/admin/manage-product">Quản lý đơn hàng</Link>,
-      icon: <ShoppingCartOutlined />,
-      key: "manage-orders",
-    },
-    {
-      label: <Link to="/admin/complaints">Khiếu nại</Link>,
+      label: <Link to="/admin/disputes">Giải quyết tranh chấp</Link>,
       icon: <WarningOutlined />,
-      key: "complaints",
+      key: "/admin/disputes",
     },
     {
-      label: <Link to="/admin/money">Quản lý phí nền tảng</Link>,
+      label: <Link to="/admin/packages">Quản lý gói dịch vụ</Link>,
       icon: <DollarOutlined />,
-      key: "platform-fees-management",
+      key: "/admin/packages",
     },
-    
-   
+    {
+      label: (
+        <span style={{ color: "red" }} onClick={handleLogout}>
+          Đăng xuất
+        </span>
+      ),
+      icon: <LogoutOutlined style={{ color: "red" }} />,
+      key: "logout",
+    },
   ];
+
   return (
     <Menu
       mode="inline"
       items={items}
-      defaultSelectedKeys={["/"]}
-      defaultOpenKeys={["menu1"]}
+      selectedKeys={[selectedKey]} 
     />
   );
 }

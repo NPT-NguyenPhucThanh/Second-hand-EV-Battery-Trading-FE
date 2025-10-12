@@ -44,6 +44,7 @@ export const transactionStatusData = [
 // bài đăng
 export const post = [
   {
+    id: 1,
     key: 1,
     postId: 101,
     title: "Xe Toyota Camry 2020",
@@ -53,6 +54,7 @@ export const post = [
     status: "PENDING",
   },
   {
+    id:2,
     key: 2,
     postId: 102,
     title: "Mazda CX-5 2019",
@@ -62,6 +64,7 @@ export const post = [
     status: "APPROVED",
   },
   {
+    id:3,
     key: 3,
     postId: 103,
     title: "Honda City 2021",
@@ -71,6 +74,7 @@ export const post = [
     status: "REJECTED",
   },
   {
+    id:4,
     key: 4,
     postId: 104,
     title: "Hyundai Tucson 2020",
@@ -80,6 +84,7 @@ export const post = [
     status: "PENDING",
   },
   {
+    id:5,
     key: 5,
     postId: 105,
     title: "Ford Ranger Wildtrak 2021",
@@ -89,6 +94,7 @@ export const post = [
     status: "APPROVED",
   },
   {
+    id:6,
     key: 6,
     postId: 106,
     title: "VinFast Lux A2.0 2022",
@@ -98,6 +104,7 @@ export const post = [
     status: "REJECTED",
   },
   {
+    id:7,
     key: 7,
     postId: 107,
     title: "Kia Seltos 2021",
@@ -107,6 +114,7 @@ export const post = [
     status: "PENDING",
   },
   {
+    id:8,
     key: 8,
     postId: 108,
     title: "Mitsubishi Xpander 2020",
@@ -116,6 +124,7 @@ export const post = [
     status: "APPROVED",
   },
   {
+    id:9,
     key: 9,
     postId: 109,
     title: "Mercedes C300 AMG 2019",
@@ -125,6 +134,7 @@ export const post = [
     status: "PENDING",
   },
   {
+    id:10,
     key: 10,
     postId: 110,
     title: "BMW X3 2020",
@@ -134,6 +144,7 @@ export const post = [
     status: "REJECTED",
   },
   {
+    id:11,
     key: 11,
     postId: 111,
     title: "Toyota Fortuner 2021",
@@ -143,6 +154,7 @@ export const post = [
     status: "APPROVED",
   },
   {
+    id:12,
     key: 12,
     postId: 112,
     title: "Hyundai Elantra 2018",
@@ -152,6 +164,7 @@ export const post = [
     status: "PENDING",
   },
   {
+    id:13,
     key: 13,
     postId: 113,
     title: "Honda CR-V 2022",
@@ -161,6 +174,7 @@ export const post = [
     status: "APPROVED",
   },
   {
+    id:14,
     key: 14,
     postId: 114,
     title: "Mazda 3 2020",
@@ -170,6 +184,7 @@ export const post = [
     status: "PENDING",
   },
   {
+    id:15,
     key: 15,
     postId: 115,
     title: "VinFast Fadil 2021",
@@ -179,6 +194,7 @@ export const post = [
     status: "REJECTED",
   },
   {
+    id:16,
     key: 16,
     postId: 116,
     title: "Ford Everest 2022",
@@ -188,6 +204,7 @@ export const post = [
     status: "APPROVED",
   },
   {
+    id:17,
     key: 17,
     postId: 117,
     title: "Suzuki XL7 2021",
@@ -197,6 +214,7 @@ export const post = [
     status: "PENDING",
   },
   {
+    id:18,
     key: 18,
     postId: 118,
     title: "Peugeot 3008 2020",
@@ -206,6 +224,7 @@ export const post = [
     status: "APPROVED",
   },
   {
+    id:19,
     key: 19,
     postId: 119,
     title: "Mitsubishi Outlander 2019",
@@ -215,6 +234,7 @@ export const post = [
     status: "REJECTED",
   },
   {
+    id:20,
     key: 20,
     postId: 120,
     title: "Toyota Corolla Cross 2021",
@@ -256,6 +276,7 @@ export const vehicleInspection = [
 // kho xe
 export const productsData = [
   {
+    id:1,
     productid: 1,
     productname: "Toyota Camry 2020",
     model: "Camry 2.5Q",
@@ -270,6 +291,7 @@ export const productsData = [
     status: "inspection_passed",
   },
   {
+    id:2,
     productid: 2,
     productname: "Mazda CX-5 2019",
     model: "CX-5 Premium",
@@ -284,6 +306,7 @@ export const productsData = [
     status: "inspection_passed",
   },
   {
+    id:3,
     productid: 3,
     productname: "Ford Ranger 2021",
     model: "Ranger Wildtrak",
@@ -357,3 +380,126 @@ export const orders = [
   },
 ];
 
+export const disputeData = [
+  {
+    id: 1,
+    buyer: "Nguyễn Văn A",
+    seller: "Trần Văn B",
+    reason: "Sản phẩm bị lỗi",
+    status: "Pending",
+  },
+  {
+    id: 2,
+    buyer: "Lê Thị C",
+    seller: "Phạm Văn D",
+    reason: "Giao hàng chậm",
+    status: "Resolved",
+  },
+];
+
+// Dữ liệu giả cho bảng package services
+export const packageData = [
+  {
+    packageid: 1,
+    name: "Gói Cơ Bản",
+    duration_months: 1,
+    max_batteries: 5,
+    max_cars: 2,
+    price: 99000,
+    created_at: "2025-09-01",
+  },
+  {
+    packageid: 2,
+    name: "Gói Nâng Cao",
+    duration_months: 3,
+    max_batteries: 15,
+    max_cars: 6,
+    price: 249000,
+    created_at: "2025-09-01",
+  },
+  {
+    packageid: 3,
+    name: "Gói Cao Cấp",
+    duration_months: 6,
+    max_batteries: 50,
+    max_cars: 20,
+    price: 499000,
+    created_at: "2025-09-01",
+  },
+];
+
+// Dữ liệu giả cho bảng user packages
+export const userPackageData = [
+  {
+    userpackageid: 1,
+    username: "nguyenvana",
+    packageid: 1,
+    name: "Gói Cơ Bản",
+    purchase_date: "2025-10-01",
+    expiry_date: "2025-11-01",
+    remaining_batteries: 3,
+    remaining_cars: 1,
+  },
+  {
+    userpackageid: 2,
+    username: "tranthib",
+    packageid: 2,
+    name: "Gói Nâng Cao",
+    purchase_date: "2025-09-15",
+    expiry_date: "2025-12-15",
+    remaining_batteries: 10,
+    remaining_cars: 4,
+  },
+  {
+    userpackageid: 3,
+    username: "phamvanc",
+    packageid: 3,
+    name: "Gói Cao Cấp",
+    purchase_date: "2025-07-01",
+    expiry_date: "2025-12-31",
+    remaining_batteries: 45,
+    remaining_cars: 17,
+  },
+];
+
+export const userData = [
+  {
+    userid: 1,
+    displayname: "Nguyễn Văn A",
+    username: "nguyenvana",
+    email: "a@gmail.com",
+    phone: "0123456789",
+    isactive: true,
+    created_at: "2025-10-01",
+    updated_at: "2025-10-10",
+    dateofbirth: "2000-05-15",
+    role: "pending_buyer",
+    avatar: "https://i.pravatar.cc/150?img=1",
+  },
+  {
+    userid: 2,
+    displayname: "Trần Thị B",
+    username: "tranthib",
+    email: "b@gmail.com",
+    phone: "0987654321",
+    isactive: false,
+    created_at: "2025-09-20",
+    updated_at: "2025-10-05",
+    dateofbirth: "1999-09-12",
+    role: "buyer",
+    avatar: "https://i.pravatar.cc/150?img=2",
+  },
+  {
+    userid: 3,
+    displayname: "Phạm Văn C",
+    username: "phamvanc",
+    email: "c@gmail.com",
+    phone: "0777777777",
+    isactive: true,
+    created_at: "2025-08-15",
+    updated_at: "2025-10-11",
+    dateofbirth: "1998-02-22",
+    role: "user",
+    avatar: "https://i.pravatar.cc/150?img=3",
+  },
+];

@@ -10,6 +10,10 @@ import PostManagement from "../pages/admin/PostManagement";
 import VehicleInspection from "../pages/admin/VehicleInspection";
 import VehicleStorage from "../pages/admin/VehicleStorage";
 import TransactionManagement from "../pages/admin/TransactionManagement";
+import DisputeManagement from "../pages/admin/DisputeManagement"
+import UserManagement from "../pages/admin/UserManagement";
+import PackageManagement from "../pages/admin/PackageManagement";
+
 export const routes = [
   {
     path: "/admin",
@@ -20,6 +24,10 @@ export const routes = [
       { path: "/admin/vehicle-inspection", element: <VehicleInspection /> },
       { path: "/admin/vehicle-storage", element: <VehicleStorage /> },
       { path: "/admin/transactions", element: <TransactionManagement /> },
+      { path: "/admin/disputes", element: <DisputeManagement/> },
+      { path: "/admin/users", element: <UserManagement/> },
+      { path: "/admin/packages", element: <PackageManagement/> }
+      
     ],
   },
   {
