@@ -474,7 +474,7 @@ export const userData = [
     updated_at: "2025-10-10",
     dateofbirth: "2000-05-15",
     role: "pending_buyer",
-    avatar: "https://i.pravatar.cc/150?img=1",
+    avatar: "",
   },
   {
     userid: 2,
@@ -487,7 +487,7 @@ export const userData = [
     updated_at: "2025-10-05",
     dateofbirth: "1999-09-12",
     role: "buyer",
-    avatar: "https://i.pravatar.cc/150?img=2",
+    avatar: "",
   },
   {
     userid: 3,
@@ -500,6 +500,6 @@ export const userData = [
     updated_at: "2025-10-11",
     dateofbirth: "1998-02-22",
     role: "user",
-    avatar: "https://i.pravatar.cc/150?img=3",
+    avatar: "",
   },
 ];

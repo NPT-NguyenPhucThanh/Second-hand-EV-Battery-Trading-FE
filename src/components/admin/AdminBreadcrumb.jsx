@@ -6,7 +6,6 @@ export default function AdminBreadcrumb() {
   const location = useLocation();
   const path = location.pathname;
 
-  // map đường dẫn → tiêu đề hiển thị
   const nameMap = {
     "/admin": "Bảng điều khiển",
     "/admin/users": "Quản lý người dùng",
@@ -18,15 +17,12 @@ export default function AdminBreadcrumb() {
     "/admin/packages": "Quản lý gói dịch vụ",
   };
 
-  // lấy danh sách breadcrumb
   const breadcrumbItems = [];
 
-  // luôn có Bảng điều khiển
   breadcrumbItems.push({
     title: <Link to="/admin">Bảng điều khiển</Link>,
   });
 
-  // nếu không phải đang ở /admin thì thêm trang hiện tại
   if (path !== "/admin") {
     breadcrumbItems.push({
       title: nameMap[path] || "Trang hiện tại",

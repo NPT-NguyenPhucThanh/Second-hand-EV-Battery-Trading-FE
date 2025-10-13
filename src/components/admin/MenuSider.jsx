@@ -55,7 +55,7 @@ export default function MenuSider() {
       key: "/admin/transactions",
     },
     {
-      label: <Link to="/admin/disputes">Giải quyết tranh chấp</Link>,
+      label: <Link to="/admin/disputes">Xử lý tranh chấp</Link>,
       icon: <WarningOutlined />,
       key: "/admin/disputes",
     },

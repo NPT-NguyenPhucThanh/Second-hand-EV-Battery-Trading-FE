@@ -42,7 +42,7 @@ export default function PostManagement() {
   return (
     <>
     <AdminBreadcrumb />
-      <Table columns={columns} dataSource={post} pagination={{ pageSize: 7 }} scroll={{ x: "max-content" }} />
+      <Table columns={columns} dataSource={post} pagination={{ pageSize: 8 }} scroll={{ x: "max-content" }} />
       <Modal open={isModalVisible} onCancel={() => setIsModalVisible(false)} title={selectedPost?.title} footer={null} width={700}>
         {selectedPost && (
           <>
