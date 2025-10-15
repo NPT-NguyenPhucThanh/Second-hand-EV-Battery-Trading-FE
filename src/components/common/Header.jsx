@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import React, { useState, useEffect, useRef } from "react";
 
-/* ----------------------- USER PROFILE DROPDOWN ----------------------- */
+/* ----------------------- ICONS ----------------------- */
 const User = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -61,24 +61,6 @@ const CreditCard = (props) => (
     <line x1="2" x2="22" y1="10" y2="10" />
   </svg>
 );
-const HelpCircle = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-    <line x1="12" x2="12.01" y1="17" y2="17" />
-  </svg>
-);
 const LogOut = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -98,6 +80,7 @@ const LogOut = (props) => (
   </svg>
 );
 
+/* ----------------------- DROPDOWN CƠ BẢN ----------------------- */
 const DropdownMenu = ({ children, trigger }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -151,68 +134,68 @@ const DropdownMenuItem = ({ children, onClick }) => (
 
 const DropdownMenuSeparator = () => <div className="my-2 h-px bg-zinc-200" />;
 
+/* ----------------------- HỒ SƠ NGƯỜI DÙNG ----------------------- */
 function UserProfileDropdown() {
   return (
     <DropdownMenu
       trigger={
-        <button className="flex items-center space-x-3 px-3 py-2 rounded-lgshadow-sm hover:bg-gray-300 transition-all">
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-sm  ">
+        <button className="flex items-center space-x-3 px-3 py-2 rounded-lg shadow-sm hover:bg-gray-300 transition-all">
+          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-sm">
             DH
           </div>
           <div className="text-left">
-            <div className="text-sm font-bold text-white ">Dang Hieu</div>
-            
+            <div className="text-sm font-bold text-white">Đăng Hiệu</div>
           </div>
         </button>
       }
     >
-      {/* dropdown */}
+      {/* dropdown header */}
       <div className="px-3 py-3 border-b border-zinc-200">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
             DH
           </div>
           <div>
-            <div className="text-sm font-semibold text-zinc-900">Dang Hieu</div>
+            <div className="text-sm font-semibold text-zinc-900">Đăng Hiệu</div>
             <div className="text-xs text-zinc-500">dagnhieu.work@gmail.com</div>
-            <div className="text-xs text-blue-600 font-medium">Pro Plan</div>
+            <div className="text-xs text-blue-600 font-medium">Gói Pro</div>
           </div>
         </div>
       </div>
 
       <div className="py-1">
-        <DropdownMenuItem onClick={() => console.log("Profile")}>
+        <DropdownMenuItem onClick={() => console.log("Trang cá nhân")}>
           <User className="mr-3 h-4 w-4 text-zinc-500" />
-          <Link to={"/profile"}>Your Profile</Link>
+          <Link to={"/profile"}>Trang cá nhân</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => console.log("Settings")}>
+        <DropdownMenuItem onClick={() => console.log("Cài đặt")}>
           <Settings className="mr-3 h-4 w-4 text-zinc-500" />
-          Settings
+          Cài đặt
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => console.log("Billing")}>
+        <DropdownMenuItem onClick={() => console.log("Thanh toán")}>
           <CreditCard className="mr-3 h-4 w-4 text-zinc-500" />
-          Billing & Plans
+          Gói & thanh toán
         </DropdownMenuItem>
       </div>
 
       <DropdownMenuSeparator />
 
       <div className="py-1">
-        <DropdownMenuItem onClick={() => console.log("Sign out")}>
+        <DropdownMenuItem onClick={() => console.log("Đăng xuất")}>
           <LogOut className="mr-3 h-4 w-4 text-zinc-500" />
-          Sign Out
+          Đăng xuất
         </DropdownMenuItem>
       </div>
     </DropdownMenu>
   );
 }
 
-/* ----------------------- MAIN HEADER ----------------------- */
+/* ----------------------- HEADER CHÍNH ----------------------- */
 export default function Header({ user = 1 }) {
   const notifications = [
-    { id: 1, message: "Your order #1234 has been shipped." },
-    { id: 2, message: "New message from support team." },
-    { id: 3, message: "Battery listing approved." },
+    { id: 1, message: "Đơn hàng #1234 của bạn đã được gửi đi." },
+    { id: 2, message: "Bạn có tin nhắn mới từ đội hỗ trợ." },
+    { id: 3, message: "Tin đăng pin đã được phê duyệt." },
   ];
 
   const notificationContent = (
@@ -226,7 +209,9 @@ export default function Header({ user = 1 }) {
         )}
       />
       {notifications.length === 0 && (
-        <p className="text-gray-500 text-center text-sm">No notifications</p>
+        <p className="text-gray-500 text-center text-sm">
+          Chưa có thông báo nào
+        </p>
       )}
     </div>
   );
@@ -240,12 +225,12 @@ export default function Header({ user = 1 }) {
             TradeEV
           </Link>
 
-          {/* Search Bar */}
+          {/* Thanh tìm kiếm */}
           <div className="flex-1 bg-white rounded-lg mx-10">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Tìm kiếm sản phẩm..."
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
               />
               <button className="absolute right-3 top-2.5">
@@ -266,20 +251,16 @@ export default function Header({ user = 1 }) {
             </div>
           </div>
 
-          {/* Navigation & Auth */}
+          {/* Điều hướng & tài khoản */}
           <div className="flex items-center space-x-4">
             <CategoryDropdown />
             <Link to={"/support"} className="text-white font-bold">
-              Support
+              Hỗ trợ
             </Link>
 
             <Popover
               content={notificationContent}
-              title={
-                <span className="font-semibold text-gray-700">
-                  Notifications
-                </span>
-              }
+              title={<span className="font-semibold text-gray-700">Thông báo</span>}
               trigger="click"
               placement="bottomRight"
             >
@@ -297,12 +278,12 @@ export default function Header({ user = 1 }) {
             </Popover>
 
             {user === 1 ? (
-              <nav className="ml-6 flex items-center ">
+              <nav className="ml-6 flex items-center">
                 <UserProfileDropdown />
               </nav>
             ) : (
               <Link to={"/login"}>
-                <Button className="ml-5 font-bold">Login/Register</Button>
+                <Button className="ml-5 font-bold">Đăng nhập / Đăng ký</Button>
               </Link>
             )}
           </div>
@@ -312,12 +293,12 @@ export default function Header({ user = 1 }) {
   );
 }
 
-/* ----------------------- CATEGORY DROPDOWN ----------------------- */
+/* ----------------------- DANH MỤC ----------------------- */
 export function CategoryDropdown() {
   const items = [
     {
       key: "bike",
-      label: "Bike",
+      label: "Xe điện",
       children: [
         {
           key: "vinfast",
@@ -331,10 +312,10 @@ export function CategoryDropdown() {
     },
     {
       key: "batteries",
-      label: "Batteries",
+      label: "Pin",
       children: [
-        { key: "lithium", label: "Lithium-ion" },
-        { key: "solid", label: "Solid-state" },
+        { key: "lithium", label: "Pin Lithium-ion" },
+        { key: "solid", label: "Pin thể rắn" },
       ],
     },
   ];
@@ -344,7 +325,7 @@ export function CategoryDropdown() {
       menu={{
         items,
         onClick: (e) => {
-          console.log("Selected category:", e.key);
+          console.log("Danh mục đã chọn:", e.key);
         },
       }}
       placement="bottomLeft"
@@ -356,7 +337,7 @@ export function CategoryDropdown() {
         icon={<AppstoreOutlined style={{ color: "white" }} />}
         style={{ color: "white" }}
       >
-        Categories{" "}
+        Danh mục{" "}
         <DownOutlined
           style={{ fontSize: "12px", marginLeft: "4px", color: "white" }}
         />

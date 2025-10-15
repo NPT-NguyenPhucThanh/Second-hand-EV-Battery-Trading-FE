@@ -20,7 +20,7 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-300">
               <li>Email: dagnhieu.work@gmail.com</li>
               <li>Phone: +84 81 369 8456</li>
-              <li>Address: FPT lô e34</li>
+              <li>Address: Lô E2a-7, Đường D1 Khu Công nghệ cao, P.Long Thạnh Mỹ, TP Thủ Đức, TP.HCM</li>
             </ul>
           </div>
         </div>

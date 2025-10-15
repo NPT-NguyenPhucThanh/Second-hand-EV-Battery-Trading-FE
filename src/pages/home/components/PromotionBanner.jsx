@@ -1,6 +1,6 @@
-// src/features/home/components/PromotionBanner.jsx
 import { Link } from "react-router";
 import banner from "../../../assets/images/Banner.jpg";
+
 export default function PromotionBanner({
   title = "EV Second-hand Marketplace",
   subtitle = "Your Marketplace for Electric Mobility",
@@ -8,33 +8,48 @@ export default function PromotionBanner({
   ctaHref = "/listings/new",
 }) {
   return (
-    <section className="   py-8 mx-auto  mt-8 ">
-      <div className=" p-6 md:p-35 text-amber-300 font-semibold relative overflow-hidden">
-        <img
-          src={banner}
-          alt="Promotion Background"
-          className="absolute inset-0 w-full h-full object-cover opacity-50"
-        />
-        <div className="relative z-10">
+    <section className="py-8 mx-auto mt-8 relative overflow-hidden rounded-2xl shadow-lg">
+      {/* Import Google Fonts inline */}
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Exo+2:wght@400;600&family=Rajdhani:wght@500;700&display=swap');
+          .font-orbitron { font-family: 'Orbitron', sans-serif; }
+          .font-exo2 { font-family: 'Exo 2', sans-serif; }
+          .font-rajdhani { font-family: 'Rajdhani', sans-serif; }
+        `}
+      </style>
+
+      <div className="relative p-8 md:p-16 text-left text-white flex flex-col justify-center min-h-[350px] md:min-h-[450px]">
+        {/* Background + overlay */}
+        <div className="absolute inset-0">
+          <img
+            src={banner}
+            alt="Promotion Background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-transparent" />
+        </div>
+
+        {/* Nội dung */}
+        <div className="relative z-10 max-w-2xl">
           <h2
-            className="text-2xl md:text-5xl font-bold "
-            style={{ WebkitTextStroke: "0.7px black" }}
+            className="font-orbitron text-3xl md:text-6xl font-bold tracking-wide drop-shadow-lg"
+            style={{ WebkitTextStroke: "0.5px rgba(0,0,0,0.8)" }}
           >
             {title}
           </h2>
-          <p className="mt-2 text-white/90">{subtitle}</p>
+
+          <p className="mt-4 font-exo2 text-lg md:text-2xl text-white/90">
+            {subtitle}
+          </p>
 
           <Link
             to={ctaHref}
-            className="inline-block mt-4 rounded-lg bg-white px-4 py-2 font-semibold text-[#007BFF] hover:bg-amber-100"
+            className="inline-block mt-6 rounded-lg bg-amber-400 hover:bg-amber-300 px-6 py-3 font-rajdhani text-lg font-semibold text-black shadow-md transition-all duration-200"
           >
             {ctaText}
           </Link>
         </div>
-
-        {/* decor */}
-        <div className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute -left-12 -top-12 w-56 h-56 rounded-full bg-white/10 blur-2xl" />
       </div>
     </section>
   );
