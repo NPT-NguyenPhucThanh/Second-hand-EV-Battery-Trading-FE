@@ -13,7 +13,7 @@ export const post = async (path, data) => {
     },
     body: JSON.stringify(data),
   });
-  return response.json();
+  return await response.json();
 };
 export const put = async (path, data) => {
   const response = await fetch(`${API_DOMAIN}${path}`, {

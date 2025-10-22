@@ -6,7 +6,7 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (credentials) => {
   const res = await api.post("api/auth/login", credentials);
-  return res.data; // chỉ lấy phần data từ response
+  return res; // chỉ lấy phần data từ response
 };
 
 export const logoutUser = async () => {
