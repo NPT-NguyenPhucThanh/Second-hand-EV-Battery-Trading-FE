@@ -14,6 +14,7 @@ import DisputeManagement from "../pages/admin/DisputeManagement";
 import UserManagement from "../pages/admin/UserManagement";
 import PackageManagement from "../pages/admin/PackageManagement";
 import ProfilePage from "../pages/profile/ProfilePage";
+import NewPost from "../pages/home/components/NewPost";
 
 export const routes = [
   {
@@ -46,8 +47,11 @@ export const routes = [
   {
     path: "/profile",
     element: <MemberLayout />,
-    children: [{path: "/profile", element: <ProfilePage />}],
-
+    children: [{ path: "/profile", element: <ProfilePage /> }],
+  },
+  {
+    path: "/listings/new",
+    element: <NewPost />,
   },
 ];
 
