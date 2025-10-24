@@ -16,6 +16,8 @@ import PackageManagement from "../pages/admin/PackageManagement";
 import ProfilePage from "../pages/profile/ProfilePage";
 import NewPost from "../pages/home/components/NewPost";
 
+import WarehouseManagement from "../pages/admin/WarehouseManagement";
+
 export const routes = [
   {
     path: "/admin",
@@ -29,6 +31,7 @@ export const routes = [
       { path: "/admin/disputes", element: <DisputeManagement /> },
       { path: "/admin/users", element: <UserManagement /> },
       { path: "/admin/packages", element: <PackageManagement /> },
+       { path: "/admin/warehouse", element: <WarehouseManagement /> },
     ],
   },
   {

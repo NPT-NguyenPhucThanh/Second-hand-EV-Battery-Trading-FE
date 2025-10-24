@@ -25,12 +25,24 @@ export const put = async (path, data) => {
   });
   return response.json();
 };
+// export const del = async (path) => {
+//   const response = await fetch(`${API_DOMAIN}${path}`, {
+//     method: "DELETE"
+//   });
+//   return response.json();
+// };
 export const del = async (path) => {
   const response = await fetch(`${API_DOMAIN}${path}`, {
-    method: "DELETE",
-  });
-  return response.json();
+     method: "DELETE" 
+    });
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 };
+
 export const patch = async (path, data) => {
   const response = await fetch(`${API_DOMAIN}${path}`, {
     method: "PATCH",

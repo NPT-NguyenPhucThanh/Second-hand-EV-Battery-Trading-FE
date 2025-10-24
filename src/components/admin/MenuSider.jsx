@@ -65,6 +65,16 @@ export default function MenuSider() {
       key: "/admin/packages",
     },
     {
+      label: <Link to="/admin/warehouse">Kho</Link>,
+      icon: <DollarOutlined />,
+      key: "/admin/warehouse",
+    },
+    {
+      label: <Link to="/admin/seller">seller</Link>,
+      icon: <DollarOutlined />,
+      key: "/admin/seller",
+    },
+    {
       label: (
         <span style={{ color: "red" }} onClick={handleLogout}>
           Đăng xuất
