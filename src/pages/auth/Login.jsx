@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import loginpic from "../../assets/images/loginpic.png";
 import bgimg from "../../assets/images/bgimg.png";
 import { registerUser, loginUser } from "../../utils/services/userService";
@@ -19,20 +19,19 @@ const Login = () => {
   });
   const [error, setError] = useState({});
   const { login } = useUser();
-  const [message, setMessage] = useState(""); // New state for success/failure messages
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateRegister(formData);
     setError(newErrors);
-    setMessage(""); // Clear previous message
+    setMessage("");
     if (Object.keys(newErrors).length > 0) {
       return;
     }
     try {
-      const payload = {
-        ...formData,
-      };
+      const payload = { ...formData };
       delete payload.confirmPassword;
       const response = await registerUser(payload);
       setFormData({
@@ -42,11 +41,11 @@ const Login = () => {
         confirmPassword: "",
       });
       setError({});
-      setMessage("Registration successful! Please log in."); // Add success feedback
-      setIsLoginMode(true); // Optional: Switch to login mode after success
+      setMessage("Registration successful! Please log in.");
+      setIsLoginMode(true);
     } catch (error) {
       console.error("Registration failed:", error);
-      setMessage("Registration failed. Please try again."); // Add failure feedback
+      setMessage("Registration failed. Please try again.");
     }
   };
 
@@ -62,11 +61,18 @@ const Login = () => {
       const response = await loginUser({ username, password });
       console.log("Response từ server:", response);
 
-      // ✅ response giờ chính là object có username, token, email, ...
-      login(response.username, response.token);
-      console.log("Login successful:", response);
+      login(
+        {
+          username: response.username,
+          email: response.email,
+          roles: response.roles,
+        },
+        response.token
+      ); // Hoặc login(response) nếu muốn đầy đủ
 
+      console.log("Login successful:", response);
       setMessage("Login successful!");
+      navigate("/"); // Chuyển hướng sau khi đăng nhập thành công
     } catch (error) {
       console.error("Login failed:", error);
       setMessage("Login failed. Please check your credentials.");
@@ -75,6 +81,10 @@ const Login = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const GoogleAuth = () => {
+    console.log("Google Auth Clicked");
   };
 
   return (
@@ -121,57 +131,12 @@ const Login = () => {
                 }`}
               ></div>
             </div>
-            {/* Social Login Button */}
-            <div className="w-full flex flex-col items-center">
-              <button
-                type="button"
-                className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-white text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out border hover:shadow"
-                onClick={() => console.log("Login with Google clicked")}
-              >
-                <div className="p-2 rounded-full">
-                  {/* Google logo SVG */}
-                  <svg
-                    className="w-5 h-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 48 48"
-                  >
-                    <path
-                      fill="#EA4335"
-                      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.62 2.52 30.16 0 24 0 14.62 0 6.4 5.38 2.48 13.22l7.98 6.2C12.1 13.05 17.58 9.5 24 9.5z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M46.1 24.49c0-1.58-.14-3.09-.39-4.56H24v9.11h12.45c-.54 2.92-2.18 5.39-4.65 7.06l7.28 5.66C43.42 37.63 46.1 31.62 46.1 24.49z"
-                    />
-                    <path
-                      fill="#4A90E2"
-                      d="M10.46 28.03c-.48-1.45-.74-3-.74-4.61s.26-3.16.74-4.61l-7.98-6.2C.9 15.2 0 19.45 0 23.42s.9 8.22 2.48 11.82l7.98-7.21z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M24 47.84c6.16 0 11.34-2.03 15.12-5.52l-7.28-5.66c-2.02 1.36-4.6 2.16-7.84 2.16-6.42 0-11.9-3.55-14.54-8.92l-7.98 7.21C6.4 42.62 14.62 47.84 24 47.84z"
-                    />
-                  </svg>
-                </div>
-                <span className="ml-4">
-                  {isLoginMode ? "Login" : "Sign Up"} with Google
-                </span>
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="my-10 border-b text-center w-full max-w-xs">
-              <div className="leading-none px-2 inline-block text-sm text-gray-600 tracking-wide font-medium bg-white transform translate-y-1/2">
-                Or {isLoginMode ? "login" : "sign up"} with e-mail
-              </div>
-            </div>
 
             {/* Form */}
             <div className="mx-auto max-w-xs w-full">
               {message && (
                 <p className="text-center mb-4 text-green-500">{message}</p>
               )}{" "}
-              {/* Display success/failure */}
               <input
                 type={isLoginMode ? "text" : "text"}
                 name="username"

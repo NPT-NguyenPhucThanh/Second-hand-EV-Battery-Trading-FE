@@ -1,14 +1,16 @@
 "use client";
 import { Button, Popover, List, Badge, Dropdown } from "antd";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom"; // Changed to react-router-dom and added useNavigate
 import { logoutUser } from "../../utils/services/userService";
 import { useUser } from "../../contexts/UserContext.jsx";
 import {
   NotificationOutlined,
   DownOutlined,
   AppstoreOutlined,
+  ShoppingCartOutlined,
+  HeartOutlined,
 } from "@ant-design/icons";
-import React, { useState, useEffect, useRef, use } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 /* ----------------------- ICONS ----------------------- */
 const User = (props) => (
@@ -140,17 +142,24 @@ const DropdownMenuSeparator = () => <div className="my-2 h-px bg-zinc-200" />;
 /* ----------------------- HỒ SƠ NGƯỜI DÙNG ----------------------- */
 function UserProfileDropdown() {
   const { user, logout } = useUser();
+  const navigate = useNavigate();
+
+  // Thêm check: Nếu user undefined hoặc loading, không render dropdown
+  if (!user || !user.username) {
+    return null; // Hoặc <div>Loading...</div> nếu muốn placeholder
+  }
+
   return (
     <DropdownMenu
       trigger={
         <button className="flex items-center space-x-3 px-3 py-2 rounded-lg shadow-sm hover:bg-gray-300 transition-all">
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-sm">
-            {user.displayname.toUpperCase().split(" ").slice(-1)[0][0]}
+            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}{" "}
+            {/* Sửa: dùng username, thêm safe */}
           </div>
           <div className="text-left">
             <div className="text-sm font-bold text-white">
-              {" "}
-              {user.displayname}{" "}
+              {user.username || "User"} {/* Sửa: dùng username */}
             </div>
           </div>
         </button>
@@ -160,22 +169,26 @@ function UserProfileDropdown() {
       <div className="px-3 py-3 border-b border-zinc-200">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-            {user.displayname.toUpperCase().split(" ").slice(-1)[0][0]}
+            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}{" "}
+            {/* Sửa tương tự */}
           </div>
           <div>
             <div className="text-sm font-semibold text-zinc-900">
-              {user.displayname}
+              {user.username || "User"} {/* Sửa: dùng username */}
             </div>
-            <div className="text-xs text-zinc-500">{user.email}</div>
+            <div className="text-xs text-zinc-500">
+              {user.email || "No email"}
+            </div>{" "}
+            {/* Thêm safe cho email */}
             <div className="text-xs text-blue-600 font-medium">Gói Pro</div>
           </div>
         </div>
       </div>
 
       <div className="py-1">
-        <DropdownMenuItem onClick={() => console.log("Trang cá nhân")}>
+        <DropdownMenuItem onClick={() => navigate("/profile")}>
           <User className="mr-3 h-4 w-4 text-zinc-500" />
-          <Link to={"/profile"}>Trang cá nhân</Link>
+          Trang cá nhân
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => console.log("Cài đặt")}>
           <Settings className="mr-3 h-4 w-4 text-zinc-500" />
@@ -190,7 +203,9 @@ function UserProfileDropdown() {
       <DropdownMenuSeparator />
 
       <div className="py-1">
-        <DropdownMenuItem onClick={() => logoutUser()}>
+        <DropdownMenuItem onClick={logout}>
+          {" "}
+          {/* Sửa: dùng logout() từ context */}
           <LogOut className="mr-3 h-4 w-4 text-zinc-500" />
           Đăng xuất
         </DropdownMenuItem>
@@ -200,7 +215,9 @@ function UserProfileDropdown() {
 }
 
 /* ----------------------- HEADER CHÍNH ----------------------- */
-export default function Header({ user }) {
+export default function Header() {
+  // Removed unnecessary { user } prop
+  const { user } = useUser(); // Use context directly here
   const notifications = [
     { id: 1, message: "Đơn hàng #1234 của bạn đã được gửi đi." },
     { id: 2, message: "Bạn có tin nhắn mới từ đội hỗ trợ." },
@@ -287,6 +304,41 @@ export default function Header({ user }) {
                 />
               </Badge>
             </Popover>
+
+            {user && ( // Only show cart and favorites if logged in
+              <>
+                <Link to="/favorites">
+                  <Badge count={0} size="small" offset={[0, 5]}>
+                    {" "}
+                    {/* Replace 0 with dynamic favorites count if available */}
+                    <Button
+                      type="text"
+                      shape="circle"
+                      icon={
+                        <HeartOutlined
+                          style={{ fontSize: "20px", color: "white" }}
+                        />
+                      }
+                    />
+                  </Badge>
+                </Link>
+                <Link to="/cart">
+                  <Badge count={0} size="small" offset={[0, 5]}>
+                    {" "}
+                    {/* Replace 0 with dynamic cart count if available */}
+                    <Button
+                      type="text"
+                      shape="circle"
+                      icon={
+                        <ShoppingCartOutlined
+                          style={{ fontSize: "20px", color: "white" }}
+                        />
+                      }
+                    />
+                  </Badge>
+                </Link>
+              </>
+            )}
 
             {user ? (
               <nav className="ml-6 flex items-center">

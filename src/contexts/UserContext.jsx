@@ -10,30 +10,36 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
+    const userData = localStorage.getItem("user"); // Giữ key "user"
     if (token && userData) {
-      setUser(JSON.parse(userData));
-      setIsAuthenticated(true);
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Invalid user data in localStorage:", error);
+        localStorage.removeItem("user"); // Xóa nếu parse lỗi
+      }
     }
     setLoading(false);
   }, []);
 
   const login = (userData, token) => {
     localStorage.setItem("token", token);
-    localStorage.setItem("username", JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData)); // Sửa key thành "user"
     setUser(userData);
     setIsAuthenticated(true);
   };
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("user"); // Sửa key thành "user"
     setUser(null);
     setIsAuthenticated(false);
   };
 
   const updateUser = (newUserData) => {
     setUser(newUserData);
-    localStorage.setItem("user", JSON.stringify(newUserData));
+    localStorage.setItem("user", JSON.stringify(newUserData)); // Đã đúng
   };
   const value = {
     user,
