@@ -1,70 +1,96 @@
-import React, { useState } from "react";
-import {
-  Tabs,
-  Table,
-  Button,
-  Modal,
-  Descriptions,
-  Image,
-  Tag,
-  Space,
-  message,
-} from "antd";
-import {
-  LockOutlined,
-  UnlockOutlined,
-  EyeOutlined,
-  CheckOutlined,
-} from "@ant-design/icons";
+// src/pages/admin/SellerRequestManagement.jsx
+import React, { useEffect, useState } from "react";
+import { Table, Button, Modal, Descriptions, Image, Tag, Space, message } from "antd";
+import { EyeOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import AdminBreadcrumb from "../../components/admin/AdminBreadcrumb";
-import { userData } from "../../dataAdmin";
+import { getSellerUpgradeRequests, approveSellerRequest } from "../../services/sellerUpgradeService";
 
-export default function UserManagement() {
-  const [users, setUsers] = useState(userData);
-  const [selectedUser, setSelectedUser] = useState(null);
+export default function SellerRequestManagement() {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const showDetails = (user) => {
-    setSelectedUser(user);
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const response = await getSellerUpgradeRequests();
+      if (response && Array.isArray(response.requests)) {
+        setRequests(response.requests);
+      } else {
+        setRequests([]);
+        message.error("Không thể tải danh sách yêu cầu.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu:", error);
+      message.error("Đã xảy ra lỗi khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+      
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const handleApprove = async (userId) => {
+    try {
+      
+      const payload = {
+        approved: true,
+        rejectionReason: null, 
+      };
+      await approveSellerRequest(userId, payload);
+      message.success("Duyệt yêu cầu thành công!");
+      fetchRequests();
+    } catch (error) {
+      message.error("Có lỗi xảy ra khi duyệt yêu cầu.");
+      console.error("Lỗi khi duyệt:", error);
+    }
+  };
+  
+  const handleReject = async (userId) => {
+  try {
+    const reason = prompt("Vui lòng nhập lý do từ chối yêu cầu này:");
+    if (reason === null || reason.trim() === "") {
+      message.info("Hành động từ chối đã được hủy.");
+      return; 
+    }
+    const payload = {
+      approved: false,         
+      rejectionReason: reason, 
+    };
+    await approveSellerRequest(userId, payload);
+    message.success("Đã từ chối yêu cầu thành công.");
+    fetchRequests();
+
+  } catch (error) {
+    console.error("Lỗi khi từ chối yêu cầu:", error);
+    message.error("Đã có lỗi xảy ra khi thực hiện từ chối.");
+    }
+  };
+
+  const showDetails = (request) => {
+    setSelectedRequest(request);
     setIsModalVisible(true);
   };
 
-  const toggleActive = (userid) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.userid === userid ? { ...u, isactive: !u.isactive } : u
-      )
-    );
-    message.success("Cập nhật trạng thái tài khoản thành công!");
-  };
-
-  const approveSeller = (userid) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.userid === userid ? { ...u, role: "buyer" } : u))
-    );
-    message.success("Đã duyệt seller mới thành công!");
-  };
-
-  const pendingColumns = [
-    { title: "User ID", dataIndex: "userid", key: "userid" },
-    { title: "Tên hiển thị", dataIndex: "displayname", key: "displayname" },
+  const columns = [
+    { title: "Mã User", dataIndex: "userid", key: "userid" },
+    { title: "Tên tài khoản", dataIndex: "username", key: "username" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "SĐT", dataIndex: "phone", key: "phone" },
     {
-      title: "Trạng thái",
-      dataIndex: "isactive",
-      key: "isactive",
-      render: (active) =>
-        active ? (
-          <Tag color="green">Hoạt động</Tag>
-        ) : (
-          <Tag color="red">Bị khóa</Tag>
-        ),
+      title: "Ngày yêu cầu",
+      dataIndex: "requestDate",
+      key: "requestDate",
+      render: (date) => new Date(date).toLocaleDateString("vi-VN"), 
     },
     {
-      title: "Ngày tạo",
-      dataIndex: "created_at",
-      key: "created_at",
+        title: "Trạng thái",
+        key: "status",
+        render: () => <Tag color="orange">Chờ duyệt</Tag>,
     },
     {
       title: "Thao tác",
@@ -76,157 +102,67 @@ export default function UserManagement() {
             onClick={() => showDetails(record)}
             type="primary"
           >
-            Xem
+            Xem chi tiết
           </Button>
           <Button
             icon={<CheckOutlined />}
-            type="default"
-            onClick={() => approveSeller(record.userid)}
-            style={{ backgroundColor: "#52c41a", color: "white" }}
-          >
-            Duyệt seller mới
-          </Button>
-          <Button
-            danger={record.isactive}
-            icon={record.isactive ? <LockOutlined /> : <UnlockOutlined />}
-            onClick={() => toggleActive(record.userid)}
-          >
-            {record.isactive ? "Khóa" : "Mở khóa"}
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
-  const allColumns = [
-    { title: "User ID", dataIndex: "userid", key: "userid" },
-    { title: "Tên hiển thị", dataIndex: "displayname", key: "displayname" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "SĐT", dataIndex: "phone", key: "phone" },
-    {
-      title: "Quyền",
-      dataIndex: "role",
-      key: "role",
-      render: (role) => {
-        if (role === "buyer") return <Tag color="blue">Buyer</Tag>;
-        if (role === "pending_buyer")
-          return <Tag color="orange">Chờ duyệt</Tag>;
-        return <Tag color="default">User</Tag>;
-      },
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "isactive",
-      key: "isactive",
-      render: (active) =>
-        active ? (
-          <Tag color="green">Hoạt động</Tag>
-        ) : (
-          <Tag color="red">Bị khóa</Tag>
-        ),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            icon={<EyeOutlined />}
-            onClick={() => showDetails(record)}
             type="primary"
+            onClick={() => handleApprove(record.userId)}
+            style={{ backgroundColor: "#52c41a", borderColor: '#52c41a' }}
           >
-            Xem
+            Duyệt
           </Button>
           <Button
-            danger={record.isactive}
-            icon={record.isactive ? <LockOutlined /> : <UnlockOutlined />}
-            onClick={() => toggleActive(record.userid)}
+            icon={<CloseOutlined />}
+            danger
+            onClick={() => handleReject(record.userId)}
           >
-            {record.isactive ? "Khóa" : "Mở khóa"}
+            Từ chối
           </Button>
         </Space>
       ),
     },
   ];
-
-  const pendingBuyers = users.filter((u) => u.role === "pending_buyer");
-  const allUsers = users;
 
   return (
     <>
       <AdminBreadcrumb />
-      <Tabs
-        defaultActiveKey="1"
-        items={[
-          {
-            key: "1",
-            label: "Yêu cầu cấp quyền Buyer",
-            children: (
-              <Table
-                columns={pendingColumns}
-                dataSource={pendingBuyers}
-                rowKey="userid"
-                pagination={{ pageSize: 5 }}
-              />
-            ),
-          },
-          {
-            key: "2",
-            label: "Tất cả người dùng",
-            children: (
-              <Table
-                columns={allColumns}
-                dataSource={allUsers}
-                rowKey="userid"
-                pagination={{ pageSize: 5 }}
-              />
-            ),
-          },
-        ]}
+      <h2>Yêu cầu nâng cấp tài khoản Seller</h2>
+      <Table
+        columns={columns}
+        dataSource={requests}
+        rowKey="userid"
+        loading={loading}
+        pagination={{ pageSize: 10 }}
       />
 
       <Modal
-        title="Thông tin chi tiết người dùng"
+        title="Thông tin chi tiết yêu cầu"
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
+        width={800}
       >
-        {selectedUser && (
+        {selectedRequest && (
           <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Hình ảnh">
-              <Image
-                width={100}
-                src={selectedUser.avatar}
-                alt={selectedUser.displayname}
-                style={{ borderRadius: "8px" }}
-              />
+            <Descriptions.Item label="Mã User">{selectedRequest.userid}</Descriptions.Item>
+            <Descriptions.Item label="Tên tài khoản">{selectedRequest.username}</Descriptions.Item>
+            <Descriptions.Item label="Email">{selectedRequest.email}</Descriptions.Item>
+            <Descriptions.Item label="Số điện thoại">{selectedRequest.phone}</Descriptions.Item>
+            <Descriptions.Item label="Ngày yêu cầu">
+              {new Date(selectedRequest.requestdate).toLocaleString("vi-VN")}
             </Descriptions.Item>
-            <Descriptions.Item label="Tên hiển thị">
-              {selectedUser.displayname}
-            </Descriptions.Item>
-            <Descriptions.Item label="Tên đăng nhập">
-              {selectedUser.username}
-            </Descriptions.Item>
-            <Descriptions.Item label="Email">
-              {selectedUser.email}
-            </Descriptions.Item>
-            <Descriptions.Item label="Số điện thoại">
-              {selectedUser.phone}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày sinh">
-              {selectedUser.dateofbirth}
-            </Descriptions.Item>
-            <Descriptions.Item label="Quyền hiện tại">
-              {selectedUser.role}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              {selectedUser.isactive ? "Hoạt động" : "Bị khóa"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">
-              {selectedUser.created_at}
-            </Descriptions.Item>
-            <Descriptions.Item label="Cập nhật gần nhất">
-              {selectedUser.updated_at}
+            <Descriptions.Item label="Hình ảnh giấy tờ">
+              <Image.PreviewGroup>
+                <Space direction="vertical">
+                    <p>CCCD mặt trước:</p>
+                    <Image width={200} src={selectedRequest.cccdfronturl} />
+                    <p>CCCD mặt sau:</p>
+                    <Image width={200} src={selectedRequest.cccdbackurl} />
+                    <p>Giấy đăng ký xe:</p>
+                    <Image width={200} src={selectedRequest.vehicleRegistrationUrl} />
+                </Space>
+              </Image.PreviewGroup>
             </Descriptions.Item>
           </Descriptions>
         )}
