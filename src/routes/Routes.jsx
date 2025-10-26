@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import { RouterProvider } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard";
 import NotFound from "../pages/404page/NotFound";
@@ -16,8 +15,9 @@ import PackageManagement from "../pages/admin/PackageManagement";
 import ProfilePage from "../pages/profile/ProfilePage";
 import NewPost from "../pages/home/components/NewPost";
 import Cart from "../pages/cart/pages/CartPage";
-
 import WarehouseManagement from "../pages/admin/WarehouseManagement";
+import ListingDetail from "../pages/home/components/ListingDetail";
+import SellerProfile from "../pages/profile/components/SellerProfile"; // <-- import mới
 
 export const routes = [
   {
@@ -45,27 +45,19 @@ export const routes = [
     children: [
       { path: "/", element: <Home /> },
       { path: "/cart", element: <Cart /> },
-      { path: "/profile", element: <ProfilePage /> }
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "/listings/:id", element: <ListingDetail /> },
+      { path: "/sellers/:id", element: <SellerProfile /> }, // <-- route mới cho người bán
     ],
   },
   {
     path: "/login",
     element: <Login />,
   },
-  // {
-  //   path: "/profile",
-  //   element: <MemberLayout />,
-  //   children: [{ path: "/profile", element: <ProfilePage /> }],
-  // },
   {
     path: "/listings/new",
     element: <NewPost />,
   },
-  // {
-  //   path: "/cart",
-  //   element: <MemberLayout />,
-  //   children: [{ path: "/cart", element: <Cart /> }],
-  // },
 ];
 
 const router = createBrowserRouter(routes);
