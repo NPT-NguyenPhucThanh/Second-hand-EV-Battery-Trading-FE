@@ -14,7 +14,7 @@ import DisputeManagement from "../pages/admin/DisputeManagement";
 import UserManagement from "../pages/admin/UserManagement";
 import PackageManagement from "../pages/admin/PackageManagement";
 import ProfilePage from "../pages/profile/ProfilePage";
-import NewPost from "../pages/home/components/NewPost";
+import NewPost from "../pages/post/NewPost";
 import Cart from "../pages/cart/pages/CartPage";
 
 import WarehouseManagement from "../pages/admin/WarehouseManagement";
@@ -45,7 +45,8 @@ export const routes = [
     children: [
       { path: "/", element: <Home /> },
       { path: "/cart", element: <Cart /> },
-      { path: "/profile", element: <ProfilePage /> }
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "/listings/new", element: <NewPost /> },
     ],
   },
   {
@@ -57,10 +58,10 @@ export const routes = [
   //   element: <MemberLayout />,
   //   children: [{ path: "/profile", element: <ProfilePage /> }],
   // },
-  {
-    path: "/listings/new",
-    element: <NewPost />,
-  },
+  // {
+  //   path: "/listings/new",
+  //   element: <NewPost />,
+  // },
   // {
   //   path: "/cart",
   //   element: <MemberLayout />,
