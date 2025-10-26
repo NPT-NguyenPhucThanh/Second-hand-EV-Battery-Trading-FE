@@ -8,7 +8,7 @@ function MemberLayout() {
     <>
       <Header />
       <main>
-        <Outlet />
+        <Outlet />      
       </main>
       <Footer />
     </>

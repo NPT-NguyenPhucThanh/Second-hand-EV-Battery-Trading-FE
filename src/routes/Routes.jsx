@@ -15,6 +15,7 @@ import UserManagement from "../pages/admin/UserManagement";
 import PackageManagement from "../pages/admin/PackageManagement";
 import ProfilePage from "../pages/profile/ProfilePage";
 import NewPost from "../pages/home/components/NewPost";
+import Cart from "../pages/cart/pages/CartPage";
 
 import WarehouseManagement from "../pages/admin/WarehouseManagement";
 
@@ -31,7 +32,7 @@ export const routes = [
       { path: "/admin/disputes", element: <DisputeManagement /> },
       { path: "/admin/users", element: <UserManagement /> },
       { path: "/admin/packages", element: <PackageManagement /> },
-       { path: "/admin/warehouse", element: <WarehouseManagement /> },
+      { path: "/admin/warehouse", element: <WarehouseManagement /> },
     ],
   },
   {
@@ -41,21 +42,30 @@ export const routes = [
   {
     path: "/",
     element: <MemberLayout />,
-    children: [{ path: "/", element: <Home /> }],
+    children: [
+      { path: "/", element: <Home /> },
+      { path: "/cart", element: <Cart /> },
+      { path: "/profile", element: <ProfilePage /> }
+    ],
   },
   {
     path: "/login",
     element: <Login />,
   },
-  {
-    path: "/profile",
-    element: <MemberLayout />,
-    children: [{ path: "/profile", element: <ProfilePage /> }],
-  },
+  // {
+  //   path: "/profile",
+  //   element: <MemberLayout />,
+  //   children: [{ path: "/profile", element: <ProfilePage /> }],
+  // },
   {
     path: "/listings/new",
     element: <NewPost />,
   },
+  // {
+  //   path: "/cart",
+  //   element: <MemberLayout />,
+  //   children: [{ path: "/cart", element: <Cart /> }],
+  // },
 ];
 
 const router = createBrowserRouter(routes);
