@@ -41,6 +41,7 @@ export default function PackageManagement() {
 
   const handleSavePackage = (pkg) => {
     if (pkg.packageid) {
+      console.log(pkg)
       updatePackage(pkg.packageid, pkg);
     } else {
       addPackage({ ...pkg, packageType: currentType });
