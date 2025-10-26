@@ -45,7 +45,8 @@ export const routes = [
     children: [
       { path: "/", element: <Home /> },
       { path: "/cart", element: <Cart /> },
-      { path: "/profile", element: <ProfilePage /> }
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "/listings/new", element: <NewPost /> },
     ],
   },
   {
