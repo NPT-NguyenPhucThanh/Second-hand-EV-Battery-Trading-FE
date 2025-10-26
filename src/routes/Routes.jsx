@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import { RouterProvider } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard";
 import NotFound from "../pages/404page/NotFound";
@@ -16,8 +15,9 @@ import PackageManagement from "../pages/admin/PackageManagement";
 import ProfilePage from "../pages/profile/ProfilePage";
 import NewPost from "../pages/post/NewPost";
 import Cart from "../pages/cart/pages/CartPage";
-
 import WarehouseManagement from "../pages/admin/WarehouseManagement";
+import ListingDetail from "../pages/home/components/ListingDetail";
+import SellerProfile from "../pages/profile/components/SellerProfile"; // <-- import mới
 
 export const routes = [
   {
@@ -45,8 +45,7 @@ export const routes = [
     children: [
       { path: "/", element: <Home /> },
       { path: "/cart", element: <Cart /> },
-      { path: "/profile", element: <ProfilePage /> },
-      { path: "/listings/new", element: <NewPost /> },
+      { path: "/profile", element: <ProfilePage /> }
     ],
   },
   {
@@ -58,10 +57,10 @@ export const routes = [
   //   element: <MemberLayout />,
   //   children: [{ path: "/profile", element: <ProfilePage /> }],
   // },
-  // {
-  //   path: "/listings/new",
-  //   element: <NewPost />,
-  // },
+  {
+    path: "/listings/new",
+    element: <NewPost />,
+  },
   // {
   //   path: "/cart",
   //   element: <MemberLayout />,
