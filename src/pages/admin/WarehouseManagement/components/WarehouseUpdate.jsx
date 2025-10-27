@@ -8,8 +8,6 @@ import { updateProductStatus } from "../../../../services/warehouseService";
 
 // Danh sách các trạng thái để người dùng lựa chọn
 const statusOptions = [
-  { value: "CHO_DUYET", label: "Chờ duyệt sơ bộ" },
-  { value: "CHO_KIEM_DUYET", label: "Chờ kiểm định" },
   { value: "DA_DUYET", label: "Đã duyệt - Chờ ký hợp đồng" },
   { value: "DANG_BAN", label: "Đang bán" },
   { value: "DA_BAN", label: "Đã bán" },

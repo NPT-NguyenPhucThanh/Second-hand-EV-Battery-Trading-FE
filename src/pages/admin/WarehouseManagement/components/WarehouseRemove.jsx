@@ -38,7 +38,6 @@ export default function WarehouseRemove({ record, onReload, type = "primary" }) 
       <Button
         type={type}
         danger
-        icon={<ArrowLeftOutlined />}
         size="small"
         onClick={() => setIsModalVisible(true)}
       >

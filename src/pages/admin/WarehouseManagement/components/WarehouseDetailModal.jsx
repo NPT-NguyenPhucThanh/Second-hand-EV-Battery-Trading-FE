@@ -45,13 +45,13 @@ export default function WarehouseDetailModal({ open, onClose, product }) {
           })()}
         </Descriptions.Item>
 
-        <Descriptions.Item label="Trong kho" span={2}>
+        {/* <Descriptions.Item label="Trong kho" span={2}>
           {product.inWarehouse ? (
             <Badge status="processing" text="Còn trong kho" />
           ) : (
             <Badge status="default" text="Đã xuất kho" />
           )}
-        </Descriptions.Item>
+        </Descriptions.Item> */}
 
         <Descriptions.Item label="Mô tả" span={2}>
           {product.description}
@@ -66,10 +66,21 @@ export default function WarehouseDetailModal({ open, onClose, product }) {
         <Descriptions.Item label="Odo (km)">
           {product.brandcars?.odo?.toLocaleString("vi-VN") || "-"}
         </Descriptions.Item>
-        <Descriptions.Item label="Lượt xem">
+        {/* <Descriptions.Item label="Lượt xem">
           {product.viewCount}
-        </Descriptions.Item>
+        </Descriptions.Item> */}
       </Descriptions>
+      {product.imgs && product.imgs.length > 0 && (
+            <Descriptions.Item label="Hình ảnh sản phẩm" span={2}>
+                <Image.PreviewGroup>
+                    <Space size="large" wrap>
+                        {product.imgs.map((img) => (
+                            <Image key={img.imgid} width={150} src={img.url} />
+                        ))}
+                    </Space>
+                </Image.PreviewGroup>
+            </Descriptions.Item>
+        )}
     </Modal>
   );
 }

@@ -32,7 +32,7 @@ export default function MenuSider() {
     },
     {
       label: (
-        <Link to="/staff/user-upgrade">Duyệt nâng cấp Seller</Link>
+        <Link to="/staff/user-upgrade">Duyệt Seller</Link>
       ),
       icon: <UserSwitchOutlined />,
       key: "/staff/user-upgrade",
@@ -74,5 +74,5 @@ export default function MenuSider() {
     },
   ];
 
-  return <Menu mode="inline" items={items} selectedKeys={[selectedKey]} />;
+  return <Menu mode="inline" items={items} selectedKeys={[selectedKey]}  />;
 }

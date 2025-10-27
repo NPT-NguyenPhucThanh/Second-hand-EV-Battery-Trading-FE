@@ -27,7 +27,7 @@ export const getProductPendingInsspection = async () => {
   return data;
 };
 
-export const getProductApproval = async () => {
+export const getProductPendingApproval = async () => {
   const data = await get("api/staff/products/pending-approval");
   return data;
 };
