@@ -5,6 +5,11 @@ export const getRefund = async (id) => {
   return data;
 };
 
+export const getAllRefund = async () => {
+  const data = await get(`api/staff/refunds`);
+  return data;
+};
+
 export const getRefundPending = async () => {
   const data = await get("api/staff/refunds/pending");
   return data;

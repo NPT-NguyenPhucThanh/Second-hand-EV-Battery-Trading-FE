@@ -33,7 +33,7 @@ export default function WarehousePending() {
     <>
       {contextHolder}
       <h2>Danh sách sản phẩm chờ nhập kho</h2>
-      <TableWarehouseList products={products} onViewDetail={handleViewDetail} />
+      <TableWarehouseList products={products} onViewDetail={handleViewDetail} tabType={"pending"} onReload={fetchApi}/>
       <WarehouseDetailModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

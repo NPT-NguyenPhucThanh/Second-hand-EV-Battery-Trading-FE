@@ -19,8 +19,8 @@ export default function WarehouseRemove({ record, onReload, type = "primary" }) 
     const response = await removeProduct(record.productid, { reason: reason.trim() });
 
     if (response) {
-      onReload();
       messageApi.success(`Xuất kho thành công sản phẩm "${record.productname}"!`);
+      onReload();
       setIsModalVisible(false);
       setReason("");
     } else {
@@ -34,6 +34,7 @@ export default function WarehouseRemove({ record, onReload, type = "primary" }) 
   return (
     <>
       {contextHolder}
+      <>
       <Button
         type={type}
         danger
@@ -60,6 +61,7 @@ export default function WarehouseRemove({ record, onReload, type = "primary" }) 
           onChange={(e) => setReason(e.target.value)}
         />
       </Modal>
+      </>
     </>
   );
 }

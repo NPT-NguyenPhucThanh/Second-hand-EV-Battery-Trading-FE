@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { message, Tabs } from "antd";
-import { getWarehouse, getWarehousePending } from "../../../services/warehouseService";
+import { getWarehouse } from "../../../services/warehouseService";
 import TableWarehouseList from "./components/TableWarehouseList";
 import WarehouseDetailModal from "./components/WarehouseDetailModal";
 
@@ -9,7 +9,7 @@ export default function WarehouseManagement() {
   const [messageApi, contextHolder] = message.useMessage();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [pendingProducts, setPendingProducts] = useState([]);
+  // const [pendingProducts, setPendingProducts] = useState([]);
 
 
   const fetchApi = async () => {
@@ -22,12 +22,12 @@ export default function WarehouseManagement() {
   }
 
   // Sản phẩm chờ nhập kho
-  const pendingRes = await getWarehousePending();
-  if (pendingRes) {
-    setPendingProducts(pendingRes || []);
-  } else {
-    messageApi.error("Không nhận được dữ liệu từ server cho sản phẩm chờ nhập kho");
-  }
+  // const pendingRes = await getWarehousePending();
+  // if (pendingRes) {
+  //   setPendingProducts(pendingRes || []);
+  // } else {
+  //   messageApi.error("Không nhận được dữ liệu từ server cho sản phẩm chờ nhập kho");
+  // }
 };
 
 
@@ -44,7 +44,7 @@ export default function WarehouseManagement() {
     fetchApi();
   }
  const inWarehouse = products.filter((p) => p.inWarehouse === true);
- const soldOut = products.filter((p) => p.inWarehouse === false);
+//  const soldOut = products.filter((p) => p.inWarehouse === false);
 
 const tabItems = [
   {
@@ -59,29 +59,29 @@ const tabItems = [
       />
     ),
   },
-  {
-    key: "2",
-    label: `Chờ nhập kho (${pendingProducts.length})`,
-    children: (
-      <TableWarehouseList
-        products={pendingProducts}
-        onViewDetail={handleViewDetail}
-        tabType={"pending"}
-      />
-    ),
-  },
-  {
-    key: "3",
-    label: `Đã xuất kho (${soldOut.length})`,
-    children: (
-      <TableWarehouseList
-        products={soldOut}
-        onViewDetail={handleViewDetail}
-        onReload={fetchApi}
+  // {
+  //   key: "2",
+  //   label: `Chờ nhập kho (${pendingProducts.length})`,
+  //   children: (
+  //     <TableWarehouseList
+  //       products={pendingProducts}
+  //       onViewDetail={handleViewDetail}
+  //       tabType={"pending"}
+  //     />
+  //   ),
+  // },
+  // {
+  //   key: "3",
+  //   label: `Đã xuất kho (${soldOut.length})`,
+  //   children: (
+  //     <TableWarehouseList
+  //       products={soldOut}
+  //       onViewDetail={handleViewDetail}
+  //       onReload={fetchApi}
         
-      />
-    ),
-  },
+  //     />
+  //   ),
+  // },
 ];
 
   return (

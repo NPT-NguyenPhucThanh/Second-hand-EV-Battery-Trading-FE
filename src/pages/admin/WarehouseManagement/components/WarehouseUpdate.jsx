@@ -34,7 +34,6 @@ export default function WarehouseUpdate({ record, onReload, type }) {
     setLoading(true);
 
     const response = await updateProductStatus(record.productid, newStatus);
-    console.log(response)
     if (response) {
       onReload();
       messageApi.success("Cập nhật trạng thái thành công!");

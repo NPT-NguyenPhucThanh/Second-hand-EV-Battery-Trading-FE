@@ -26,52 +26,52 @@ export default function MenuSider() {
 
   const items = [
     {
-      label: <Link to="/staff">Bảng điều khiển</Link>,
+      label: <Link to="/manager">Bảng điều khiển</Link>,
       icon: <PieChartOutlined />,
-      key: "/staff",
+      key: "/manager",
     },
     {
       label: (
-        <Link to="/staff/user-upgrade">Duyệt nâng cấp Seller</Link>
+        <Link to="/manager/user-upgrade">Duyệt nâng cấp Seller</Link>
       ),
       icon: <UserSwitchOutlined />,
-      key: "/staff/user-upgrade",
+      key: "/manager/user-upgrade",
     },
     {
-      label: <Link to="/staff/users">Quản lý người dùng</Link>,
+      label: <Link to="/manager/users">Quản lý người dùng</Link>,
       icon: <UserOutlined />,
-      key: "/staff/users",
+      key: "/manager/users",
     },
     {
-      label: <Link to="/staff/posts">Quản lý bài đăng</Link>,
+      label: <Link to="/manager/posts">Quản lý bài đăng</Link>,
       icon: <FileTextOutlined />,
-      key: "/staff/posts",
+      key: "/manager/posts",
     },
     {
-      label: <Link to="/staff/warehouse/pending">Chờ nhập kho</Link>,
+      label: <Link to="/manager/warehouse/pending">Chờ nhập kho</Link>,
       icon: <AuditOutlined />,
-      key: "/staff/warehouse/pending",
+      key: "/manager/warehouse/pending",
     },
 
     {
-      label: <Link to="/staff/vehicle-storage">Quản lý kho xe</Link>,
+      label: <Link to="/manager/vehicle-storage">Quản lý kho xe</Link>,
       icon: <CarOutlined />,
-      key: "/staff/vehicle-storage",
+      key: "/manager/vehicle-storage",
     },
     {
-      label: <Link to="/staff/transactions">Quản lý giao dịch</Link>,
+      label: <Link to="/manager/transactions">Quản lý giao dịch</Link>,
       icon: <TransactionOutlined />,
-      key: "/staff/transactions",
+      key: "/manager/transactions",
     },
     {
-      label: <Link to="/staff/refund">Xử lý hoàn tiền</Link>,
+      label: <Link to="/manager/refund">Xử lý hoàn tiền</Link>,
       icon: <WarningOutlined />,
-      key: "/staff/refund",
+      key: "/manager/refund",
     },
     {
-      label: <Link to="/staff/packages">Quản lý gói dịch vụ</Link>,
+      label: <Link to="/manager/packages">Quản lý gói dịch vụ</Link>,
       icon: <DollarOutlined />,
-      key: "/staff/packages",
+      key: "/manager/packages",
     },
     {
       label: (
