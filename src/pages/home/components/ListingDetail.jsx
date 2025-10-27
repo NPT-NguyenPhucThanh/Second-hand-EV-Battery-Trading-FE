@@ -1,7 +1,11 @@
 // src/features/home/components/ListingDetail.jsx
 import { useParams, Link } from "react-router-dom";
-import { DEMO } from "../../../data";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Eye, MessageCircle, ShoppingCart, Package, Shield, TrendingUp, Award, Mail, Phone } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  getProductById,
+  checkAuth,
+} from "../../../utils/services/productService";
 
 function currency(value) {
   return value.toLocaleString("vi-VN") + " ₫";
@@ -9,118 +13,351 @@ function currency(value) {
 
 export default function ListingDetail() {
   const { id } = useParams();
-  const item = DEMO.find((it) => it.id === id);
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  if (!item) {
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const data = await getProductById(id);
+        setItem(data);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  const handleAction = async (action) => {
+    try {
+      const authData = await checkAuth(action);
+      if (authData.requiresAuth) {
+        alert(authData.message);
+        window.location.href = authData.loginUrl;
+      } else {
+        alert(
+          `Thực hiện ${action === "buy" ? "mua" : "liên hệ"}: ${
+            item.product.productname
+          }`
+        );
+      }
+    } catch (error) {
+      alert("Lỗi khi kiểm tra đăng nhập. Vui lòng thử lại.");
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="container mx-auto py-10 text-center">
-        <p className="text-gray-600 text-lg"> Không tìm thấy sản phẩm.</p>
-        <Link
-          to="/"
-          className="inline-block mt-4 bg-[#007BFF] text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-        >
-          Quay lại trang chủ
-        </Link>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
+        <div className="container mx-auto py-20 text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+          <p className="text-gray-600 text-lg mt-4 font-medium">Đang tải...</p>
+        </div>
       </div>
     );
   }
 
-  const handleBuyNow = () => {
-    alert(`Bạn đã chọn mua: ${item.title} - ${currency(item.price)}`);
-  };
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Back link */}
-      <Link
-        to="/"
-        className="text-[#007BFF] hover:underline text-sm mb-4 inline-block"
-      >
-        ← Quay lại
-      </Link>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-6 rounded-xl shadow-sm">
-        {/* Ảnh sản phẩm + reviews */}
-        <div>
-          <div className="relative">
-            <img
-              src={item.image}
-              alt={item.title}
-              className="w-full h-auto rounded-xl object-cover"
-            />
-            {item.badge && (
-              <span className="absolute left-2 top-2 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                {item.badge}
-              </span>
-            )}
-            <button
-              aria-label="Yêu thích"
-              className="absolute right-2 top-2 rounded-full bg-white/90 p-2 hover:bg-white shadow-sm"
+  if (error || !item || item.status !== "success") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
+        <div className="container mx-auto py-20 text-center">
+          <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md mx-auto">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <p className="text-gray-700 text-lg mb-6">
+              {error || "Không tìm thấy sản phẩm."}
+            </p>
+            <Link
+              to="/"
+              className="inline-block bg-gradient-to-r from-blue-500 to-green-400 text-white px-8 py-3 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-semibold"
             >
-              <Heart className="w-5 h-5 text-gray-700" />
-            </button>
-          </div>
-
-          {/* Reviews */}
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-3">Đánh giá từ người dùng</h2>
-            {item.reviews.length > 0 ? (
-              <ul className="space-y-4">
-                {item.reviews.map((review, index) => (
-                  <li key={index} className="border-b pb-2">
-                    <div className="flex items-center mb-1">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-400" />
-                      ))}
-                      {[...Array(5 - review.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-gray-300" />
-                      ))}
-                      <span className="ml-2 text-gray-700 font-medium">{review.name}</span>
-                    </div>
-                    <p className="text-gray-600">{review.comment}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">Chưa có đánh giá nào.</p>
-            )}
+              Quay lại trang chủ
+            </Link>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Thông tin chi tiết sản phẩm + người bán */}
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-800 mb-2">{item.title}</h1>
-          <div className="text-[#007BFF] text-xl font-bold mb-3">
-            {currency(item.price)}
-          </div>
-          <p className="text-gray-600 mb-4 leading-relaxed">{item.meta}</p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-8">
+      <div className="container mx-auto px-4">
+        {/* Breadcrumb */}
+        <Link
+          to="/"
+          className="inline-flex items-center text-blue-600 hover:text-green-500 text-sm mb-6 font-medium transition-all duration-300 group"
+        >
+          <span className="transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
+          <span className="ml-2">Quay lại trang chủ</span>
+        </Link>
 
-          {item.seller && (
-            <div className="mb-6">
-              <p className="text-gray-700 mb-1">
-                <span className="font-medium">Người bán:</span>{" "}
-                <Link
-                  to={`/sellers/${item.seller.id}`}
-                  className="text-[#007BFF] hover:underline font-medium"
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cột trái - Hình ảnh sản phẩm */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Ảnh chính */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:shadow-2xl transition-all duration-300">
+              <div className="relative group">
+                <img
+                  src={item.product.images[selectedImage] || "/placeholder-image.jpg"}
+                  alt={item.product.productname}
+                  className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                
+                {/* Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {item.product.inWarehouse && (
+                    <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse flex items-center gap-1">
+                      <Package className="w-4 h-4" />
+                      Sẵn hàng
+                    </span>
+                  )}
+                  <span className="bg-gradient-to-r from-blue-500 to-green-400 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4" />
+                    Hot Deal
+                  </span>
+                </div>
+
+                {/* Nút yêu thích */}
+                <button
+                  onClick={() => setIsFavorite(!isFavorite)}
+                  className="absolute right-4 top-4 rounded-full bg-white/90 backdrop-blur-sm p-3 hover:bg-white shadow-lg transform hover:scale-110 transition-all duration-300"
                 >
-                  {item.seller.displayName}
-                </Link>
-              </p>
-              <p className="text-gray-500 text-sm">Email: {item.seller.email}</p>
-              <p className="text-gray-500 text-sm">SĐT: {item.seller.phone}</p>
-            </div>
-          )}
+                  <Heart 
+                    className={`w-6 h-6 transition-colors duration-300 ${
+                      isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
+                    }`}
+                  />
+                </button>
+              </div>
 
-          <div className="flex gap-4">
-            <button className="bg-[#007BFF] text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-              Liên hệ ngay
-            </button>
-            <button
-              onClick={handleBuyNow}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Mua ngay
-            </button>
+              {/* Thumbnails */}
+              {item.product.images.length > 1 && (
+                <div className="p-4 bg-gray-50 flex gap-3 overflow-x-auto">
+                  {item.product.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                        selectedImage === idx
+                          ? "border-blue-500 shadow-lg scale-110"
+                          : "border-gray-200 hover:border-blue-300"
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Thông tin chi tiết */}
+            <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:shadow-2xl transition-all duration-300">
+              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+                Chi tiết sản phẩm
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl">
+                  <Shield className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="font-semibold text-gray-800 mb-1">Mô tả</p>
+                    <p className="text-gray-600 leading-relaxed">
+                      {item.product.description || "Không có mô tả."}
+                    </p>
+                  </div>
+                </div>
+
+                {item.product.brandInfo && (
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl">
+                    <Award className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold text-gray-800 mb-1">Thông tin</p>
+                      <p className="text-gray-600">
+                        {item.product.type === "Car EV"
+                          ? `${item.product.brandInfo.brand} ${item.product.brandInfo.year} - Biển số: ${
+                              item.product.brandInfo.licensePlate || "N/A"
+                            }`
+                          : `${item.product.brandInfo.brand} - Dung lượng: ${
+                              item.product.brandInfo.capacity
+                            } - Tình trạng: ${
+                              item.product.brandInfo.condition || "N/A"
+                            }`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Đánh giá */}
+            <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:shadow-2xl transition-all duration-300">
+              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent flex items-center gap-2">
+                <Star className="w-6 h-6 text-yellow-400 fill-current" />
+                Đánh giá từ người mua
+              </h2>
+              
+              {item.feedbacks.length > 0 ? (
+                <ul className="space-y-4">
+                  {item.feedbacks.map((review, index) => (
+                    <li 
+                      key={index} 
+                      className="p-5 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-100 hover:shadow-md transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-green-400 flex items-center justify-center text-white font-bold">
+                            {review.buyer.buyerName[0].toUpperCase()}
+                          </div>
+                          <span className="font-semibold text-gray-800">
+                            {review.buyer.buyerName}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[...Array(review.rating)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className="w-4 h-4 text-yellow-400 fill-current"
+                            />
+                          ))}
+                          {[...Array(5 - review.rating)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 text-gray-300" />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-700 mb-2">
+                        {review.comment || "Không có bình luận."}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        {new Date(review.createdAt).toLocaleDateString("vi-VN")}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-center py-8">
+                  <Star className="w-16 h-16 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">Chưa có đánh giá nào.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Cột phải - Thông tin mua hàng */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8 space-y-6">
+              {/* Card giá và hành động */}
+              <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:shadow-2xl transition-all duration-300">
+                <h1 className="text-2xl font-bold text-gray-800 mb-4 line-clamp-2">
+                  {item.product.productname}
+                </h1>
+                
+                <div className="bg-gradient-to-r from-blue-500 to-green-400 text-white text-3xl font-bold mb-6 p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-all duration-300">
+                  {currency(item.product.cost)}
+                </div>
+
+                {/* Action buttons */}
+                <div className="space-y-3 mb-6">
+                  <button
+                    onClick={() => handleAction("buy")}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    Mua ngay
+                  </button>
+                  <button
+                    onClick={() => handleAction("chat")}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    Liên hệ ngay
+                  </button>
+                </div>
+
+                {/* Stats */}
+                <div className="flex items-center justify-around py-4 border-t border-gray-200">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
+                      <Star className="w-5 h-5 fill-current" />
+                      <span className="font-bold text-lg">{item.averageRating.toFixed(1)}</span>
+                    </div>
+                    <p className="text-xs text-gray-500">{item.totalReviews} đánh giá</p>
+                  </div>
+                  <div className="w-px h-12 bg-gray-200"></div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
+                      <Eye className="w-5 h-5" />
+                      <span className="font-bold text-lg">{item.viewCount}</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Lượt xem</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card người bán */}
+              <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:shadow-2xl transition-all duration-300">
+                <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+                  Thông tin người bán
+                </h3>
+                
+                <Link
+                  to={`/sellers/${item.seller.sellerId}`}
+                  className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl hover:shadow-md transition-all duration-300 mb-6 group"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-green-400 flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                    {item.seller.displayName[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-800 text-lg truncate group-hover:text-blue-600 transition-colors duration-300">
+                      {item.seller.displayName}
+                    </p>
+                    <div className="flex items-center gap-1 text-yellow-500 text-sm">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="font-semibold">{item.averageRating.toFixed(1)}</span>
+                      <span className="text-gray-500">({item.totalReviews})</span>
+                    </div>
+                  </div>
+                </Link>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-gray-600 hover:text-blue-600 transition-colors duration-300">
+                    <Mail className="w-5 h-5 text-blue-500" />
+                    <span className="text-sm">{item.seller.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-600 hover:text-green-600 transition-colors duration-300">
+                    <Phone className="w-5 h-5 text-green-500" />
+                    <span className="text-sm">{item.seller.phone || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust badges */}
+              <div className="bg-blue-400 rounded-2xl shadow-xl p-6 text-white">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-6 h-6" />
+                    <span className="font-semibold">Thanh toán an toàn</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Package className="w-6 h-6" />
+                    <span className="font-semibold">Giao hàng nhanh chóng</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Award className="w-6 h-6" />
+                    <span className="font-semibold">Đảm bảo chất lượng</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

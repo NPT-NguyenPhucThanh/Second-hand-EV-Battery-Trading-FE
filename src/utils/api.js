@@ -1,7 +1,6 @@
 const API_DOMAIN = "http://localhost:8080/";
 
 const getToken = () => localStorage.getItem("token"); // giả sử bạn lưu JWT ở localStorage
-//const getToken = () => "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJST0xFX1NUQUZGIl0sImRpc3BsYXluYW1lIjoiTmjDom4gVmnDqm4gSD8gVGg_bmciLCJpc01hbmFnZXIiOmZhbHNlLCJlbWFpbCI6InN0YWZmQHRyYWRpbmdldi5jb20iLCJzdWIiOiJzdGFmZiIsImlhdCI6MTc2MTU3NTg4OCwiZXhwIjoxNzYxNjExODg4fQ.l1agQ7F9GrACvE559cCIzMtJrzUP8YF-pivH3E4J0mw";
 
 export const get = async (path) => {
   const token = getToken();
@@ -13,14 +12,15 @@ export const get = async (path) => {
 
 export const post = async (path, data) => {
   const token = getToken();
+  const isFormData = data instanceof FormData;
   const response = await fetch(`${API_DOMAIN}${path}`, {
     method: "POST",
     headers: {
       Accept: "application/json",
-      "Content-Type": "application/json",
+      ...(!isFormData && { "Content-Type": "application/json" }),
       ...(token && { Authorization: `Bearer ${token}` }),
     },
-    ...(data && { body: JSON.stringify(data) }),
+    ...(data && { body: isFormData ? data : JSON.stringify(data) }),
   });
 
   if (!response.ok) {
@@ -55,7 +55,6 @@ export const put = async (path, data) => {
 
   return text;
 };
-
 
 export const del = async (path) => {
   const token = getToken();

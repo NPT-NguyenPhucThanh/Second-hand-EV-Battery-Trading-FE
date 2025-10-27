@@ -21,6 +21,8 @@ import SystemManagement from "../pages/admin/SystemManagement";
 import RevenueManagement from "../pages/admin/RevenueManagement";
 import PostManagement from "../pages/admin/PostManagement";
 import TransactionManagement from "../pages/admin/TransactionManagement";
+import RoleGuard from "../components/auth/ProtectedRoute";
+import { ROLES } from "../constants/role";
 export const routes = [
   {
     path: "/staff",
@@ -29,11 +31,10 @@ export const routes = [
       { path: "/staff/user-upgrade", element: <SellerUpgradePage /> },
       { path: "/staff", element: <PostManagement /> },
       { path: "/staff/transactions", element: <TransactionManagement /> },
-      { path: "/staff/refund", element: <RefundManagement/> },
+      { path: "/staff/refund", element: <RefundManagement /> },
       { path: "/staff/users", element: <UserManagement /> },
       { path: "/staff/warehouse/pending", element: <WarehousePending /> },
       { path: "/staff/vehicle-storage", element: <WarehouseManagement /> },
-      
     ],
   },
   {
@@ -59,18 +60,22 @@ export const routes = [
       { path: "/", element: <Home /> },
       { path: "/cart", element: <Cart /> },
       { path: "/profile", element: <ProfilePage /> },
-      { path: "/listings/new", element: <NewPost /> },
-       { path: "/listings/:id", element: <ListingDetail /> },
-       { path: "/sellers/:id", element: <SellerProfile /> },
+
+      { path: "/listings/:id", element: <ListingDetail /> },
+      { path: "/sellers/:id", element: <SellerProfile /> },
+      {
+        path: "/listings/new",
+        element: 
+          
+            <NewPost />,
+         
+      
+      },
     ],
   },
   {
     path: "/login",
     element: <Login />,
-  },
-  {
-    path: "/listings/new",
-    element: <NewPost />,
   },
 ];
 
