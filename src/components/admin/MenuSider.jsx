@@ -25,9 +25,9 @@ export default function MenuSider() {
   };
 
   const items = [
-    {
-      label: <Link to="/staff">Bảng điều khiển</Link>,
-      icon: <PieChartOutlined />,
+     {
+      label: <Link to="/staff">Quản lý bài đăng</Link>,
+      icon: <FileTextOutlined />,
       key: "/staff",
     },
     {
@@ -41,11 +41,6 @@ export default function MenuSider() {
       label: <Link to="/staff/users">Quản lý người dùng</Link>,
       icon: <UserOutlined />,
       key: "/staff/users",
-    },
-    {
-      label: <Link to="/staff/posts">Quản lý bài đăng</Link>,
-      icon: <FileTextOutlined />,
-      key: "/staff/posts",
     },
     {
       label: <Link to="/staff/warehouse/pending">Chờ nhập kho</Link>,
@@ -67,11 +62,6 @@ export default function MenuSider() {
       label: <Link to="/staff/refund">Xử lý hoàn tiền</Link>,
       icon: <WarningOutlined />,
       key: "/staff/refund",
-    },
-    {
-      label: <Link to="/staff/packages">Quản lý gói dịch vụ</Link>,
-      icon: <DollarOutlined />,
-      key: "/staff/packages",
     },
     {
       label: (

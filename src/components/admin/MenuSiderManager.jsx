@@ -31,47 +31,25 @@ export default function MenuSider() {
       key: "/manager",
     },
     {
-      label: (
-        <Link to="/manager/user-upgrade">Duyệt nâng cấp Seller</Link>
-      ),
-      icon: <UserSwitchOutlined />,
-      key: "/manager/user-upgrade",
-    },
-    {
       label: <Link to="/manager/users">Quản lý người dùng</Link>,
       icon: <UserOutlined />,
       key: "/manager/users",
     },
-    {
-      label: <Link to="/manager/posts">Quản lý bài đăng</Link>,
-      icon: <FileTextOutlined />,
-      key: "/manager/posts",
-    },
-    {
-      label: <Link to="/manager/warehouse/pending">Chờ nhập kho</Link>,
-      icon: <AuditOutlined />,
-      key: "/manager/warehouse/pending",
-    },
 
-    {
-      label: <Link to="/manager/vehicle-storage">Quản lý kho xe</Link>,
-      icon: <CarOutlined />,
-      key: "/manager/vehicle-storage",
-    },
-    {
-      label: <Link to="/manager/transactions">Quản lý giao dịch</Link>,
-      icon: <TransactionOutlined />,
-      key: "/manager/transactions",
-    },
-    {
-      label: <Link to="/manager/refund">Xử lý hoàn tiền</Link>,
-      icon: <WarningOutlined />,
-      key: "/manager/refund",
-    },
     {
       label: <Link to="/manager/packages">Quản lý gói dịch vụ</Link>,
       icon: <DollarOutlined />,
       key: "/manager/packages",
+    },
+    {
+      label: <Link to="/manager/revenue">Báo cáo doanh thu</Link>,
+      icon: <DollarOutlined />,
+      key: "/manager/revenue",
+    },
+    {
+      label: <Link to="/manager/system">Báo cáo hệ thống</Link>,
+      icon: <DollarOutlined />,
+      key: "/manager/system",
     },
     {
       label: (

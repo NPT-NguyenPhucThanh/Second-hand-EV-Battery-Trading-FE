@@ -1,7 +1,7 @@
-import { get, post } from "../utils/api"; 
+import { get, post } from "../utils/api";
 
-export const getRefund = async (id) => {
-  const data = await get(`api/staff/refunds/${id}`);
+export const getRefund = async (refundId) => {
+  const data = await get(`api/staff/refunds/${refundId}`);
   return data;
 };
 
@@ -22,5 +22,5 @@ export const getRefundOrder = async (orderId) => {
 
 export const processRefund = async (refundId, payload) => {
     const response = await post(`api/staff/refunds/${refundId}/process`, payload);
-    return response.data;
+    return response;
 };

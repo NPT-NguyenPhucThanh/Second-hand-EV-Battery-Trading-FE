@@ -1,7 +1,7 @@
 const API_DOMAIN = "http://localhost:8080/";
 
-//const getToken = () => localStorage.getItem("token"); // giả sử bạn lưu JWT ở localStorage
-const getToken = () => "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJST0xFX01BTkFHRVIiXSwiZGlzcGxheW5hbWUiOiJRdT9uIFRyPyBWacOqbiIsImlzTWFuYWdlciI6dHJ1ZSwiZW1haWwiOiJtYW5hZ2VyQHRyYWRpbmdldi5jb20iLCJzdWIiOiJtYW5hZ2VyIiwiaWF0IjoxNzYxNTI4NjEyLCJleHAiOjE3NjE1NjQ2MTJ9.W3f0hpxgZorlPD1B-Fn03K3bt_Vl808hmjSPHa1_ooI";
+const getToken = () => localStorage.getItem("token"); // giả sử bạn lưu JWT ở localStorage
+//const getToken = () => "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJST0xFX1NUQUZGIl0sImRpc3BsYXluYW1lIjoiTmjDom4gVmnDqm4gSD8gVGg_bmciLCJpc01hbmFnZXIiOmZhbHNlLCJlbWFpbCI6InN0YWZmQHRyYWRpbmdldi5jb20iLCJzdWIiOiJzdGFmZiIsImlhdCI6MTc2MTU3NTg4OCwiZXhwIjoxNzYxNjExODg4fQ.l1agQ7F9GrACvE559cCIzMtJrzUP8YF-pivH3E4J0mw";
 
 export const get = async (path) => {
   const token = getToken();

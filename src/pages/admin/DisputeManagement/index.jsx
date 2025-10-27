@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Input, Tag, Form } from "antd";
-import { disputeData } from "../../dataAdmin"; 
-import AdminBreadcrumb from '../../components/admin/AdminBreadcrumb';
+import { disputeData } from "../../../dataAdmin"; 
+import AdminBreadcrumb from '../../../components/admin/AdminBreadcrumb';
 
 export default function DisputeManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);

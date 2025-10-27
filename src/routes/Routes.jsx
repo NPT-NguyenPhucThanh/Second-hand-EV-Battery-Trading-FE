@@ -5,9 +5,6 @@ import NotFound from "../pages/404page/NotFound";
 import MemberLayout from "../layouts/MemberLayout";
 import Home from "../pages/home/pages/Home";
 import Login from "../pages/auth/Login";
-import PostManagement from "../pages/admin/PostManagement";
-import VehicleInspection from "../pages/admin/VehicleInspection";
-import TransactionManagement from "../pages/admin/TransactionManagement";
 import ProfilePage from "../pages/profile/ProfilePage";
 import NewPost from "../pages/post/NewPost";
 import Cart from "../pages/cart/pages/CartPage";
@@ -20,21 +17,21 @@ import WarehouseManagement from "../pages/admin/WarehouseManagement";
 import WarehousePending from "../pages/admin/WarehousePending";
 import RefundManagement from "../pages/admin/RefundManagement";
 import PackageManagement from "../pages/admin/PackageManagement";
+import SystemManagement from "../pages/admin/SystemManagement";
+import RevenueManagement from "../pages/admin/RevenueManagement";
+import PostManagement from "../pages/admin/PostManagement";
+import TransactionManagement from "../pages/admin/TransactionManagement";
 export const routes = [
   {
     path: "/staff",
     element: <AdminLayout />,
     children: [
-      { path: "/staff", element: <Dashboard /> },
       { path: "/staff/user-upgrade", element: <SellerUpgradePage /> },
-      { path: "/staff/posts", element: <PostManagement /> },
-      { path: "/staff/vehicle-inspection", element: <VehicleInspection /> },
+      { path: "/staff", element: <PostManagement /> },
       { path: "/staff/transactions", element: <TransactionManagement /> },
       { path: "/staff/refund", element: <RefundManagement/> },
       { path: "/staff/users", element: <UserManagement /> },
-      { path: "/staff/packages", element: <PackageManagement /> },
       { path: "/staff/warehouse/pending", element: <WarehousePending /> },
-      // { path: "/admin/warehouse", element: <WarehouseManagement /> },
       { path: "/staff/vehicle-storage", element: <WarehouseManagement /> },
       
     ],
@@ -44,17 +41,11 @@ export const routes = [
     element: <ManagerLayout />,
     children: [
       { path: "/manager", element: <Dashboard /> },
-      { path: "/manager/user-upgrade", element: <SellerUpgradePage /> },
       { path: "/manager/posts", element: <PostManagement /> },
-      { path: "/manager/vehicle-inspection", element: <VehicleInspection /> },
-      { path: "/manager/transactions", element: <TransactionManagement /> },
-      { path: "/manager/refund", element: <RefundManagement/> },
       { path: "/manager/users", element: <UserManagement /> },
       { path: "/manager/packages", element: <PackageManagement /> },
-      { path: "/manager/warehouse/pending", element: <WarehousePending /> },
-      // { path: "/admin/warehouse", element: <WarehouseManagement /> },
-      { path: "/manager/vehicle-storage", element: <WarehouseManagement /> },
-      
+      { path: "/manager/revenue", element: <RevenueManagement /> },
+      { path: "/manager/system", element: <SystemManagement /> },
     ],
   },
   {

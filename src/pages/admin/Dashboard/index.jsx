@@ -1,90 +1,121 @@
-import React, { useEffect, useState } from 'react'
-import CardItem from '../../../components/admin/CardItem'
-import { Row, Col } from 'antd';
-import { CarOutlined, UserAddOutlined, ShoppingOutlined, WarningOutlined  } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Row, Col, message, Spin } from 'antd';
+import { Link } from "react-router-dom";
+import CardItem from '../../../components/admin/CardItem';
 import LineChart from '../../../components/admin/LineChart';
 import PieChart from '../../../components/admin/PieChart';
-import { Link } from "react-router-dom";
-import { revenueData, newUserData, carStatusData, transactionStatusData } from '../../../dataAdmin';
 import AdminBreadcrumb from '../../../components/admin/AdminBreadcrumb';
-import { getReportSystem } from '../../../services/reportSystemService';
+import { getDashboardOverview } from '../../../services/managerSystemService';
+import { 
+  UserOutlined, 
+  ShoppingOutlined, 
+  DollarCircleOutlined,
+  RiseOutlined,
+  BarChartOutlined,
+  EyeOutlined,
+  ThunderboltOutlined,
+  CarOutlined,
+  FileDoneOutlined
+} from '@ant-design/icons';
 
+// Dữ liệu mẫu cho biểu đồ, vì API không trả về dữ liệu chi tiết
+import { revenueData, carStatusData } from '../../../dataAdmin';
 
 export default function Dashboard() {
-  const[data,setData] = useState([]);
-  const fetchApi = async() =>{
-    const response = await getReportSystem();
-    setData(response);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchApi = async () => {
+    setLoading(true);
+    try {
+      const response = await getDashboardOverview();
+      if (response && response.status === 'success') {
+        setDashboardData(response);
+      } else {
+        message.error(response.message || "Không thể tải dữ liệu dashboard!");
+      }
+    } catch (error) {
+      message.error("Lỗi kết nối đến server!");
+    } finally {
+      setLoading(false);
+    }
   };
+
   useEffect(() => {
-    fetchApi()
-  },[])
-  
-  // const handleReload = () =>{
-  //   fetchApi()
-  // }
-  console.log(data)
+    fetchApi();
+  }, []);
+
+  if (loading) {
+    return <Spin size="large" style={{ display: 'block', marginTop: '50px' }} />;
+  }
+
+  // Gán giá trị từ API vào các biến để dễ sử dụng
+  const pendingTasks = dashboardData?.pendingTasks || {};
+  const revenueSummary = dashboardData?.revenueSummary || {};
+  const quickStats = dashboardData?.quickStats || {};
+  const marketTrends = dashboardData?.marketTrends || {};
+
   return (
     <>
-    <AdminBreadcrumb />
-    <Row gutter={[20, 20]}>
-        <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
-        <Link to="/admin/posts">
-        <CardItem title="Bài đăng chờ duyệt" value={5} icon={<CarOutlined style={{ color: 'red' }} />} />
-        </Link>
+      <AdminBreadcrumb />
+      
+      {/* Hàng 1: Doanh thu & Người dùng */}
+      <h3 style={{ marginBottom: 16 }}>Doanh Thu & Người Dùng</h3>
+      <Row gutter={[20, 20]}>
+        <Col xxl={6} xl={6} lg={12} md={12} sm={24} xs={24}>
+          <Link to="/manager/revenue">
+            <CardItem title="Tổng Doanh Thu" value={`${revenueSummary.totalRevenue?.toLocaleString('vi-VN')} ₫`} icon={<DollarCircleOutlined style={{ color: '#1890ff' }} />} />
+          </Link>
         </Col>
-        <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
-         <Link to="/admin/users">
-        <CardItem title="Người dùng mới trong tháng" value={10} icon={<UserAddOutlined style={{ color: 'green' }} />} />
-        </Link>
+        <Col xxl={6} xl={6} lg={12} md={12} sm={24} xs={24}>
+          <Link to="/manager/revenue">
+            <CardItem title="Doanh Thu Nền Tảng" value={`${revenueSummary.platformRevenue?.toLocaleString('vi-VN')} ₫`} icon={<RiseOutlined style={{ color: '#52c41a' }} />} />
+          </Link>
         </Col>
-        <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
-        <Link to="/admin/transactions">
-        <CardItem title="Giao dịch đang xử lý" value={3} icon={<ShoppingOutlined style={{ color: 'blue' }} />}  />
-        </Link>
+        <Col xxl={6} xl={6} lg={12} md={12} sm={24} xs={24}>
+          <Link to="/manager/users">
+            <CardItem title="Tổng Người Dùng" value={quickStats.totalUsers} icon={<UserOutlined style={{ color: '#722ed1' }} />} />
+          </Link>
         </Col>
-        <Col xxl={6} xl={6} lg={6} md={12} sm={24} xs={24}>
-        <Link to="/admin/disputes">
-        <CardItem title="Khiếu nại cần xử lý" value={1} icon={<WarningOutlined style={{ color: 'orange' }} />} />
-        </Link>
+         <Col xxl={6} xl={6} lg={12} md={12} sm={24} xs={24}>
+          <CardItem title="Tổng Đơn Hàng" value={quickStats.totalOrders} icon={<ShoppingOutlined style={{ color: '#faad14' }} />} />
         </Col>
-    </Row>
+      </Row>
+      
+      {/* Hàng 2: Xu Hướng Thị Trường */}
+      <h3 style={{ marginTop: 20, marginBottom: 16 }}>Xu Hướng Thị Trường</h3>
+      <Row gutter={[20, 20]}>
+         <Col xxl={12} xl={12} lg={24} md={24} sm={24} xs={24}>
+            <CardItem title="Sản phẩm được xem nhiều nhất" icon={<EyeOutlined />}>
+              <p style={{ margin: 0, fontWeight: 600 }}>{marketTrends.mostViewedProduct?.productName || 'N/A'}</p>
+              <small>{marketTrends.mostViewedProduct?.views || 0} lượt xem</small>
+            </CardItem>
+        </Col>
+        <Col xxl={4} xl={4} lg={8} md={8} sm={24} xs={24}>
+            <CardItem title="Danh mục hot" value={marketTrends.trendingCategory} icon={<BarChartOutlined />} />
+        </Col>
+        <Col xxl={4} xl={4} lg={8} md={8} sm={24} xs={24}>
+            <CardItem title="Lượt xem Xe" value={marketTrends.totalCarViews} icon={<CarOutlined />} />
+        </Col>
+        <Col xxl={4} xl={4} lg={8} md={8} sm={24} xs={24}>
+            <CardItem title="Lượt xem Pin" value={marketTrends.totalBatteryViews} icon={<ThunderboltOutlined />} />
+        </Col>
+      </Row>
 
-    <Row gutter={[20, 20]} className='mt-20'>
-        <Col xxl={16} xl={16} lg={16} md={24} sm={24} xs={24}>
-        <CardItem title="Doanh thu theo tháng" style={{ height: '400px' }} >
-        <LineChart data={revenueData} />
-        </CardItem>
+      {/* Hàng 3: Biểu đồ (vẫn dùng dữ liệu mẫu) */}
+      <Row gutter={[20, 20]} className='mt-20'>
+        <Col xxl={16} xl={16} lg={24} md={24} sm={24} xs={24}>
+          <CardItem title="Doanh thu theo tháng (Dữ liệu mẫu)" style={{ height: '400px' }} >
+            <LineChart data={revenueData} />
+          </CardItem>
         </Col>
-        <Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}>
-        <CardItem title="Số lượng xe đăng bán theo trạng thái" style={{ height: '400px' }} >
-        <PieChart data={carStatusData} />
-        </CardItem>
+        <Col xxl={8} xl={8} lg={24} md={24} sm={24} xs={24}>
+          <CardItem title="Tác vụ chờ xử lý (Dữ liệu mẫu)" style={{ height: '400px' }} >
+             {/* Component PieChart có thể không phù hợp, bạn có thể thay bằng danh sách hoặc một biểu đồ cột nhỏ */}
+            <PieChart data={carStatusData} />
+          </CardItem>
         </Col>
-    </Row>
-    <Row gutter={[20, 20]} className='mt-20'>
-        <Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}>
-        <CardItem title="Số lượng giao dịch theo trạng thái" style={{ height: '400px' }} >
-          <PieChart data={transactionStatusData} />
-        </CardItem>
-        </Col>
-        <Col xxl={16} xl={16} lg={16} md={24} sm={24} xs={24}>
-        <CardItem title="Người dùng mới theo thời gian" style={{ height: '400px' }} >
-        <LineChart data={newUserData} />
-        </CardItem>
-        </Col>
-    </Row>
-    {/* <Row gutter={[20, 20]} className='mt-20'>
-        <Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}>
-        <CardItem title="Box 9" style={{ height: '400px' }} />
-        </Col>
-        <Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}>
-        <CardItem title="Box 10" style={{ height: '400px' }} />
-        </Col>
-        <Col xxl={8} xl={8} lg={8} md={24} sm={24} xs={24}>
-        <CardItem title="Box 11" style={{ height: '400px' }} />
-        </Col>
-    </Row> */}
+      </Row>
     </>
   )
 }
