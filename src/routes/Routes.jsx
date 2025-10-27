@@ -47,26 +47,18 @@ export const routes = [
       { path: "/cart", element: <Cart /> },
       { path: "/profile", element: <ProfilePage /> },
       { path: "/listings/new", element: <NewPost /> },
+      { path: "/listings/:id", element: <ListingDetail /> },
+      { path: "/sellers/:id", element: <SellerProfile /> }, // <-- route mới cho người bán
     ],
   },
   {
     path: "/login",
     element: <Login />,
   },
-  // {
-  //   path: "/profile",
-  //   element: <MemberLayout />,
-  //   children: [{ path: "/profile", element: <ProfilePage /> }],
-  // },
   {
     path: "/listings/new",
     element: <NewPost />,
   },
-  // {
-  //   path: "/cart",
-  //   element: <MemberLayout />,
-  //   children: [{ path: "/cart", element: <Cart /> }],
-  // },
 ];
 
 const router = createBrowserRouter(routes);

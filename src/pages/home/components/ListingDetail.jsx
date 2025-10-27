@@ -14,7 +14,7 @@ export default function ListingDetail() {
   if (!item) {
     return (
       <div className="container mx-auto py-10 text-center">
-        <p className="text-gray-600 text-lg">❌ Không tìm thấy sản phẩm.</p>
+        <p className="text-gray-600 text-lg"> Không tìm thấy sản phẩm.</p>
         <Link
           to="/"
           className="inline-block mt-4 bg-[#007BFF] text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"

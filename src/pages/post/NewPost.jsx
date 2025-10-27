@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createPost } from "../../utils/services/postService";
 import { toast } from "sonner";
+
 export default function CreateProductPage() {
   const [formData, setFormData] = useState({
     productname: "",
@@ -12,12 +13,23 @@ export default function CreateProductPage() {
     type: "",
     specs: "",
     images: [""],
+    brandcars: { brand: "", year: "", licensePlate: "", odo: "", capacity: "", color: "" }, // Conditional for CAR
+    brandbattery: { brand: "", year: "", capacity: "", voltage: "", condition: "", pickupAddress: "", remaining: "" }, // Conditional for BATTERY
   });
+  const [loading, setLoading] = useState(false);
 
   // Handle text inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle nested fields (for brandcars or brandbattery)
+  const handleNestedChange = (section, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [field]: value },
+    }));
   };
 
   // Handle dynamic image URLs
@@ -33,31 +45,49 @@ export default function CreateProductPage() {
   };
 
   // Submit handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form data ready to send:", formData);
-    {
-      async () => {
-        try {
-          const response = await createPost(formData);
-          console.log("Product created:", response);
-        } catch (error) {
-          console.error("Error:", error);
-          toast.error("Failed to create product. Please try again.");
-        }
+    setLoading(true);
 
-        // TODO: Replace console.log with API call:
-        /*
-    fetch("/api/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("✅ Product created:", data))
-      .catch((err) => console.error("❌ Error:", err));
-    */
-      };
+    // Filter out empty images
+    const cleanedData = {
+      ...formData,
+      images: formData.images.filter((img) => img.trim() !== ""),
+    };
+
+    // If type is CAR or BATTERY, ensure nested data is included; otherwise, remove unused nested objects
+    if (formData.type !== "CAR") {
+      delete cleanedData.brandcars;
+    }
+    if (formData.type !== "BATTERY") {
+      delete cleanedData.brandbattery;
+    }
+
+    console.log("Form data ready to send:", cleanedData);
+
+    try {
+      const response = await createPost(cleanedData);
+      console.log("Product created:", response);
+      toast.success("Product created successfully!");
+      // Reset form
+      setFormData({
+        productname: "",
+        description: "",
+        cost: "",
+        amount: "",
+        status: "CHO_DUYET",
+        model: "",
+        type: "",
+        specs: "",
+        images: [""],
+        brandcars: { brand: "", year: "", licensePlate: "", odo: "", capacity: "", color: "" },
+        brandbattery: { brand: "", year: "", capacity: "", voltage: "", condition: "", pickupAddress: "", remaining: "" },
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to create product. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,10 +174,9 @@ export default function CreateProductPage() {
                 value={formData.status}
                 onChange={handleChange}
                 className="w-full border rounded p-2"
+                disabled // Sellers likely only submit as CHO_DUYET
               >
                 <option value="CHO_DUYET">Waiting Approval</option>
-                <option value="DUOC_DUYET">Approved</option>
-                <option value="TU_CHOI">Rejected</option>
               </select>
             </div>
           </div>
@@ -176,6 +205,115 @@ export default function CreateProductPage() {
             />
           </div>
 
+          {/* Conditional Fields for CAR */}
+          {formData.type === "CAR" && (
+            <div className="space-y-3 border-t pt-4">
+              <h3 className="font-semibold">Car-Specific Details</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Brand"
+                  value={formData.brandcars.brand}
+                  onChange={(e) => handleNestedChange("brandcars", "brand", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Year"
+                  value={formData.brandcars.year}
+                  onChange={(e) => handleNestedChange("brandcars", "year", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="text"
+                  placeholder="License Plate"
+                  value={formData.brandcars.licensePlate}
+                  onChange={(e) => handleNestedChange("brandcars", "licensePlate", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Odo (km)"
+                  value={formData.brandcars.odo}
+                  onChange={(e) => handleNestedChange("brandcars", "odo", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Capacity"
+                  value={formData.brandcars.capacity}
+                  onChange={(e) => handleNestedChange("brandcars", "capacity", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Color"
+                  value={formData.brandcars.color}
+                  onChange={(e) => handleNestedChange("brandcars", "color", e.target.value)}
+                  className="border rounded p-2"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Conditional Fields for BATTERY */}
+          {formData.type === "BATTERY" && (
+            <div className="space-y-3 border-t pt-4">
+              <h3 className="font-semibold">Battery-Specific Details</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Brand"
+                  value={formData.brandbattery.brand}
+                  onChange={(e) => handleNestedChange("brandbattery", "brand", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Year"
+                  value={formData.brandbattery.year}
+                  onChange={(e) => handleNestedChange("brandbattery", "year", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Capacity (kWh)"
+                  value={formData.brandbattery.capacity}
+                  onChange={(e) => handleNestedChange("brandbattery", "capacity", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Voltage"
+                  value={formData.brandbattery.voltage}
+                  onChange={(e) => handleNestedChange("brandbattery", "voltage", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Condition"
+                  value={formData.brandbattery.condition}
+                  onChange={(e) => handleNestedChange("brandbattery", "condition", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Pickup Address"
+                  value={formData.brandbattery.pickupAddress}
+                  onChange={(e) => handleNestedChange("brandbattery", "pickupAddress", e.target.value)}
+                  className="border rounded p-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Remaining (%)"
+                  value={formData.brandbattery.remaining}
+                  onChange={(e) => handleNestedChange("brandbattery", "remaining", e.target.value)}
+                  className="border rounded p-2"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Images (Dynamic Fields) */}
           <div>
             <label className="block font-semibold">Images (URLs)</label>
@@ -202,9 +340,10 @@ export default function CreateProductPage() {
           <div className="text-right">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+              disabled={loading}
+              className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             >
-              Submit
+              {loading ? "Submitting..." : "Submit"}
             </button>
           </div>
         </form>
