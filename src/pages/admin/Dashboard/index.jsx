@@ -1,15 +1,29 @@
-import React from 'react'
-import CardItem from '../../components/admin/CardItem'
+import React, { useEffect, useState } from 'react'
+import CardItem from '../../../components/admin/CardItem'
 import { Row, Col } from 'antd';
 import { CarOutlined, UserAddOutlined, ShoppingOutlined, WarningOutlined  } from '@ant-design/icons';
-import LineChart from '../../components/admin/LineChart';
-import PieChart from '../../components/admin/PieChart';
+import LineChart from '../../../components/admin/LineChart';
+import PieChart from '../../../components/admin/PieChart';
 import { Link } from "react-router-dom";
-import { revenueData, newUserData, carStatusData, transactionStatusData } from '../../dataAdmin';
-import AdminBreadcrumb from '../../components/admin/AdminBreadcrumb';
+import { revenueData, newUserData, carStatusData, transactionStatusData } from '../../../dataAdmin';
+import AdminBreadcrumb from '../../../components/admin/AdminBreadcrumb';
+import { getReportSystem } from '../../../services/reportSystemService';
 
 
 export default function Dashboard() {
+  const[data,setData] = useState([]);
+  const fetchApi = async() =>{
+    const response = await getReportSystem();
+    setData(response);
+  };
+  useEffect(() => {
+    fetchApi()
+  },[])
+  
+  // const handleReload = () =>{
+  //   fetchApi()
+  // }
+  console.log(data)
   return (
     <>
     <AdminBreadcrumb />

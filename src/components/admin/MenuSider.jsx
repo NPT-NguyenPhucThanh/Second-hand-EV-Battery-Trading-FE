@@ -10,6 +10,7 @@ import {
   AuditOutlined,
   CarOutlined,
   LogoutOutlined,
+  UserSwitchOutlined,
 } from "@ant-design/icons";
 
 export default function MenuSider() {
@@ -30,6 +31,13 @@ export default function MenuSider() {
       key: "/admin",
     },
     {
+      label: (
+        <Link to="/admin/user-upgrade">Duyệt yêu cầu nâng cấp Seller</Link>
+      ),
+      icon: <UserSwitchOutlined />,
+      key: "/admin/user-upgrade",
+    },
+    {
       label: <Link to="/admin/users">Quản lý người dùng</Link>,
       icon: <UserOutlined />,
       key: "/admin/users",
@@ -40,10 +48,11 @@ export default function MenuSider() {
       key: "/admin/posts",
     },
     {
-      label: <Link to="/admin/vehicle-inspection">Kiểm định xe</Link>,
+      label: <Link to="/admin/warehouse/pending">Chờ nhập kho</Link>,
       icon: <AuditOutlined />,
-      key: "/admin/vehicle-inspection",
+      key: "/admin/warehouse/pending",
     },
+
     {
       label: <Link to="/admin/vehicle-storage">Quản lý kho xe</Link>,
       icon: <CarOutlined />,
@@ -85,11 +94,5 @@ export default function MenuSider() {
     },
   ];
 
-  return (
-    <Menu
-      mode="inline"
-      items={items}
-      selectedKeys={[selectedKey]} 
-    />
-  );
+  return <Menu mode="inline" items={items} selectedKeys={[selectedKey]} />;
 }
