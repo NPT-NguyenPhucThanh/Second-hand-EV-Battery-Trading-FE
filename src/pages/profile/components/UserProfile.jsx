@@ -1,8 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
+import { useUser } from "../../../contexts/UserContext";
 
 export default function ProfilePage() {
+  const { user } = useUser();
+
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [editingBirthDate, setEditingBirthDate] = useState(false);
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [birthDate, setBirthDate] = useState(user?.birthDate || "");
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <p className="text-gray-700 mb-4">
+            Bạn cần đăng nhập để xem trang cá nhân.
+          </p>
+          <a
+            href="/login"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            Đăng nhập
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 flex ">
+    <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-sm border-r p-6 hidden md:block mt-15">
         <div className="flex items-center space-x-3 mb-8">
@@ -10,7 +36,7 @@ export default function ProfilePage() {
             <i className="fa-regular fa-user text-white text-xl"></i>
           </div>
           <div>
-            <p className="font-semibold text-gray-800">Dang Hieu</p>
+            <p className="font-semibold text-gray-800">{user.username}</p>
             <button className="text-sm text-blue-500 hover:underline">
               Sửa Hồ Sơ
             </button>
@@ -73,62 +99,84 @@ export default function ProfilePage() {
               <label className="block text-gray-600 text-sm mb-1">
                 Tên đăng nhập
               </label>
-              <p className="text-gray-800">dagnhieu.work@gmail.com</p>
+              <p className="text-gray-800">{user.email}</p>
             </div>
 
             <div>
               <label className="block text-gray-600 text-sm mb-1">Tên</label>
               <input
                 type="text"
+                defaultValue={user.username || ""}
                 className="w-full border rounded-md p-2 text-gray-800 focus:ring-blue-400 focus:border-blue-400"
               />
             </div>
 
+            {/* Số điện thoại */}
             <div>
               <label className="block text-gray-600 text-sm mb-1">
                 Số điện thoại
               </label>
-              <p className="text-gray-800">
-                ********56{" "}
-                <span className="text-blue-500 cursor-pointer hover:underline">
-                  Thay Đổi
-                </span>
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-gray-600 text-sm mb-1">Giới tính</label>
-              <div className="flex items-center space-x-6">
-                <label className="flex items-center space-x-1">
+              {editingPhone ? (
+                <div className="flex items-center space-x-2">
                   <input
-                    type="radio"
-                    name="gender"
-                    defaultChecked
-                    className="text-blue-500 focus:ring-blue-400"
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="border rounded-md p-2 flex-1 focus:ring-blue-400 focus:border-blue-400"
                   />
-                  <span>Nam</span>
-                </label>
-                <label className="flex items-center space-x-1">
-                  <input type="radio" name="gender" className="text-blue-500" />
-                  <span>Nữ</span>
-                </label>
-                <label className="flex items-center space-x-1">
-                  <input type="radio" name="gender" className="text-blue-500" />
-                  <span>Khác</span>
-                </label>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPhone(false)}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Lưu
+                  </button>
+                </div>
+              ) : (
+                <p className="text-gray-800">
+                  {phone || "Chưa cập nhật"}{" "}
+                  <span
+                    className="text-blue-500 cursor-pointer hover:underline"
+                    onClick={() => setEditingPhone(true)}
+                  >
+                    Thay Đổi
+                  </span>
+                </p>
+              )}
             </div>
 
+            {/* Ngày sinh */}
             <div>
               <label className="block text-gray-600 text-sm mb-1">
                 Ngày sinh
               </label>
-              <p className="text-gray-800">
-                **/**/2005{" "}
-                <span className="text-blue-500 cursor-pointer hover:underline">
-                  Thay Đổi
-                </span>
-              </p>
+              {editingBirthDate ? (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    className="border rounded-md p-2 focus:ring-blue-400 focus:border-blue-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditingBirthDate(false)}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Lưu
+                  </button>
+                </div>
+              ) : (
+                <p className="text-gray-800">
+                  {birthDate || "**/**/****"}{" "}
+                  <span
+                    className="text-blue-500 cursor-pointer hover:underline"
+                    onClick={() => setEditingBirthDate(true)}
+                  >
+                    Thay Đổi
+                  </span>
+                </p>
+              )}
             </div>
 
             <button
@@ -142,7 +190,15 @@ export default function ProfilePage() {
           {/* Right: Upload Avatar */}
           <div className="flex flex-col items-center">
             <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-300 to-blue-500 flex items-center justify-center overflow-hidden shadow-md">
-              <i className="fa-regular fa-user text-white text-5xl"></i>
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="Avatar"
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <i className="fa-regular fa-user text-white text-5xl"></i>
+              )}
             </div>
             <button className="mt-4 px-4 py-1 border border-blue-400 text-blue-600 rounded-md text-sm hover:bg-blue-50 transition">
               Chọn Ảnh
