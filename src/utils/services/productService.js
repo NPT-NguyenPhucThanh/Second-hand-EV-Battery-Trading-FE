@@ -34,11 +34,42 @@ export const getProductById = async (productId) => {
 
 export const checkAuth = async (action) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/check-auth`, {
-      params: { action },
-    });
+    const response = await axios.get(
+      `${API_BASE_URL}/check-auth`,
+      {
+        params: { action },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorized: "Bearer " + localStorage.getItem("token"),
+        },
+      }
+    );
+    console.log(response.data);
     return response.data;
   } catch (error) {
     throw new Error("Không thể kiểm tra yêu cầu đăng nhập.");
+  }
+};
+export const searchProducts = async (filters = {}) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/products/search`, {
+      params: {
+        keyword: filters.keyword || "",
+        brand: filters.brand || "",
+        minYear: filters.minYear || undefined,
+        maxYear: filters.maxYear || undefined,
+        minPrice: filters.minPrice || undefined,
+        maxPrice: filters.maxPrice || undefined,
+        condition: filters.condition || "",
+        type: filters.type || "",
+      },
+    });
+
+    return response.data; // trả về danh sách kết quả
+  } catch (error) {
+    console.error("Lỗi khi tìm kiếm sản phẩm:", error);
+    throw new Error("Không thể tìm kiếm sản phẩm. Vui lòng thử lại.");
   }
 };

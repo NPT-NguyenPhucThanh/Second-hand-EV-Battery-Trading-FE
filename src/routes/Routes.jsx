@@ -23,6 +23,7 @@ import PostManagement from "../pages/admin/PostManagement";
 import TransactionManagement from "../pages/admin/TransactionManagement";
 import RoleGuard from "../components/auth/ProtectedRoute";
 import { ROLES } from "../constants/role";
+import SearchResults from "../pages/home/components/SearchResult";
 export const routes = [
   {
     path: "/staff",
@@ -62,6 +63,7 @@ export const routes = [
       { path: "/profile", element: <ProfilePage /> },
 
       { path: "/listings/:id", element: <ListingDetail /> },
+      { path: "/search", element: <SearchResults /> },
       { path: "/sellers/:id", element: <SellerProfile /> },
       {
         path: "/listings/new",

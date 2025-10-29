@@ -1,7 +1,8 @@
 "use client";
 import { Button, Popover, List, Badge, Dropdown } from "antd";
-import { Link, useNavigate } from "react-router-dom"; // Changed to react-router-dom and added useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../utils/services/userService";
+import { searchProducts } from "../../services/searchService.js"; // ✅ import hàm search
 import { useUser } from "../../contexts/UserContext.jsx";
 import {
   NotificationOutlined,
@@ -14,71 +15,29 @@ import React, { useState, useEffect, useRef } from "react";
 
 /* ----------------------- ICONS ----------------------- */
 const User = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
 const Settings = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <circle cx="12" cy="12" r="3" />
     <path d="M12 1v6m0 6v6" />
     <path d="M1 12h6m6 0h6" />
   </svg>
 );
+
 const CreditCard = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <rect width="20" height="14" x="2" y="5" rx="2" />
     <line x1="2" x2="22" y1="10" y2="10" />
   </svg>
 );
+
 const LogOut = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" x2="9" y1="12" y2="12" />
@@ -144,9 +103,8 @@ function UserProfileDropdown() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
-  // Thêm check: Nếu user undefined hoặc loading, không render dropdown
   if (!user || !user.username) {
-    return null; // Hoặc <div>Loading...</div> nếu muốn placeholder
+    return null;
   }
 
   return (
@@ -154,32 +112,22 @@ function UserProfileDropdown() {
       trigger={
         <button className="flex items-center space-x-3 px-3 py-2 rounded-lg shadow-sm hover:bg-gray-300 transition-all">
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-sm">
-            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}{" "}
-            {/* Sửa: dùng username, thêm safe */}
+            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}
           </div>
           <div className="text-left">
-            <div className="text-sm font-bold text-white">
-              {user.username || "User"} {/* Sửa: dùng username */}
-            </div>
+            <div className="text-sm font-bold text-white">{user.username || "User"}</div>
           </div>
         </button>
       }
     >
-      {/* dropdown header */}
       <div className="px-3 py-3 border-b border-zinc-200">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}{" "}
-            {/* Sửa tương tự */}
+            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}
           </div>
           <div>
-            <div className="text-sm font-semibold text-zinc-900">
-              {user.username || "User"} {/* Sửa: dùng username */}
-            </div>
-            <div className="text-xs text-zinc-500">
-              {user.email || "No email"}
-            </div>{" "}
-            {/* Thêm safe cho email */}
+            <div className="text-sm font-semibold text-zinc-900">{user.username}</div>
+            <div className="text-xs text-zinc-500">{user.email || "No email"}</div>
             <div className="text-xs text-blue-600 font-medium">Gói Pro</div>
           </div>
         </div>
@@ -190,11 +138,11 @@ function UserProfileDropdown() {
           <User className="mr-3 h-4 w-4 text-zinc-500" />
           Trang cá nhân
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => console.log("Cài đặt")}>
+        <DropdownMenuItem>
           <Settings className="mr-3 h-4 w-4 text-zinc-500" />
           Cài đặt
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => console.log("Thanh toán")}>
+        <DropdownMenuItem>
           <CreditCard className="mr-3 h-4 w-4 text-zinc-500" />
           Gói & thanh toán
         </DropdownMenuItem>
@@ -204,8 +152,6 @@ function UserProfileDropdown() {
 
       <div className="py-1">
         <DropdownMenuItem onClick={logout}>
-          {" "}
-          {/* Sửa: dùng logout() từ context */}
           <LogOut className="mr-3 h-4 w-4 text-zinc-500" />
           Đăng xuất
         </DropdownMenuItem>
@@ -216,8 +162,20 @@ function UserProfileDropdown() {
 
 /* ----------------------- HEADER CHÍNH ----------------------- */
 export default function Header() {
-  // Removed unnecessary { user } prop
-  const { user } = useUser(); // Use context directly here
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState("");
+
+  // ✅ Tìm kiếm trực tiếp qua navigate
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    const trimmed = keyword.trim();
+    if (!trimmed) return;
+
+    // Điều hướng sang trang kết quả
+    navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
+  };
+
   const notifications = [
     { id: 1, message: "Đơn hàng #1234 của bạn đã được gửi đi." },
     { id: 2, message: "Bạn có tin nhắn mới từ đội hỗ trợ." },
@@ -235,9 +193,7 @@ export default function Header() {
         )}
       />
       {notifications.length === 0 && (
-        <p className="text-gray-500 text-center text-sm">
-          Chưa có thông báo nào
-        </p>
+        <p className="text-gray-500 text-center text-sm">Chưa có thông báo nào</p>
       )}
     </div>
   );
@@ -251,33 +207,25 @@ export default function Header() {
             TradeEV
           </Link>
 
-          {/* Thanh tìm kiếm */}
-          <div className="flex-1 bg-white rounded-lg mx-10">
+          {/* 🔍 Thanh tìm kiếm */}
+          <form onSubmit={handleSearch} className="flex-1 bg-white rounded-lg mx-10">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Tìm kiếm sản phẩm..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
               />
-              <button className="absolute right-3 top-2.5">
-                <svg
-                  className="w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+              <button type="submit" className="absolute right-3 top-2.5 text-gray-500 hover:text-blue-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
             </div>
-          </div>
+          </form>
 
-          {/* Điều hướng & tài khoản */}
+          {/* 🔔 Menu phải */}
           <div className="flex items-center space-x-4">
             <CategoryDropdown />
             <Link to={"/support"} className="text-white font-bold">
@@ -286,9 +234,7 @@ export default function Header() {
 
             <Popover
               content={notificationContent}
-              title={
-                <span className="font-semibold text-gray-700">Thông báo</span>
-              }
+              title={<span className="font-semibold text-gray-700">Thông báo</span>}
               trigger="click"
               placement="bottomRight"
             >
@@ -296,44 +242,28 @@ export default function Header() {
                 <Button
                   type="text"
                   shape="circle"
-                  icon={
-                    <NotificationOutlined
-                      style={{ fontSize: "20px", color: "white" }}
-                    />
-                  }
+                  icon={<NotificationOutlined style={{ fontSize: "20px", color: "white" }} />}
                 />
               </Badge>
             </Popover>
 
-            {user && ( // Only show cart and favorites if logged in
+            {user && (
               <>
                 <Link to="/favorites">
                   <Badge count={0} size="small" offset={[0, 5]}>
-                    {" "}
-                    {/* Replace 0 with dynamic favorites count if available */}
                     <Button
                       type="text"
                       shape="circle"
-                      icon={
-                        <HeartOutlined
-                          style={{ fontSize: "20px", color: "white" }}
-                        />
-                      }
+                      icon={<HeartOutlined style={{ fontSize: "20px", color: "white" }} />}
                     />
                   </Badge>
                 </Link>
                 <Link to="/cart">
                   <Badge count={0} size="small" offset={[0, 5]}>
-                    {" "}
-                    {/* Replace 0 with dynamic cart count if available */}
                     <Button
                       type="text"
                       shape="circle"
-                      icon={
-                        <ShoppingCartOutlined
-                          style={{ fontSize: "20px", color: "white" }}
-                        />
-                      }
+                      icon={<ShoppingCartOutlined style={{ fontSize: "20px", color: "white" }} />}
                     />
                   </Badge>
                 </Link>
@@ -363,14 +293,8 @@ export function CategoryDropdown() {
       key: "bike",
       label: "Xe điện",
       children: [
-        {
-          key: "vinfast",
-          label: <Link to="/categories/bike/vinfast">VinFast</Link>,
-        },
-        {
-          key: "wuling",
-          label: <Link to="/categories/bike/wuling">Wuling</Link>,
-        },
+        { key: "vinfast", label: <Link to="/categories/bike/vinfast">VinFast</Link> },
+        { key: "wuling", label: <Link to="/categories/bike/wuling">Wuling</Link> },
       ],
     },
     {
@@ -401,9 +325,7 @@ export function CategoryDropdown() {
         style={{ color: "white" }}
       >
         Danh mục{" "}
-        <DownOutlined
-          style={{ fontSize: "12px", marginLeft: "4px", color: "white" }}
-        />
+        <DownOutlined style={{ fontSize: "12px", marginLeft: "4px", color: "white" }} />
       </Button>
     </Dropdown>
   );

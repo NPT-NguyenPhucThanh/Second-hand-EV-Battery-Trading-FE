@@ -37,14 +37,9 @@ export default function FeaturedListings() {
   // Fetch products on mount and when page or type changes
   useEffect(() => {
     fetchProducts(currentPage, typeFilter);
+    // Cuộn về đầu trang khi đổi trang
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage, typeFilter]);
-
-  // Handle "Xem thêm" button click
-  const handleShowMore = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
 
   // Handle type filter change
   const handleTypeFilterChange = (type) => {
@@ -89,6 +84,7 @@ export default function FeaturedListings() {
       {loading && <div className="text-center">Đang tải...</div>}
       {error && <div className="text-center text-red-500">{error}</div>}
 
+      {/* Product grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((item) => (
           <Link
@@ -137,14 +133,43 @@ export default function FeaturedListings() {
         ))}
       </div>
 
-      {currentPage < totalPages - 1 && (
-        <div className="flex justify-center mt-6">
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 gap-2 items-center">
+          {/* Previous button */}
           <button
-            onClick={handleShowMore}
-            className="bg-[#007BFF] text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-            disabled={loading}
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 0))}
+            disabled={currentPage === 0 || loading}
+            className="px-3 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
           >
-            Xem thêm
+            «
+          </button>
+
+          {/* Page numbers */}
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index)}
+              className={`px-4 py-2 rounded-lg border transition-colors ${
+                currentPage === index
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+              }`}
+              disabled={loading}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          {/* Next button */}
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(p + 1, totalPages - 1))
+            }
+            disabled={currentPage === totalPages - 1 || loading}
+            className="px-3 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+          >
+            »
           </button>
         </div>
       )}

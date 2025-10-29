@@ -1,13 +1,8 @@
+// CartItem.jsx (lưu ý: document là CartItems.jsx nhưng code là CartItem): Không cần sửa lớn, vì logic remove ở parent.
+// Chỉ thêm comment nếu cần.
+
 import React from "react";
 
-/**
- *  CartItem.jsx
- * Hiển thị thông tin từng sản phẩm trong giỏ hàng
- *
- *  Sau này gắn API:
- * DELETE /api/buyer/cart/remove/{itemId}
- * PUT /api/buyer/cart/update/{itemId} (nếu cập nhật số lượng)
- */
 const CartItem = ({ item, onRemoveItem }) => {
   if (!item) return null;
 
