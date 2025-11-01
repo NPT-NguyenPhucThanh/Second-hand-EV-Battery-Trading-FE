@@ -1,8 +1,6 @@
-"use client";
 import { Button, Popover, List, Badge, Dropdown } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { logoutUser } from "../../utils/services/userService";
-import { searchProducts } from "../../services/searchService.js"; // ✅ import hàm search
+import { searchProducts } from "../../services/searchService.js";
 import { useUser } from "../../contexts/UserContext.jsx";
 import {
   NotificationOutlined,
@@ -142,7 +140,8 @@ function UserProfileDropdown() {
           <Settings className="mr-3 h-4 w-4 text-zinc-500" />
           Cài đặt
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        {/* TRONG DROPDOWN: GÓI & THANH TOÁN */}
+        <DropdownMenuItem onClick={() => navigate("/seller/packages")}>
           <CreditCard className="mr-3 h-4 w-4 text-zinc-500" />
           Gói & thanh toán
         </DropdownMenuItem>
@@ -166,13 +165,10 @@ export default function Header() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
 
-  // ✅ Tìm kiếm trực tiếp qua navigate
   const handleSearch = async (e) => {
     e.preventDefault();
     const trimmed = keyword.trim();
     if (!trimmed) return;
-
-    // Điều hướng sang trang kết quả
     navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
   };
 
@@ -203,11 +199,11 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to={"/"} className="text-2xl font-bold text-white">
+          <Link to="/" className="text-2xl font-bold text-white">
             TradeEV
           </Link>
 
-          {/* 🔍 Thanh tìm kiếm */}
+          {/* Thanh tìm kiếm */}
           <form onSubmit={handleSearch} className="flex-1 bg-white rounded-lg mx-10">
             <div className="relative">
               <input
@@ -225,11 +221,16 @@ export default function Header() {
             </div>
           </form>
 
-          {/* 🔔 Menu phải */}
+          {/* MENU PHẢI – THÊM "GÓI DỊCH VỤ" Ở GIỮA */}
           <div className="flex items-center space-x-4">
             <CategoryDropdown />
-            <Link to={"/support"} className="text-white font-bold">
+            <Link to="/support" className="text-white font-bold">
               Hỗ trợ
+            </Link>
+
+            {/* GÓI DỊCH VỤ – HIỆN CHO TẤT CẢ */}
+            <Link to="/seller/packages" className="text-white font-bold">
+              Gói dịch vụ
             </Link>
 
             <Popover
@@ -275,8 +276,10 @@ export default function Header() {
                 <UserProfileDropdown />
               </nav>
             ) : (
-              <Link to={"/login"}>
-                <Button className="ml-5 font-bold">Đăng nhập / Đăng ký</Button>
+              <Link to="/login">
+                <Button className="ml-5 font-bold text-white bg-white/20 hover:bg-white/30">
+                  Đăng nhập / Đăng ký
+                </Button>
               </Link>
             )}
           </div>

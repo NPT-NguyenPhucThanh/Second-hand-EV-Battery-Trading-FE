@@ -1,7 +1,10 @@
+// src/contexts/UserContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 
+// ĐÚNG: khai báo context
 const UserContext = createContext();
 
+// Provider
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -9,7 +12,8 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user"); // Giữ key "user"
+    const userData = localStorage.getItem("user");
+
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
@@ -17,7 +21,8 @@ export const UserProvider = ({ children }) => {
         setIsAuthenticated(true);
       } catch (error) {
         console.error("Invalid user data in localStorage:", error);
-        localStorage.removeItem("user"); // Xóa nếu parse lỗi
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
       }
     }
     setLoading(false);
@@ -25,21 +30,23 @@ export const UserProvider = ({ children }) => {
 
   const login = (userData, token) => {
     localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData)); // Sửa key thành "user"
+    localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
   };
+
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); // Sửa key thành "user"
+    localStorage.removeItem("user");
     setUser(null);
     setIsAuthenticated(false);
   };
 
   const updateUser = (newUserData) => {
     setUser(newUserData);
-    localStorage.setItem("user", JSON.stringify(newUserData)); // Đã đúng
+    localStorage.setItem("user", JSON.stringify(newUserData));
   };
+
   const value = {
     user,
     isAuthenticated,
@@ -48,9 +55,11 @@ export const UserProvider = ({ children }) => {
     logout,
     updateUser,
   };
+
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
+// Hook tiện lợi
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
@@ -58,3 +67,6 @@ export const useUser = () => {
   }
   return context;
 };
+
+// THÊM DÒNG NÀY ĐỂ VITE NHẬN EXPORT NAMED
+export { UserContext };
