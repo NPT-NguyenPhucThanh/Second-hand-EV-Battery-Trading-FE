@@ -1,6 +1,6 @@
 // src/components/seller/PackageDetail.jsx
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Spin, Alert, Button } from "antd";
 import { usePackages } from "../../services/packageService";
 import { 
@@ -10,7 +10,6 @@ import {
   DollarOutlined 
 } from "@ant-design/icons";
 
-// ICON PIN TÙY CHỈNH (SVG) – KHÔNG LỖI
 const BatteryIcon = ({ className }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -30,6 +29,7 @@ const BatteryIcon = ({ className }) => (
 
 export default function PackageDetail() {
   const { packageid } = useParams();
+  const navigate = useNavigate();
   const { getPackageById } = usePackages();
   const [pkg, setPkg] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +61,7 @@ export default function PackageDetail() {
   const features = [
     { icon: <CheckCircleFilled className="text-green-500" />, text: `Đăng tối đa ${limit}` },
     { icon: <CarOutlined className="text-blue-600" />, text: "Hiển thị nổi bật trên trang chủ" },
-    { icon: <BatteryIcon className="text-green-600 w-6 h-6" />, text: "Hỗ trợ ưu tiên từ đội ngũ" }, // DÙNG SVG
+    { icon: <BatteryIcon className="text-green-600 w-6 h-6" />, text: "Hỗ trợ ưu tiên từ đội ngũ" },
     { icon: <ClockCircleOutlined className="text-purple-600" />, text: "Báo cáo doanh thu chi tiết" },
   ];
 
@@ -104,12 +104,15 @@ export default function PackageDetail() {
                   <p className="text-2xl font-bold text-green-600 mt-2">{limit}</p>
                 </div>
 
+                {/* NÚT MUA NGAY → TỰ ĐỘNG HIỆN QR */}
                 <Button
                   type="primary"
                   size="large"
-                  className="w-full h-14 text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 shadow-lg"
+                  onClick={() => navigate(`/payment/checkout?packageid=${pkg.packageid}`)}
+                  className="w-full h-14 text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-emerald-600 hover:to-green-600 shadow-lg"
+                  disabled={pkg.isActive}
                 >
-                  Mua gói ngay
+                  {pkg.isActive ? "ĐÃ KÍCH HOẠT" : "MUA NGAY"}
                 </Button>
               </div>
 
