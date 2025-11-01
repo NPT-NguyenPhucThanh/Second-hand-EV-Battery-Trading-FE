@@ -1,6 +1,6 @@
 .notify-dropdown {
     box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.88);
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border-radius: 5px;
     overflow: hidden;
     min-width: 250px;
@@ -17,6 +17,7 @@
     border-top: 1px solid #ddd;
     max-height: 200px;
     overflow-y: auto; /* hien thanh roll */
+    margin: 10px;
 }
 
 .ant-dropdown-menu-item {
@@ -80,3 +81,4 @@
 .delete-btn:hover {
     color: #ff4d4f !important;
 }
+
