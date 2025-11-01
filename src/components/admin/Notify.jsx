@@ -107,7 +107,7 @@ export default function Notify() {
       trigger={["click"]}
     >
       <Badge count={notifications.length}>
-        <Button type="text" icon={<BellOutlined style={{ color: 'white', fontSize: '20px' }} />} />
+        <Button type="text" icon={<BellOutlined style={{ color: 'var(--text-primary)', fontSize: '20px' }} />} />
       </Badge>
     </Dropdown>
   );

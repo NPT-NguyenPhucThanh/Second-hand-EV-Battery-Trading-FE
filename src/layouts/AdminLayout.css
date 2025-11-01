@@ -10,6 +10,7 @@
 
 .header__logo {
    width: 200px;
+   height: 120px;
    display: flex;
    align-items: center;
    justify-content: center;
@@ -57,3 +58,37 @@
 .header__nav-right{
    margin-right: 50px;
 }
+
+
+.header {
+   display: flex;
+   background: var(--bg-primary);
+   border-bottom: 1px solid var(--border-color);
+}
+
+.header__logo {
+   border-right: 1px solid var(--border-color);
+}
+
+
+.layout-default {
+  padding-top: 110px; 
+  background-color: var(--bg-secondary);
+}
+
+.sider {
+  position: fixed;
+  top: 120px; 
+  bottom: 0;
+  background-color: var(--bg-primary) !important; /* Thêm !important để ghi đè theme 'light' của Antd */
+  border-right: 1px solid var(--border-color);
+}
+
+.content {
+  margin-left: 200px; 
+  overflow-y: auto;
+  margin-top: 20px;
+  padding: 20px;
+  /* Content sẽ tự động có màu nền của body */
+}
+

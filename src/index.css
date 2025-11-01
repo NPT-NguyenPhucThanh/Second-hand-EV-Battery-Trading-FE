@@ -1,5 +1,5 @@
 @import "tailwindcss";
-body {
+/* body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
@@ -10,6 +10,47 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+.mt-20 {
+  margin-top: 20px;
+} */
+
+/* src/index.css */
+
+
+/* 1. Định nghĩa biến màu cho chế độ SÁNG (mặc định) */
+:root {
+  --bg-primary: #ffffff;         /* Nền chính (ví dụ: card, layout) */
+  --bg-secondary: #f3f4f6;      /* Nền phụ (ví dụ: body) */
+  --text-primary: #111827;      /* Chữ chính (đen) */
+  --text-secondary: #6b7281;    /* Chữ phụ (xám) */
+  --border-color: #e5e7eb;      /* Viền */
+}
+
+/* 2. Định nghĩa lại các biến đó cho chế độ TỐI */
+.dark {
+  --bg-primary: #1f2937;         /* Nền chính (xám đen) */
+  --bg-secondary: #111827;      /* Nền phụ (đen) */
+  --text-primary: #f9fafb;      /* Chữ chính (trắng) */
+  --text-secondary: #d1d5db;    /* Chữ phụ (xám sáng) */
+  --border-color: #374151;      /* Viền (xám tối) */
+}
+
+/* 3. Áp dụng các biến này cho toàn bộ trang */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Tự động áp dụng nền và màu chữ */
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+
+  /* Thêm hiệu ứng chuyển động mượt mà khi đổi theme */
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .mt-20 {

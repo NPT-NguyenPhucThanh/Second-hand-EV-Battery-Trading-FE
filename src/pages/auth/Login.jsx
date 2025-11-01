@@ -72,7 +72,14 @@ const Login = () => {
 
       console.log("Login successful:", response);
       setMessage("Login successful!");
-      navigate("/"); // Chuyển hướng sau khi đăng nhập thành công
+      if (response.roles.includes("STAFF")) {
+        navigate("/staff");
+      } else if (response.roles.includes("MANAGER")) {
+        navigate("/manager");
+      }
+      else {
+        navigate("/"); 
+      }
     } catch (error) {
       console.error("Login failed:", error);
       setMessage("Login failed. Please check your credentials.");
