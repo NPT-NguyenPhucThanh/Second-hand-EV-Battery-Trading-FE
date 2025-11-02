@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Tag, Modal, Input, message, Tabs, Space, Popconfirm } from "antd";
-import AdminBreadcrumb from '../../../components/admin/AdminBreadcrumb';
 import { getProductPendingApproval, getProductPendingInsspection, approveProduct, inputInspection } from "../../../services/productService";
-// Import component để xem chi tiết
 import WarehouseDetailModal from "../WarehouseManagement/components/WarehouseDetailModal";
-
-const { TabPane } = Tabs;
 
 export default function PostManagement() {
     const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
-    const [isDetailModalVisible, setIsDetailModalVisible] = useState(false); // State cho modal chi tiết
+    const [isDetailModalVisible, setIsDetailModalVisible] = useState(false); 
     const [note, setNote] = useState("");
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [activeTab, setActiveTab] = useState("approval");
@@ -86,8 +82,7 @@ export default function PostManagement() {
             messageApi.error("Có lỗi xảy ra, vui lòng thử lại!");
         }
     };
-    
-    // --- Hàm mới để xem chi tiết ---
+
     const showDetailModal = (product) => {
         setSelectedProduct(product);
         setIsDetailModalVisible(true);
@@ -109,7 +104,6 @@ export default function PostManagement() {
             key: "action",
             render: (_, record) => (
                 <Space>
-                    {/* Thêm nút Xem chi tiết */}
                     <Button size="small" onClick={() => showDetailModal(record)}>Xem chi tiết</Button>
                     <Popconfirm
                         title="Xác nhận duyệt sản phẩm?"
@@ -125,19 +119,29 @@ export default function PostManagement() {
             ),
         },
     ];
+    const tabItems = [
+        {
+            key: 'approval',
+            label: `Chờ duyệt sơ bộ (${approvalList.length})`,
+            children: <Table columns={columns} dataSource={approvalList} loading={loading} rowKey="productid" pagination={{ pageSize: 8 }} scroll={{ x: "max-content" }} />
+        },
+        {
+            key: 'inspection',
+            label: `Chờ kiểm định (${inspectionList.length})`,
+            children: <Table columns={columns} dataSource={inspectionList} loading={loading} rowKey="productid" pagination={{ pageSize: 8 }} scroll={{ x: "max-content" }} />
+        }
+    ];
 
     return (
         <>
             {contextHolder}
             <h2>Quản lý Bài đăng (Duyệt sản phẩm)</h2>
-            <Tabs defaultActiveKey="approval" onChange={(key) => setActiveTab(key)}>
-                <TabPane tab={`Chờ duyệt sơ bộ (${approvalList.length})`} key="approval">
-                    <Table columns={columns} dataSource={approvalList} loading={loading} rowKey="productid" pagination={{ pageSize: 8 }} scroll={{ x: "max-content" }} />
-                </TabPane>
-                <TabPane tab={`Chờ kiểm định (${inspectionList.length})`} key="inspection">
-                    <Table columns={columns} dataSource={inspectionList} loading={loading} rowKey="productid" pagination={{ pageSize: 8 }} scroll={{ x: "max-content" }} />
-                </TabPane>
-            </Tabs>
+
+            <Tabs 
+                defaultActiveKey="approval" 
+                onChange={(key) => setActiveTab(key)} 
+                items={tabItems} 
+            />
 
             <Modal
                 title="Từ chối sản phẩm"
@@ -155,8 +159,6 @@ export default function PostManagement() {
                     </>
                 )}
             </Modal>
-            
-            {/* Thêm Modal để xem chi tiết */}
             <WarehouseDetailModal 
                 open={isDetailModalVisible}
                 onClose={handleDetailCancel}

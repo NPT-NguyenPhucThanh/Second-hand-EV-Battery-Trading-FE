@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Input, Tag, message, Space } from "antd";
-// Sửa lại import để phù hợp với yêu cầu của bạn
-import { getOrders, getOrderDetails, approveOrder } from "../../../services/orderService"; 
-import AdminBreadcrumb from "../../../components/admin/AdminBreadcrumb";
+import React, { useState, useEffect, useCallback } from "react";
+import { Table, Button, Modal, Input, Tag, message, Space, Tabs } from "antd";
+import { getOrders, getOrderDetails, approveOrder, getOrdersByStatus } from "../../../services/orderService"; 
 import TransactionDetailModal from "./components/TransactionDetailModal";
+
+const ORDER_STATUS = {
+  CHO_DUYET: "CHO_DUYET",
+  CHO_THANH_TOAN: "CHO_THANH_TOAN",
+  DA_HOAN_TAT: "DA_HOAN_TAT",
+  BI_TU_CHOI: "BI_TU_CHOI",
+  TRANH_CHAP: "TRANH_CHAP",
+  DA_GIAO: "DA_GIAO",
+  DA_HUY: "DA_HUY"
+};
 
 export default function TransactionManagement() {
   const [orders, setOrders] = useState([]);
@@ -11,15 +19,19 @@ export default function TransactionManagement() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [note, setNote] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false); // State mới
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState(ORDER_STATUS.CHO_DUYET); 
 
-  // Hàm tải dữ liệu từ API
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async (tabKey) => {
     setLoading(true);
     try {
-      const response = await getOrders();
-      // *** SỬA LỖI Ở ĐÂY ***
-      // Truy cập vào mảng 'orders' bên trong object trả về
+      let response;
+      if (tabKey === "ALL") {
+        response = await getOrders();
+      } else {
+        response = await getOrdersByStatus(tabKey);
+      }
+      
       if (response && response.status === 'success') {
         setOrders(response.orders || []);
       } else {
@@ -30,19 +42,17 @@ export default function TransactionManagement() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Tải dữ liệu khi trang được mở
-  useEffect(() => {
-    fetchOrders();
   }, []);
+
+  useEffect(() => {
+    fetchOrders(activeTab);
+  }, [activeTab, fetchOrders]); 
 
   const showModal = (record) => {
     setSelectedOrder(record);
     setModalVisible(true);
   };
 
-  // Hàm mở modal chi tiết
   const showDetailModal = async (orderId) => {
     try {
         const res = await getOrderDetails(orderId);
@@ -61,28 +71,22 @@ export default function TransactionManagement() {
     setModalVisible(false);
     setNote("");
     setSelectedOrder(null);
+    setIsDetailModalVisible(false);
   };
 
-  // Hàm xử lý khi nhấn nút "Duyệt" hoặc "Từ chối"
   const handleProcess = async (isApproved) => {
     if (!selectedOrder) return;
-
     if (!isApproved && !note.trim()) {
       message.warning("Vui lòng nhập lý do từ chối!");
       return;
     }
-
-    const payload = {
-      approved: isApproved,
-      note: note,
-    };
+    const payload = { approved: isApproved, note: note };
 
     try {
-      // Giả sử hàm approveOrder đã được định nghĩa đúng
       const success = await approveOrder(selectedOrder.orderid, payload);
-      if (success) {
+      if (success === "Order processed") {
         message.success(`Đã ${isApproved ? 'duyệt' : 'từ chối'} giao dịch thành công!`);
-        fetchOrders(); // Tải lại danh sách để cập nhật
+        fetchOrders(activeTab); 
         handleCancel();
       } else {
         throw new Error("Phản hồi từ server không hợp lệ.");
@@ -92,6 +96,10 @@ export default function TransactionManagement() {
     }
   };
 
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+  };
+
   const columns = [
     { title: "Mã Đơn", dataIndex: "orderid", key: "orderid" },
     { title: "Người mua", dataIndex: ["users", "username"], key: "buyerName" },
@@ -99,7 +107,7 @@ export default function TransactionManagement() {
       title: "Tổng Giá (VNĐ)",
       dataIndex: "totalfinal",
       key: "totalPrice",
-      render: (price) => price.toLocaleString('vi-VN')
+      render: (price) => (price ? price.toLocaleString('vi-VN') : '0')
     },
     {
       title: "Ngày tạo",
@@ -112,9 +120,10 @@ export default function TransactionManagement() {
       dataIndex: "status",
       render: (status) => {
           let color = "default";
-          if (status === "CHO_DUYET") color = "orange";
-          else if (status === "DA_HOAN_TAT") color = "green";
-          else if (status === "BI_TU_CHOI") color = "red";
+          if (status === ORDER_STATUS.CHO_DUYET) color = "orange";
+          else if (status === ORDER_STATUS.DA_HOAN_TAT) color = "green";
+          else if (status === ORDER_STATUS.BI_TU_CHOI) color = "red";
+          else if (status === ORDER_STATUS.TRANH_CHAP) color = "volcano";
           return <Tag color={color}>{status}</Tag>;
       }
     },
@@ -125,17 +134,53 @@ export default function TransactionManagement() {
             <Button size="small" onClick={() => showDetailModal(record.orderid)}>
                 Xem chi tiết
             </Button>
-            <Button type="primary" size="small" onClick={() => showModal(record)}>
-                Xử lý
-            </Button>
+
+            {record.status === ORDER_STATUS.CHO_DUYET && (
+              <Button type="primary" size="small" onClick={() => showModal(record)}>
+                  Xử lý
+              </Button>
+            )}
         </Space>
       ),
+    },
+  ];
+
+  const tabItems = [
+    {
+      key: ORDER_STATUS.CHO_DUYET,
+      label: "Chờ duyệt",
+    },
+    {
+      key: ORDER_STATUS.TRANH_CHAP,
+      label: "Đang tranh chấp",
+    },
+    {
+      key: ORDER_STATUS.DA_HOAN_TAT,
+      label: "Đã hoàn tất",
+    },
+    {
+      key: ORDER_STATUS.BI_TU_CHOI,
+      label: "Bị từ chối",
+    },
+    {
+      key: ORDER_STATUS.DA_HUY,
+      label: "Đã hủy",
+    },
+     {
+      key: "ALL", 
+      label: "Tất cả đơn hàng",
     },
   ];
 
   return (
     <>
       <h2>Quản lý Giao dịch (Duyệt đơn hàng)</h2>
+
+      <Tabs 
+        defaultActiveKey={ORDER_STATUS.CHO_DUYET} 
+        items={tabItems} 
+        onChange={handleTabChange} 
+      />
       
       <Table
         dataSource={orders}
@@ -170,10 +215,11 @@ export default function TransactionManagement() {
             </>
         )}
       </Modal>
+      
       <TransactionDetailModal 
         order={selectedOrder}
         visible={isDetailModalVisible}
-        onClose={handleCancel}
+        onClose={handleCancel} 
       />
     </>
   );

@@ -1,80 +1,113 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, message, Spin } from 'antd';
-import { DollarCircleOutlined, RiseOutlined, ShoppingCartOutlined, GiftOutlined, CarOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import AdminBreadcrumb from '../../../components/admin/AdminBreadcrumb';
-import CardItem from '../../../components/admin/CardItem';
-import LineChart from '../../../components/admin/LineChart';
+import { Table, message, Spin, Typography } from 'antd';
 import { getRevenue } from '../../../services/managerSystemService';
-import { revenueData } from '../../../dataAdmin'; // Dùng dữ liệu mẫu cho biểu đồ
+
+const { Title, Text } = Typography;
+
+const formatCurrency = (value) => {
+  if (typeof value !== 'number') {
+    return value; 
+  }
+  return `${value.toLocaleString('vi-VN')} ₫`;
+};
 
 export default function RevenueManagement() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchRevenueReport = async () => {
-    setLoading(true);
-    try {
-      const response = await getRevenue();
-      // API của bạn trả về dữ liệu trực tiếp, không có key 'status'
-      setReport(response);
-    } catch (error) {
-      message.error("Không thể tải báo cáo doanh thu!");
-      console.error("API Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchRevenueReport = async () => {
+      setLoading(true);
+      try {
+        const response = await getRevenue();
+        setReport(response); 
+      } catch (error) {
+        message.error("Không thể tải báo cáo doanh thu!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchRevenueReport();
   }, []);
 
-  if (loading) {
+  if (loading || !report) {
     return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
   }
 
-  const formatCurrency = (value) => `${(value || 0).toLocaleString('vi-VN')} ₫`;
+  const dataSource = [
+    {
+      key: '1',
+      item: 'Tổng Doanh Thu (Từ Bán Hàng)',
+      value: formatCurrency(report.totalRevenue),
+    },
+    {
+      key: '2',
+      item: 'Doanh Thu Nền Tảng (Lợi nhuận)',
+      value: formatCurrency(report.platformRevenue),
+    },
+    {
+      key: '3',
+      item: 'Tổng Hoa Hồng (Tạm tính)',
+      value: `${formatCurrency(report.totalCommission)} (${report.commissionRate})`, 
+    },
+    {
+      key: '4',
+      item: 'Doanh Thu Bán Gói Dịch Vụ',
+      value: formatCurrency(report.packageRevenue),
+    },
+    {
+      key: '5',
+      item: 'Doanh Thu Bán Xe',
+      value: formatCurrency(report.carRevenue),
+    },
+    {
+      key: '6',
+      item: 'Doanh Thu Bán Pin',
+      value: formatCurrency(report.batteryRevenue),
+    },
+    {
+      key: '7',
+      item: 'Số Đơn Hàng Hoàn Tất',
+      value: report.totalCompletedOrders?.toLocaleString('vi-VN'),
+    },
+    {
+      key: '8',
+      item: 'Số Gói Dịch Vụ Đã Bán',
+      value: report.totalPackagesSold?.toLocaleString('vi-VN'),
+    },
+  ];
+
+  const columns = [
+    {
+      title: 'Chỉ mục Báo cáo',
+      dataIndex: 'item',
+      key: 'item',
+      width: '70%', 
+      render: (text) => <Text strong>{text}</Text>, 
+    },
+    {
+      title: 'Giá trị',
+      dataIndex: 'value',
+      key: 'value',
+      width: '30%',
+    },
+  ];
 
   return (
     <>
-      <AdminBreadcrumb />
-      <h2>Báo cáo Doanh thu</h2>
+      <Title level={2}>Báo cáo Doanh thu</Title>
+      <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
+        Dữ liệu tổng hợp từ các đơn hàng đã hoàn tất trong hệ thống.
+      </Text>
 
-      {/* Hàng 1: Các chỉ số doanh thu chính */}
-      <Row gutter={[20, 20]}>
-        <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tổng Doanh Thu (Từ Bán Hàng)" value={formatCurrency(report?.totalRevenue)} icon={<DollarCircleOutlined style={{ color: '#1890ff' }} />} />
-        </Col>
-        <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Doanh Thu Nền Tảng" value={formatCurrency(report?.platformRevenue)} icon={<RiseOutlined style={{ color: '#52c41a' }} />} />
-        </Col>
-        <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tổng Hoa Hồng (5%)" value={formatCurrency(report?.totalCommission)} icon={<ShoppingCartOutlined style={{ color: '#faad14' }} />} />
-        </Col>
-        <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Doanh Thu Bán Gói" value={formatCurrency(report?.packageRevenue)} icon={<GiftOutlined style={{ color: '#722ed1' }} />} />
-        </Col>
-      </Row>
-
-      {/* Hàng 2: Chi tiết doanh thu theo loại sản phẩm */}
-      <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
-        <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-            <CardItem title="Doanh Thu Bán Xe" value={formatCurrency(report?.carRevenue)} icon={<CarOutlined />} />
-        </Col>
-        <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-            <CardItem title="Doanh Thu Bán Pin" value={formatCurrency(report?.batteryRevenue)} icon={<ThunderboltOutlined />} />
-        </Col>
-      </Row>
-
-      {/* Hàng 3: Biểu đồ */}
-      <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
-        <Col span={24}>
-          <CardItem title="Biểu đồ Doanh thu (Sử dụng dữ liệu mẫu)" style={{ height: '400px' }}>
-            <LineChart data={revenueData} />
-            <p style={{textAlign: 'center', color: '#888', marginTop: '10px'}}>Lưu ý: Biểu đồ này sử dụng dữ liệu mẫu. Cần API trả về dữ liệu theo chuỗi thời gian để hiển thị chính xác.</p>
-          </CardItem>
-        </Col>
-      </Row>
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        pagination={false}
+        bordered 
+        rowKey="key"
+      />
     </>
   );
 }
