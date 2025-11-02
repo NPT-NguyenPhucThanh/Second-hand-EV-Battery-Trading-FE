@@ -2,12 +2,21 @@
 import { useState, useCallback } from 'react';
 import { get, post, put, del } from '../utils/api';
 
+/**
+ * Hook quản lý gói dịch vụ
+ * - Tách biệt Admin (CRUD) và Public (lấy gói để mua)
+ * - Tối ưu useCallback + xử lý lỗi rõ ràng
+ */
 export const usePackages = () => {
-  const [packages, setPackages] = useState([]);
+  // === STATE CHUNG ===
+  const [packages, setPackages] = useState([]); // Dành cho Admin
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // === ADMIN: LẤY DANH SÁCH GÓI ===
+  // =================================================================
+  // === ADMIN: QUẢN LÝ GÓI (CRUD) ===
+  // =================================================================
+
   const fetchPackages = useCallback(async () => {
     try {
       setLoading(true);
@@ -15,7 +24,7 @@ export const usePackages = () => {
       const data = await get("api/manager/packages");
       setPackages(Array.isArray(data) ? data : []);
     } catch (err) {
-      const msg = err.message || "Lỗi tải gói";
+      const msg = err.message || "Không thể tải danh sách gói";
       setError(msg);
       console.error("fetchPackages error:", err);
     } finally {
@@ -23,7 +32,6 @@ export const usePackages = () => {
     }
   }, []);
 
-  // === ADMIN: THÊM GÓI ===
   const addPackage = useCallback(async (newPackage) => {
     try {
       setLoading(true);
@@ -32,14 +40,14 @@ export const usePackages = () => {
       setPackages(prev => [result, ...prev]);
       return result;
     } catch (err) {
-      setError(err.message || "Lỗi tạo gói");
+      const msg = err.message || "Không thể tạo gói mới";
+      setError(msg);
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // === ADMIN: SỬA GÓI ===
   const updatePackage = useCallback(async (packageId, updatedPackage) => {
     try {
       setLoading(true);
@@ -48,14 +56,14 @@ export const usePackages = () => {
       setPackages(prev => prev.map(p => p.packageid === packageId ? result : p));
       return result;
     } catch (err) {
-      setError(err.message || "Lỗi cập nhật gói");
+      const msg = err.message || "Không thể cập nhật gói";
+      setError(msg);
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // === ADMIN: XÓA GÓI ===
   const deletePackage = useCallback(async (packageId) => {
     try {
       setLoading(true);
@@ -63,14 +71,18 @@ export const usePackages = () => {
       await del(`api/manager/packages/${packageId}`);
       setPackages(prev => prev.filter(p => p.packageid !== packageId));
     } catch (err) {
-      setError(err.message || "Lỗi xóa gói");
+      const msg = err.message || "Không thể xóa gói";
+      setError(msg);
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // === PUBLIC: LẤY GÓI ĐỂ MUA ===
+  // =================================================================
+  // === PUBLIC: LẤY GÓI ĐỂ MUA (KHÔNG DÙNG STATE CHUNG) ===
+  // =================================================================
+
   const getPublicPackages = useCallback(async () => {
     try {
       const data = await get("api/public/package-services");
@@ -82,13 +94,16 @@ export const usePackages = () => {
     }
   }, []);
 
-  // === PUBLIC: LẤY GÓI THEO ID ===
   const getPackageById = useCallback(async (packageid) => {
     const list = await getPublicPackages();
-    const pkg = list.find(p => p.packageid === parseInt(packageid));
-    if (!pkg) throw new Error("Gói không tồn tại");
+    const pkg = list.find(p => p.packageid === parseInt(packageid, 10));
+    if (!pkg) throw new Error("Gói dịch vụ không tồn tại");
     return pkg;
   }, [getPublicPackages]);
+
+  // =================================================================
+  // === TRẢ VỀ ===
+  // =================================================================
 
   return {
     // Admin
