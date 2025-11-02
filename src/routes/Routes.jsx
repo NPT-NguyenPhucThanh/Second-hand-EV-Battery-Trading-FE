@@ -16,6 +16,8 @@ import ListingDetail from "../pages/home/components/ListingDetail";
 import SellerProfile from "../pages/profile/components/SellerProfile";
 import SearchResults from "../pages/home/components/SearchResult";
 import NotFound from "../pages/404page/NotFound";
+import Deposit from "../pages/checkout/Deposite";
+
 
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
@@ -81,6 +83,7 @@ export const routes = [
       { path: "listings/:id", element: <ListingDetail /> },
       { path: "sellers/:id", element: <SellerProfile /> },
       { path: "search", element: <SearchResults /> },
+      {path: "checkout/deposit/:orderId", element: <Deposit />},
 
       // === GÓI DỊCH VỤ (SELLER) ===
       { path: "seller/packages", element: <BuyPackage /> },

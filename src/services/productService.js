@@ -13,6 +13,8 @@ export const getProductPendingApproval = async () => {
 // Hàm checkAuth để kiểm tra xác thực (thêm vào file để hỗ trợ logic auth, dựa trên vấn đề trước đó)
 export const checkAuth = async (action) => {
   const token = localStorage.getItem("token");
+
+  // Nếu không có token, giả định yêu cầu auth
   if (!token) {
     return {
       requiresAuth: true,
@@ -21,13 +23,30 @@ export const checkAuth = async (action) => {
     };
   }
 
-  // Optional: Xác thực token với server nếu cần (giả định có API verify)
-  {
+  // Gọi API để kiểm tra với action và token (nếu có)
+  try {
+    const headers = {
+      Authorization: `Bearer ${token}`
+    };
+    const response = await get(`api/public/check-auth?action=${action}`, { headers });
+
+    // Giả định response là object { requiresAuth: bool, message?, loginUrl? }
+    // Nếu response.requiresAuth === false, nghĩa là đã auth ok cho action
+    return response; 
+  } catch (error) {
     console.error("Error verifying auth:", error);
-    localStorage.removeItem("token"); // Xóa token nếu invalid
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      localStorage.removeItem("token"); // Xóa token nếu invalid
+      return {
+        requiresAuth: true,
+        message: "Phiên đăng nhập hết hạn hoặc lỗi xác thực. Vui lòng đăng nhập lại.",
+        loginUrl: "/login",
+      };
+    }
+    // Default: Yêu cầu auth nếu lỗi khác
     return {
       requiresAuth: true,
-      message: "Phiên đăng nhập hết hạn hoặc lỗi xác thực. Vui lòng đăng nhập lại.",
+      message: "Lỗi kiểm tra xác thực. Vui lòng thử lại.",
       loginUrl: "/login",
     };
   }
