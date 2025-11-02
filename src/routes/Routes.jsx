@@ -35,6 +35,8 @@ import TransactionManagement from "../pages/admin/TransactionManagement";
 // === SELLER PAGES (GÓI DỊCH VỤ) ===
 import BuyPackage from "../components/seller/BuyPackage";
 import PackageDetail from "../components/seller/PackageDetail";
+import PaymentCheckout from "../components/seller/PaymentCheckout"; // THÊM
+import PaymentResult from "../components/seller/PaymentResult";     // THÊM
 
 // === AUTH ===
 import RoleGuard from "../components/auth/ProtectedRoute";
@@ -47,7 +49,7 @@ export const routes = [
     path: "/staff",
     element: <AdminLayout />,
     children: [
-      { index: true, element: <PostManagement /> }, // /staff
+      { index: true, element: <PostManagement /> },
       { path: "user-upgrade", element: <SellerUpgradePage /> },
       { path: "transactions", element: <TransactionManagement /> },
       { path: "refund", element: <RefundManagement /> },
@@ -62,7 +64,7 @@ export const routes = [
     path: "/manager",
     element: <ManagerLayout />,
     children: [
-      { index: true, element: <Dashboard /> }, // /manager
+      { index: true, element: <Dashboard /> },
       { path: "posts", element: <PostManagement /> },
       { path: "users", element: <UserManagement /> },
       { path: "packages", element: <PackageManagement /> },
@@ -76,7 +78,7 @@ export const routes = [
     path: "/",
     element: <MemberLayout />,
     children: [
-      { index: true, element: <Home /> }, // Trang chủ
+      { index: true, element: <Home /> },
       { path: "cart", element: <Cart /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "listings/new", element: <NewPost /> },
@@ -88,12 +90,16 @@ export const routes = [
       // === GÓI DỊCH VỤ (SELLER) ===
       { path: "seller/packages", element: <BuyPackage /> },
       { path: "seller/packages/:packageid", element: <PackageDetail /> },
+
+      // THANH TOÁN GÓI DỊCH VỤ
+      { path: "payment/checkout", element: <PaymentCheckout /> }, // THÊM
+      { path: "payment/result", element: <PaymentResult /> },     // THÊM
     ],
   },
 
   // === PUBLIC PAGES ===
   { path: "/login", element: <Login /> },
-  { path: "*", element: <NotFound /> }, // 404
+  { path: "*", element: <NotFound /> },
 ];
 
 // === TẠO ROUTER ===
