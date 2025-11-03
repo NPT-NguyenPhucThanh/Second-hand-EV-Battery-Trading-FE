@@ -179,7 +179,7 @@ export default function Notify() {
 
   return (
     <Dropdown
-      popupRender={() => menuItems}
+      dropdownRender={() => menuItems}
       trigger={["click"]}
       onOpenChange={handleOpenChange}
       open={isDropdownOpen}

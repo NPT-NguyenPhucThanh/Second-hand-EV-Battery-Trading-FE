@@ -2,6 +2,8 @@ import { Layout } from 'antd';
 import Sider from 'antd/es/layout/Sider';
 const { Content} = Layout;
 import './AdminLayout.css';
+import logo from '../assets/images/logo.jpg';
+import { SearchOutlined } from '@ant-design/icons';
 import Notify from '../components/admin/Notify';
 import MenuSiderManager from '../components/admin/MenuSiderManager';
 import { Outlet } from 'react-router-dom';
@@ -22,7 +24,7 @@ export default function AdminLayout() {
              
             </div>
             </div>
-            <div className='header__nav-right' style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <div className='header__nav-right'>
               <ThemeToggle />
                 <Notify />
             </div>

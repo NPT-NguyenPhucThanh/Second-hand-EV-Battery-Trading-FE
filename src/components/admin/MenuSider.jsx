@@ -11,7 +11,6 @@ import {
   CarOutlined,
   LogoutOutlined,
   UserSwitchOutlined,
-  SolutionOutlined,
 } from "@ant-design/icons";
 
 export default function MenuSider() {
@@ -44,11 +43,6 @@ export default function MenuSider() {
       key: "/staff/users",
     },
     {
-      label: <Link to="/staff/user-packages">Quản lý gói User</Link>,
-      icon: <SolutionOutlined />, 
-      key: "/staff/user-packages",
-    },
-    {
       label: <Link to="/staff/warehouse/pending">Chờ nhập kho</Link>,
       icon: <AuditOutlined />,
       key: "/staff/warehouse/pending",
@@ -60,9 +54,9 @@ export default function MenuSider() {
       key: "/staff/vehicle-storage",
     },
     {
-      label: <Link to="/staff/orders">Quản lý đơn hàng</Link>,
+      label: <Link to="/staff/transactions">Quản lý giao dịch</Link>,
       icon: <TransactionOutlined />,
-      key: "/staff/orders",
+      key: "/staff/transactions",
     },
     {
       label: <Link to="/staff/refund">Xử lý hoàn tiền</Link>,

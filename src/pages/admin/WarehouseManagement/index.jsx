@@ -13,6 +13,7 @@ export default function WarehouseManagement() {
 
 
   const fetchApi = async () => {
+  // Sản phẩm trong kho
   const res = await getWarehouse();
   if (res) {
     setProducts(res || []);

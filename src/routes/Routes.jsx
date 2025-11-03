@@ -24,8 +24,6 @@ import TransactionManagement from "../pages/admin/TransactionManagement";
 import RoleGuard from "../components/auth/ProtectedRoute";
 import { ROLES } from "../constants/role";
 import SearchResults from "../pages/home/components/SearchResult";
-import DisputeManagement from "../pages/admin/DisputeManagement";
-import UserPackageManagement from "../pages/admin/UserPackageManagement";
 export const routes = [
   {
     path: "/staff",
@@ -33,12 +31,11 @@ export const routes = [
     children: [
       { path: "/staff/user-upgrade", element: <SellerUpgradePage /> },
       { path: "/staff", element: <PostManagement /> },
-      { path: "/staff/orders", element: <TransactionManagement /> },
+      { path: "/staff/transactions", element: <TransactionManagement /> },
       { path: "/staff/refund", element: <RefundManagement /> },
       { path: "/staff/users", element: <UserManagement /> },
       { path: "/staff/warehouse/pending", element: <WarehousePending /> },
       { path: "/staff/vehicle-storage", element: <WarehouseManagement /> },
-      { path: "/staff/user-packages", element: <UserPackageManagement /> },
     ],
   },
   {
@@ -51,10 +48,6 @@ export const routes = [
       { path: "/manager/packages", element: <PackageManagement /> },
       { path: "/manager/revenue", element: <RevenueManagement /> },
       { path: "/manager/system", element: <SystemManagement /> },
-      { path: "/manager/disputes", element: <DisputeManagement /> },
-      { path: "/manager/user-upgrade", element: <SellerUpgradePage /> },
-      { path: "/manager/orders", element: <TransactionManagement /> },
-      { path: "/manager/refund", element: <RefundManagement /> },
     ],
   },
   {
@@ -74,7 +67,11 @@ export const routes = [
       { path: "/sellers/:id", element: <SellerProfile /> },
       {
         path: "/listings/new",
-        element: <NewPost />,
+        element: 
+          
+            <NewPost />,
+         
+      
       },
     ],
   },

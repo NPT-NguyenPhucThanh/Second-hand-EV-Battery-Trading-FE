@@ -1,21 +1,26 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Table, Badge, Tag, message, Switch, Popconfirm, Space, Button, Input, Tabs } from "antd";
+import AdminBreadcrumb from "../../../components/admin/AdminBreadcrumb";
 import UserDetailModal from "./components/UserDetailModal";
 import { getAllUser, getAllCustomer, lockUserById, getUser, getCustomer } from "../../../services/userService";
 
+const { TabPane } = Tabs;
+
 export default function UserManagement() {
-  const [allUsers, setAllUsers] = useState([]); 
+  const [allUsers, setAllUsers] = useState([]); // State để lưu danh sách gốc từ API
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
+  // State cho tìm kiếm và lọc
   const [activeTabKey, setActiveTabKey] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const location = useLocation();
   const isManager = location.pathname.startsWith('/manager');
 
+  // Hàm tải danh sách người dùng
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -36,17 +41,21 @@ export default function UserManagement() {
     fetchUsers();
   }, [isManager]);
 
+  // Sử dụng useMemo để tính toán danh sách hiển thị một cách hiệu quả
   const displayedUsers = useMemo(() => {
     let filtered = [...allUsers];
 
+    // Lọc theo Tab (chỉ áp dụng cho Staff)
     if (!isManager) {
         if (activeTabKey === 'buyer') {
+            // Chỉ hiện user có vai trò BUYER và không phải SELLER
             filtered = filtered.filter(user => user.roles.includes('BUYER') && !user.roles.includes('SELLER'));
         } else if (activeTabKey === 'seller') {
             filtered = filtered.filter(user => user.roles.includes('SELLER'));
         }
     }
 
+    // Lọc theo từ khóa tìm kiếm
     if (searchTerm) {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter(user =>
@@ -59,6 +68,8 @@ export default function UserManagement() {
     return filtered;
   }, [allUsers, activeTabKey, searchTerm, isManager]);
 
+
+  // Hàm xử lý khóa/mở khóa (chỉ dành cho Manager)
   const handleLockToggle = async (userId, isCurrentlyActive) => {
     try {
       const isLock = isCurrentlyActive;
@@ -74,6 +85,7 @@ export default function UserManagement() {
     }
   };
 
+  // Hàm mở modal xem chi tiết
   const handleViewDetails = async (userId) => {
     try {
         const res = isManager ? await getUser(userId) : await getCustomer(userId);
@@ -126,21 +138,6 @@ export default function UserManagement() {
     },
   ];
 
-  const tabItems = [
-    {
-      key: 'all',
-      label: 'Tất cả',
-    },
-    {
-      key: 'buyer',
-      label: 'Người Mua (Buyer)',
-    },
-    {
-      key: 'seller',
-      label: 'Người Bán (Seller)',
-    },
-  ];
-
   return (
     <>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
@@ -152,13 +149,14 @@ export default function UserManagement() {
             style={{ width: 400 }}
         />
       </div>
-
+      
+      {/* Chỉ hiển thị Tabs cho Staff */}
       {!isManager ? (
-        <Tabs 
-          defaultActiveKey="all" 
-          onChange={setActiveTabKey} 
-          items={tabItems} 
-        />
+        <Tabs defaultActiveKey="all" onChange={setActiveTabKey}>
+            <TabPane tab={`Tất cả`} key="all" />
+            <TabPane tab={`Người Mua (Buyer)`} key="buyer" />
+            <TabPane tab={`Người Bán (Seller)`} key="seller" />
+        </Tabs>
       ) : null}
 
       <Table

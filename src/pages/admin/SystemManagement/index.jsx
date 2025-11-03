@@ -1,22 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, message, Spin, Descriptions, Tag, Typography } from 'antd';
-import { 
-  UserOutlined, 
-  AppstoreOutlined, 
-  ShoppingCartOutlined, 
-  WarningOutlined, 
-  EyeOutlined, 
-  RiseOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  InboxOutlined,
-  CarOutlined,
-  ThunderboltOutlined
-} from '@ant-design/icons';
+import { Row, Col, message, Spin, Descriptions, Tag } from 'antd';
+import { UserOutlined, AppstoreOutlined, ShoppingCartOutlined, WarningOutlined, EyeOutlined, RiseOutlined } from '@ant-design/icons';
+import AdminBreadcrumb from '../../../components/admin/AdminBreadcrumb';
 import CardItem from '../../../components/admin/CardItem';
-import { getReportSystem } from '../../../services/managerSystemService'; 
-
-const { Title } = Typography;
+import { getReportSystem } from '../../../services/managerSystemService';
 
 export default function SystemManagement() {
   const [report, setReport] = useState(null);
@@ -26,6 +13,7 @@ export default function SystemManagement() {
     setLoading(true);
     try {
       const response = await getReportSystem();
+      // API của bạn trả về dữ liệu trực tiếp
       setReport(response);
     } catch (error) {
       message.error("Không thể tải báo cáo hệ thống!");
@@ -43,76 +31,73 @@ export default function SystemManagement() {
     return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
   }
 
-  const formatValue = (value) => (value !== null && value !== undefined) ? value : 0;
-
   return (
     <>
-      <Title level={2}>Báo cáo Tổng quan Hệ thống</Title>
+      <AdminBreadcrumb />
+      <h2>Báo cáo Tổng quan Hệ thống</h2>
 
-      <Title level={4} style={{ marginTop: '20px', marginBottom: '16px' }}>Thống kê Người dùng</Title>
+      {/* Hàng 1: Thống kê Người dùng */}
+      <h3 style={{ marginTop: '20px', marginBottom: '16px' }}>Thống kê Người dùng</h3>
       <Row gutter={[20, 20]}>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tổng Người Dùng" value={formatValue(report.totalUsers)} icon={<UserOutlined />} />
+          <CardItem title="Tổng Người Dùng" value={report.totalUsers} icon={<UserOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tổng Người Mua (Buyer)" value={formatValue(report.totalBuyers)} icon={<UserOutlined style={{ color: '#1890ff' }} />} />
+          <CardItem title="Tổng Người Mua (Buyer)" value={report.totalBuyers} icon={<UserOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tổng Người Bán (Seller)" value={formatValue(report.totalSellers)} icon={<UserOutlined style={{ color: '#52c41a' }} />} />
+          <CardItem title="Tổng Người Bán (Seller)" value={report.totalSellers} icon={<UserOutlined />} />
         </Col>
       </Row>
 
-      <Title level={4} style={{ marginTop: '20px', marginBottom: '16px' }}>Thống kê Sản phẩm</Title>
+      {/* Hàng 2: Thống kê Sản phẩm */}
+      <h3 style={{ marginTop: '20px', marginBottom: '16px' }}>Thống kê Sản phẩm</h3>
       <Row gutter={[20, 20]}>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tổng Sản Phẩm" value={formatValue(report.totalProducts)} icon={<AppstoreOutlined />} />
+          <CardItem title="Tổng Sản Phẩm" value={report.totalProducts} icon={<AppstoreOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Xe đang bán" value={formatValue(report.carsOnSale)} icon={<CarOutlined style={{ color: '#1890ff' }} />} />
+          <CardItem title="Xe đang bán" value={report.carsOnSale} icon={<AppstoreOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Pin đang bán" value={formatValue(report.batteriesOnSale)} icon={<ThunderboltOutlined style={{ color: '#52c41a' }} />} />
+          <CardItem title="Pin đang bán" value={report.batteriesOnSale} icon={<AppstoreOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Sản phẩm trong kho" value={formatValue(report.productsInWarehouse)} icon={<InboxOutlined />} />
+          <CardItem title="Sản phẩm trong kho" value={report.productsInWarehouse} icon={<AppstoreOutlined />} />
         </Col>
       </Row>
 
-      <Title level={4} style={{ marginTop: '20px', marginBottom: '16px' }}>Thống kê Đơn hàng & Tác vụ</Title>
+      {/* Hàng 3: Thống kê Đơn hàng và Tranh chấp */}
+      <h3 style={{ marginTop: '20px', marginBottom: '16px' }}>Thống kê Đơn hàng & Tranh chấp</h3>
       <Row gutter={[20, 20]}>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tổng Đơn Hàng" value={formatValue(report.totalOrders)} icon={<ShoppingCartOutlined />} />
+          <CardItem title="Tổng Đơn Hàng" value={report.totalOrders} icon={<ShoppingCartOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Đơn hàng hoàn tất" value={formatValue(report.completedOrders)} icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />} />
+          <CardItem title="Đơn hàng hoàn tất" value={report.completedOrders} icon={<ShoppingCartOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Đơn hàng chờ xử lý" value={formatValue(report.pendingOrders)} icon={<ClockCircleOutlined style={{ color: '#faad14' }} />} />
+          <CardItem title="Đơn hàng chờ xử lý" value={report.pendingOrders} icon={<ShoppingCartOutlined />} />
         </Col>
         <Col xxl={6} xl={6} lg={12} md={12} sm={24}>
-          <CardItem title="Tranh chấp đang mở" value={formatValue(report.openDisputes)} icon={<WarningOutlined style={{ color: '#f5222d' }} />} />
+          <CardItem title="Tranh chấp đang mở" value={report.openDisputes} icon={<WarningOutlined />} />
         </Col>
       </Row>
-
-      <Title level={4} style={{ marginTop: '20px', marginBottom: '16px' }}>Xu Hướng Thị Trường</Title>
+      
+      {/* Hàng 4: Xu hướng thị trường */}
+      <h3 style={{ marginTop: '20px', marginBottom: '16px' }}>Xu Hướng Thị Trường</h3>
        <Row gutter={[20, 20]}>
         <Col span={24}>
             <CardItem title="Thông tin thị trường" icon={<RiseOutlined />}>
-                <Descriptions bordered size="small">
+                <Descriptions bordered>
                     <Descriptions.Item label="Danh mục nổi bật">
-                        <Tag color="blue">{report.trendingCategory || 'N/A'}</Tag>
+                        <Tag color="blue">{report.trendingCategory}</Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Sản phẩm xem nhiều nhất" span={2}>
+                    <Descriptions.Item label="Sản phẩm xem nhiều nhất">
                         {report.mostViewedProduct?.productName || 'Chưa có dữ liệu'}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Lượt xem (Xe)">
-                        {formatValue(report.totalCarViews)} <EyeOutlined />
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Lượt xem (Pin)">
-                        {formatValue(report.totalBatteryViews)} <EyeOutlined />
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Lượt xem (SP Hot)">
-                        {formatValue(report.mostViewedProduct?.views)} <EyeOutlined />
+                    <Descriptions.Item label="Lượt xem">
+                        {report.mostViewedProduct?.views || 0} <EyeOutlined />
                     </Descriptions.Item>
                 </Descriptions>
             </CardItem>
