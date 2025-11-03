@@ -1,4 +1,5 @@
 // src/services/packagePayment.js
+import api from "../utils/api"; // ← Dùng api.js bạn cung cấp
 
 /**
  * GỌI API: /api/payment/init-package-payment
@@ -11,96 +12,62 @@
  * @returns {Promise<Object>} { qrCode, transactionCode, amount }
  */
 export const initPackagePayment = async (payload) => {
-  const url = `http://localhost:8080/api/payment/init-package-payment`;
-
   const params = new URLSearchParams();
   params.append("packageId", payload.packageId);
   params.append("customerName", payload.customerName || "Khách hàng");
   params.append("customerEmail", payload.customerEmail || "khach@example.com");
   params.append("customerPhone", payload.customerPhone || "0900000000");
 
-  try {
-    const response = await fetch(`${url}?${params.toString()}`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  const data = await api.post(`/api/payment/init-package-payment?${params.toString()}`);
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errText}`);
-    }
-
-    const data = await response.json();
-    if (data.status !== "success") {
-      throw new Error(data.message || "Khởi tạo thanh toán thất bại");
-    }
-
-    return {
-      qrCode: data.qrCode,
-      transactionCode: data.transactionCode,
-      amount: data.amount,
-    };
-  } catch (error) {
-    console.error("Lỗi initPackagePayment:", error);
-    throw new Error(error.message || "Không thể khởi tạo thanh toán");
+  if (data.status !== "success") {
+    throw new Error(data.message || "Khởi tạo thanh toán thất bại");
   }
+
+  return {
+    qrCode: data.qrCode,
+    transactionCode: data.transactionCode,
+    amount: data.amount,
+  };
 };
 
 /**
  * GIẢ LẬP THANH TOÁN → GỌI BE LƯU DB
  * @param {string} transactionCode - Mã giao dịch
+ * @param {number} amount - Số tiền
+ * @param {number} packageId - ID gói
+ * @returns {Promise<Object>} Kết quả từ BE
  */
-export const mockPackagePayment = async (transactionCode) => {
-  const url = `http://localhost:8080/api/payment/mock-payment?transactionCode=${transactionCode}`;
+export const mockPackagePayment = async (transactionCode, amount, packageId) => {
+  const params = new URLSearchParams({ transactionCode, amount, packageId });
+  const data = await api.get(`/api/payment/mock-payment?${params.toString()}`);
 
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`HTTP ${response.status}: ${err}`);
-    }
-
-    const data = await response.json();
-    if (data.status !== "success") {
-      throw new Error(data.message || "Giả lập thất bại");
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Lỗi mockPackagePayment:", error);
-    throw error;
+  if (data.status !== "success") {
+    throw new Error(data.message || "Giả lập thanh toán thất bại");
   }
+
+  return data;
 };
 
 /**
  * LẤY KẾT QUẢ GIAO DỊCH TỪ DB
  * @param {string} transactionCode - Mã giao dịch
+ * @returns {Promise<Object>} Dữ liệu giao dịch từ DB
  */
 export const getTransactionStatus = async (transactionCode) => {
-  const url = `http://localhost:8080/api/payment/transaction-status/${transactionCode}`;
+  return await api.get(`/api/payment/transaction-status/${transactionCode}`);
+};
 
+/**
+ * LẤY DANH SÁCH GÓI ĐÃ MUA CỦA USER
+ * @returns {Promise<Array>} Danh sách gói đã mua
+ */
+export const getMyPackages = async () => {
   try {
-    const response = await fetch(url, {
-      method: "GET",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    return await response.json();
+    const data = await api.get("/api/payment/my-packages");
+    return data.purchases || [];
   } catch (error) {
-    console.error("Lỗi getTransactionStatus:", error);
+    console.error("Lỗi getMyPackages:", error);
     throw error;
   }
 };

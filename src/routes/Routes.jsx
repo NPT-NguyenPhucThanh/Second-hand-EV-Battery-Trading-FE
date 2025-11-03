@@ -18,7 +18,6 @@ import SearchResults from "../pages/home/components/SearchResult";
 import NotFound from "../pages/404page/NotFound";
 import Deposit from "../pages/checkout/Deposite";
 
-
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
 import SellerUpgradePage from "../pages/admin/SellerUpgrade";
@@ -35,8 +34,9 @@ import TransactionManagement from "../pages/admin/TransactionManagement";
 // === SELLER PAGES (GÓI DỊCH VỤ) ===
 import BuyPackage from "../components/seller/BuyPackage";
 import PackageDetail from "../components/seller/PackageDetail";
-import PaymentCheckout from "../components/seller/PaymentCheckout"; // THÊM
-import PaymentResult from "../components/seller/PaymentResult";     // THÊM
+import PaymentCheckout from "../components/seller/PaymentCheckout";
+import PaymentResult from "../components/seller/PaymentResult";
+import MyPackages from "../components/seller/MyPackages"; // ĐÃ DI CHUYỂN VÀO ĐÂY
 
 // === AUTH ===
 import RoleGuard from "../components/auth/ProtectedRoute";
@@ -85,15 +85,18 @@ export const routes = [
       { path: "listings/:id", element: <ListingDetail /> },
       { path: "sellers/:id", element: <SellerProfile /> },
       { path: "search", element: <SearchResults /> },
-      {path: "checkout/deposit/:orderId", element: <Deposit />},
+      { path: "checkout/deposit/:orderId", element: <Deposit /> },
 
       // === GÓI DỊCH VỤ (SELLER) ===
       { path: "seller/packages", element: <BuyPackage /> },
       { path: "seller/packages/:packageid", element: <PackageDetail /> },
 
-      // THANH TOÁN GÓI DỊCH VỤ
-      { path: "payment/checkout", element: <PaymentCheckout /> }, // THÊM
-      { path: "payment/result", element: <PaymentResult /> },     // THÊM
+      // === LỊCH SỬ MUA GÓI ===
+      { path: "seller/my-packages", element: <MyPackages /> },
+
+      // === THANH TOÁN GÓI DỊCH VỤ ===
+      { path: "payment/checkout", element: <PaymentCheckout /> },
+      { path: "payment/result", element: <PaymentResult /> },
     ],
   },
 
