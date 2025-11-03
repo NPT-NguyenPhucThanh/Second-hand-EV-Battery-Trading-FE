@@ -22,7 +22,7 @@ export default function AdminLayout() {
              
             </div>
             </div>
-            <div className='header__nav-right'>
+            <div className='header__nav-right' style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <ThemeToggle />
                 <Notify />
             </div>
