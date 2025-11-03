@@ -18,7 +18,7 @@ import SearchResults from "../pages/home/components/SearchResult";
 import NotFound from "../pages/404page/NotFound";
 import Deposit from "../pages/checkout/Deposite";
 
-// === ADMIN PAGES ===
+// === ADMIN / STAFF PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
 import SellerUpgradePage from "../pages/admin/SellerUpgrade";
 import UserManagement from "../pages/admin/UserManagement";
@@ -31,20 +31,47 @@ import RevenueManagement from "../pages/admin/RevenueManagement";
 import PostManagement from "../pages/admin/PostManagement";
 import TransactionManagement from "../pages/admin/TransactionManagement";
 
-// === SELLER PAGES (GÓI DỊCH VỤ) ===
+// === SELLER PAGES ===
 import BuyPackage from "../components/seller/BuyPackage";
 import PackageDetail from "../components/seller/PackageDetail";
 import PaymentCheckout from "../components/seller/PaymentCheckout";
 import PaymentResult from "../components/seller/PaymentResult";
-import MyPackages from "../components/seller/MyPackages"; // ĐÃ DI CHUYỂN VÀO ĐÂY
+import MyPackages from "../components/seller/MyPackages";
 
 // === AUTH ===
 import RoleGuard from "../components/auth/ProtectedRoute";
 import { ROLES } from "../constants/role";
 
-// === ROUTES CONFIG ===
-export const routes = [
-  // === ADMIN (STAFF) ROUTES ===
+// === ROUTES ===
+const router = createBrowserRouter([
+  // PUBLIC
+  { path: "/login", element: <Login /> },
+  { path: "*", element: <NotFound /> },
+
+  // MEMBER & PUBLIC
+  {
+    path: "/",
+    element: <MemberLayout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: "cart", element: <Cart /> },
+      { path: "profile", element: <ProfilePage /> },
+      { path: "listings/new", element: <NewPost /> },
+      { path: "listings/:id", element: <ListingDetail /> },
+      { path: "sellers/:id", element: <SellerProfile /> },
+      { path: "search", element: <SearchResults /> },
+      { path: "checkout/deposit/:orderId", element: <Deposit /> },
+
+      // SELLER PACKAGES
+      { path: "seller/packages", element: <BuyPackage /> },
+      { path: "seller/packages/:packageid", element: <PackageDetail /> },
+      { path: "seller/my-packages", element: <MyPackages /> },
+      { path: "payment/checkout", element: <PaymentCheckout /> },
+      { path: "payment/result", element: <PaymentResult /> },
+    ],
+  },
+
+  // STAFF (GIỮ NGUYÊN – KHÔNG ĐỘNG GÌ)
   {
     path: "/staff",
     element: <AdminLayout />,
@@ -59,7 +86,7 @@ export const routes = [
     ],
   },
 
-  // === MANAGER ROUTES ===
+  // MANAGER (GIỮ NGUYÊN)
   {
     path: "/manager",
     element: <ManagerLayout />,
@@ -72,39 +99,6 @@ export const routes = [
       { path: "system", element: <SystemManagement /> },
     ],
   },
+]);
 
-  // === MEMBER & PUBLIC ROUTES ===
-  {
-    path: "/",
-    element: <MemberLayout />,
-    children: [
-      { index: true, element: <Home /> },
-      { path: "cart", element: <Cart /> },
-      { path: "profile", element: <ProfilePage /> },
-      { path: "listings/new", element: <NewPost /> },
-      { path: "listings/:id", element: <ListingDetail /> },
-      { path: "sellers/:id", element: <SellerProfile /> },
-      { path: "search", element: <SearchResults /> },
-      { path: "checkout/deposit/:orderId", element: <Deposit /> },
-
-      // === GÓI DỊCH VỤ (SELLER) ===
-      { path: "seller/packages", element: <BuyPackage /> },
-      { path: "seller/packages/:packageid", element: <PackageDetail /> },
-
-      // === LỊCH SỬ MUA GÓI ===
-      { path: "seller/my-packages", element: <MyPackages /> },
-
-      // === THANH TOÁN GÓI DỊCH VỤ ===
-      { path: "payment/checkout", element: <PaymentCheckout /> },
-      { path: "payment/result", element: <PaymentResult /> },
-    ],
-  },
-
-  // === PUBLIC PAGES ===
-  { path: "/login", element: <Login /> },
-  { path: "*", element: <NotFound /> },
-];
-
-// === TẠO ROUTER ===
-const router = createBrowserRouter(routes);
 export default router;
