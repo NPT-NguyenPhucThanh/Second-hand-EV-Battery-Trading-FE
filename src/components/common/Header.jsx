@@ -1,8 +1,6 @@
-"use client";
+// src/components/layout/Header.jsx
 import { Button, Popover, List, Badge, Dropdown } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { logoutUser } from "../../utils/services/userService";
-import { searchProducts } from "../../services/searchService.js"; // ✅ import hàm search
 import { useUser } from "../../contexts/UserContext.jsx";
 import {
   NotificationOutlined,
@@ -10,6 +8,7 @@ import {
   AppstoreOutlined,
   ShoppingCartOutlined,
   HeartOutlined,
+  BoxPlotOutlined, // ICON GÓI HÀNG – CHUẨN, KHÔNG LỖI
 } from "@ant-design/icons";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -103,14 +102,12 @@ function UserProfileDropdown() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
-  if (!user || !user.username) {
-    return null;
-  }
+  if (!user || !user.username) return null;
 
   return (
     <DropdownMenu
       trigger={
-        <button className="flex items-center space-x-3 px-3 py-2 rounded-lg shadow-sm hover:bg-gray-300 transition-all">
+        <button className="flex items-center space-x-3 px-3 py-2 rounded-lg shadow-sm hover:bg-white/20 transition-all">
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-sm">
             {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}
           </div>
@@ -142,9 +139,10 @@ function UserProfileDropdown() {
           <Settings className="mr-3 h-4 w-4 text-zinc-500" />
           Cài đặt
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        {/* LỊCH SỬ THANH TOÁN */}
+        <DropdownMenuItem onClick={() => navigate("/seller/my-packages")}>
           <CreditCard className="mr-3 h-4 w-4 text-zinc-500" />
-          Gói & thanh toán
+          Lịch sử thanh toán
         </DropdownMenuItem>
       </div>
 
@@ -166,20 +164,17 @@ export default function Header() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
 
-  // ✅ Tìm kiếm trực tiếp qua navigate
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     e.preventDefault();
     const trimmed = keyword.trim();
     if (!trimmed) return;
-
-    // Điều hướng sang trang kết quả
     navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
   };
 
   const notifications = [
-    { id: 1, message: "Đơn hàng #1234 của bạn đã được gửi đi." },
-    { id: 2, message: "Bạn có tin nhắn mới từ đội hỗ trợ." },
-    { id: 3, message: "Tin đăng pin đã được phê duyệt." },
+    { id: 1, message: "Đơn hàng #1234 đã được gửi." },
+    { id: 2, message: "Tin nhắn mới từ hỗ trợ." },
+    { id: 3, message: "Tin đăng đã được duyệt." },
   ];
 
   const notificationContent = (
@@ -203,11 +198,11 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to={"/"} className="text-2xl font-bold text-white">
+          <Link to="/" className="text-2xl font-bold text-white">
             TradeEV
           </Link>
 
-          {/* 🔍 Thanh tìm kiếm */}
+          {/* Thanh tìm kiếm */}
           <form onSubmit={handleSearch} className="flex-1 bg-white rounded-lg mx-10">
             <div className="relative">
               <input
@@ -225,25 +220,23 @@ export default function Header() {
             </div>
           </form>
 
-          {/* 🔔 Menu phải */}
+          {/* MENU PHẢI */}
           <div className="flex items-center space-x-4">
             <CategoryDropdown />
-            <Link to={"/support"} className="text-white font-bold">
-              Hỗ trợ
+            <Link to="/support" className="text-white font-bold">Hỗ trợ</Link>
+
+            {/* XEM CÁC GÓI DỊCH VỤ – DẪN ĐẾN MUA GÓI */}
+            <Link 
+              to="/seller/packages" 
+              className="text-white font-bold hover:underline flex items-center space-x-1"
+            >
+              <BoxPlotOutlined />
+              <span>Gói dịch vụ</span>
             </Link>
 
-            <Popover
-              content={notificationContent}
-              title={<span className="font-semibold text-gray-700">Thông báo</span>}
-              trigger="click"
-              placement="bottomRight"
-            >
+            <Popover content={notificationContent} title="Thông báo" trigger="click" placement="bottomRight">
               <Badge count={notifications.length} size="small" offset={[0, 5]}>
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={<NotificationOutlined style={{ fontSize: "20px", color: "white" }} />}
-                />
+                <Button type="text" shape="circle" icon={<NotificationOutlined style={{ fontSize: "20px", color: "white" }} />} />
               </Badge>
             </Popover>
 
@@ -251,20 +244,12 @@ export default function Header() {
               <>
                 <Link to="/favorites">
                   <Badge count={0} size="small" offset={[0, 5]}>
-                    <Button
-                      type="text"
-                      shape="circle"
-                      icon={<HeartOutlined style={{ fontSize: "20px", color: "white" }} />}
-                    />
+                    <Button type="text" shape="circle" icon={<HeartOutlined style={{ fontSize: "20px", color: "white" }} />} />
                   </Badge>
                 </Link>
                 <Link to="/cart">
                   <Badge count={0} size="small" offset={[0, 5]}>
-                    <Button
-                      type="text"
-                      shape="circle"
-                      icon={<ShoppingCartOutlined style={{ fontSize: "20px", color: "white" }} />}
-                    />
+                    <Button type="text" shape="circle" icon={<ShoppingCartOutlined style={{ fontSize: "20px", color: "white" }} />} />
                   </Badge>
                 </Link>
               </>
@@ -275,8 +260,10 @@ export default function Header() {
                 <UserProfileDropdown />
               </nav>
             ) : (
-              <Link to={"/login"}>
-                <Button className="ml-5 font-bold">Đăng nhập / Đăng ký</Button>
+              <Link to="/login">
+                <Button className="ml-5 font-bold text-white bg-white/20 hover:bg-white/30">
+                  Đăng nhập / Đăng ký
+                </Button>
               </Link>
             )}
           </div>
@@ -308,24 +295,9 @@ export function CategoryDropdown() {
   ];
 
   return (
-    <Dropdown
-      menu={{
-        items,
-        onClick: (e) => {
-          console.log("Danh mục đã chọn:", e.key);
-        },
-      }}
-      placement="bottomLeft"
-      arrow
-    >
-      <Button
-        type="text"
-        className="font-bold"
-        icon={<AppstoreOutlined style={{ color: "white" }} />}
-        style={{ color: "white" }}
-      >
-        Danh mục{" "}
-        <DownOutlined style={{ fontSize: "12px", marginLeft: "4px", color: "white" }} />
+    <Dropdown menu={{ items }} placement="bottomLeft" arrow>
+      <Button type="text" className="font-bold" icon={<AppstoreOutlined style={{ color: "white" }} />} style={{ color: "white" }}>
+        Danh mục <DownOutlined style={{ fontSize: "12px", marginLeft: "4px", color: "white" }} />
       </Button>
     </Dropdown>
   );

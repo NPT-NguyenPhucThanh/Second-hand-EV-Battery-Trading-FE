@@ -9,7 +9,7 @@
 // - Nếu cần auth headers (token), thêm vào fetch (ví dụ: từ localStorage).
 // - Đặt <Toaster /> ở root App nếu chưa, hoặc import và đặt ở đây cho demo.
 
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Heart,
   Star,
@@ -42,6 +42,7 @@ export default function ListingDetail() {
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const nagivate = useNavigate();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -64,13 +65,9 @@ export default function ListingDetail() {
       if (action === "cart") {
         // Thêm vào giỏ hàng thực sự
         await addToCart(id, 1);
-      } else {
+      } else if (action === "buy") {
         // Xử lý các action khác (buy, chat) như cũ
-        alert(
-          `Thực hiện ${
-            action === "buy" ? "mua" : action === "chat" ? "liên hệ" : ""
-          }: ${item.product.productname}`
-        );
+        nagivate(`/checkout/deposit/${id}`); // Giả định chuyển đến trang đặt cọc
       }
     } catch (error) {
       console.error("Error in handleAction:", error);
@@ -81,7 +78,10 @@ export default function ListingDetail() {
   // Function addToCart: Gọi API POST
   const addToCart = async (productId, quantity) => {
     try {
-      const response = await api.post(`api/buyer/cart/add?productId=${productId}&quantity=${quantity}`, {});
+      const response = await api.post(
+        `api/buyer/cart/add?productId=${productId}&quantity=${quantity}`,
+        {}
+      );
 
       toast.success("Đã thêm sản phẩm vào giỏ hàng thành công!", {
         duration: 3000,

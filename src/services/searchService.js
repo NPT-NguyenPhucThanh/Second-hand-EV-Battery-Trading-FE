@@ -12,7 +12,7 @@ export const searchProducts = async (filters) => {
         params.append(key, filters[key]);
       }
     }
-
+ 
     // Gọi API
     const response = await get(`/api/public/products/search?${params.toString()}`);
     return response;

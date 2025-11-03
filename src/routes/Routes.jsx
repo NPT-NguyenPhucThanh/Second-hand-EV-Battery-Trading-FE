@@ -1,4 +1,7 @@
+// src/routes/Routes.jsx
 import { createBrowserRouter } from "react-router-dom";
+
+// === LAYOUTS ===
 import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import NotFound from "../pages/404page/NotFound";
@@ -34,6 +37,7 @@ const ROLES = {
 };
 
 export const routes = [
+  // === ADMIN (STAFF) ROUTES ===
   {
     path: "/staff",
     element: (
@@ -53,6 +57,8 @@ export const routes = [
       { path: "user-packages", element: <UserPackageManagement /> },
     ],
   },
+
+  // === MANAGER ROUTES ===
   {
     path: "/manager",
     element: (
@@ -74,10 +80,8 @@ export const routes = [
       { path: "refund", element: <RefundManagement /> },
     ],
   },
-  {
-    path: "*",
-    element: <NotFound />,
-  },
+
+  // === MEMBER & PUBLIC ROUTES ===
   {
     path: "/",
     element: <MemberRouteGuard />, 
@@ -94,11 +98,12 @@ export const routes = [
       },
     ],
   },
-  {
-    path: "/login",
-    element: <Login />,
-  },
+
+  // === PUBLIC PAGES ===
+  { path: "/login", element: <Login /> },
+  { path: "*", element: <NotFound /> },
 ];
 
+// === TẠO ROUTER ===
 const router = createBrowserRouter(routes);
 export default router;
