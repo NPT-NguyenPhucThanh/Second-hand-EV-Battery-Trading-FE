@@ -1,10 +1,6 @@
-// api.js (Đã cập nhật để hỗ trợ tốt hơn, thêm handling cho FormData ở post, và đảm bảo Authorization ở tất cả methods nếu có token)
-// Không thay đổi lớn, nhưng đảm bảo del và post hoạt động với các API mới.
-
 const API_DOMAIN = "http://localhost:8080/";
 
-const getToken = () => localStorage.getItem("token"); // giả sử bạn lưu JWT ở localStorage
-
+const getToken = () => localStorage.getItem("token"); 
 export const get = async (path) => {
   const token = getToken();
   const response = await fetch(`${API_DOMAIN}${path}`, {
