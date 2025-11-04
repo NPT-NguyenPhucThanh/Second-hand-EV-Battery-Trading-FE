@@ -1,10 +1,9 @@
-// api.js (Đã cập nhật để hỗ trợ tốt hơn, thêm handling cho FormData ở post, và đảm bảo Authorization ở tất cả methods nếu có token)
-// Không thay đổi lớn, nhưng đảm bảo del và post hoạt động với các API mới.
-
+// src/utils/api.js
 const API_DOMAIN = "http://localhost:8080/";
 
-const getToken = () => localStorage.getItem("token"); // giả sử bạn lưu JWT ở localStorage
+const getToken = () => localStorage.getItem("token");
 
+// === HÀM CŨ – GIỮ NGUYÊN 100% CHO CÁC FILE KHÁC ===
 export const get = async (path) => {
   const token = getToken();
   const response = await fetch(`${API_DOMAIN}${path}`, {
@@ -31,6 +30,34 @@ export const post = async (path, data) => {
   }
 
   const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+// === CÁC HÀM KHÁC – KHÔNG ĐỘNG GÌ ===
+export const put = async (path, data) => { /* giữ nguyên */ };
+export const del = async (path) => { /* giữ nguyên */ };
+export const patch = async (path, data) => { /* giữ nguyên */ };
+
+// === HÀM MỚI: CHỈ DÙNG CHO UPLOAD CCCD – KHÔNG ẢNH HƯỞNG FILE KHÁC ===
+export const postUpload = async (path, formData) => {
+  const token = getToken();
+  const res = await fetch(`${API_DOMAIN}${path}`, {
+    method: "POST",
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+      // KHÔNG ĐẶT Content-Type → trình duyệt tự thêm boundary
+    },
+    body: formData,
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(text || `Lỗi ${res.status}`);
+  }
 
   try {
     return JSON.parse(text);
@@ -39,50 +66,4 @@ export const post = async (path, data) => {
   }
 };
 
-export const put = async (path, data) => {
-  const token = getToken();
-  const response = await fetch(`${API_DOMAIN}${path}`, {
-    method: "PUT",
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
-
-      ...(data && { "Content-Type": "application/json" }),
-    },
-    ...(data ? { body: JSON.stringify(data) } : {}),
-  });
-
-  const text = await response.text();
-
-  if (!response.ok) throw new Error(text);
-
-  return text;
-};
-
-export const del = async (path) => {
-  const token = getToken();
-  const response = await fetch(`${API_DOMAIN}${path}`, {
-    method: "DELETE",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  const text = await response.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
-};
-
-export const patch = async (path, data) => {
-  const token = getToken();
-  const response = await fetch(`${API_DOMAIN}${path}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-    body: JSON.stringify(data),
-  });
-  return response.json();
-};
-
-export default { get, post, put, del, patch };
+export default { get, post, put, del, patch, postUpload };

@@ -1,21 +1,18 @@
 // src/pages/profile/UserProfile.jsx
 import React, { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
-import { Button, Card, Spin } from "antd";
+import { Button, Card, Spin, message } from "antd";
 import { get } from "../../../utils/api";
 import BecomeSellerModal from "../components/BecomeSellerModal";
 
 export default function UserProfile() {
-  const { user } = useUser();
+  const { user, updateUser } = useUser(); // DÙNG updateUser CÓ SẴN
   const [editingPhone, setEditingPhone] = useState(false);
   const [editingBirthDate, setEditingBirthDate] = useState(false);
   const [phone, setPhone] = useState(user?.phone || "");
   const [birthDate, setBirthDate] = useState(user?.birthDate || "");
   
-  // Modal
   const [showModal, setShowModal] = useState(false);
-
-  // Sản phẩm
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +23,7 @@ export default function UserProfile() {
     }
     const fetch = async () => {
       try {
-        const res = await get("/api/seller/products");
+        const res = await get("api/seller/products");
         setProducts(res.products || []);
       } catch {
         setProducts([
@@ -155,47 +152,71 @@ export default function UserProfile() {
 
           {/* CHƯA LÀ SELLER */}
           {user.role !== "SELLER" && (
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-10 text-center border-2 border-blue-200">
-              <i className="fa-solid fa-crown text-7xl text-purple-600 mb-6"></i>
-              <p className="text-3xl font-bold mb-4">Bắt đầu bán hàng ngay!</p>
-              <p className="text-lg text-gray-600 mb-8">Chỉ 30 giây để trở thành <strong>Người bán</strong></p>
-              <Button type="primary" size="large" className="h-14 text-xl px-12" onClick={() => setShowModal(true)}>
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-12 text-center border-4 border-indigo-200 shadow-xl">
+              <i className="fa-solid fa-crown text-9xl text-purple-600 mb-8"></i>
+              <p className="text-4xl font-bold mb-6 text-purple-900">Mở shop riêng ngay hôm nay!</p>
+              <p className="text-xl text-gray-700 mb-10">Chỉ 30 giây → Upload CCCD → Chờ duyệt → Bán hàng!</p>
+              <Button 
+                type="primary" 
+                size="large" 
+                className="h-16 text-2xl px-16 rounded-2xl shadow-lg"
+                onClick={() => setShowModal(true)}
+              >
                 Trở thành Người bán
               </Button>
             </div>
           )}
 
-          {/* ĐANG CHỜ DUYỆT */}
+          {/* ĐANG CHỜ DUYỆT – HIỆN NGAY SAU KHI GỬI */}
           {user.role === "SELLER" && user.sellerUpgradeStatus === "PENDING" && (
-            <div className="bg-yellow-50 rounded-2xl p-10 text-center border-2 border-yellow-300">
-              <i className="fa-solid fa-hourglass-half text-7xl text-yellow-600 mb-6"></i>
-              <p className="text-3xl font-bold text-yellow-800">Đang chờ duyệt</p>
-              <p className="text-lg mt-4">Yêu cầu đã gửi. Vui lòng chờ <strong>24h</strong>.</p>
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-3xl p-12 text-center border-4 border-yellow-300 shadow-2xl">
+              <i className="fa-solid fa-clock text-9xl text-yellow-600 mb-8 animate-pulse"></i>
+              <p className="text-5xl font-bold text-yellow-800 mb-6">ĐANG CHỜ DUYỆT</p>
+              <p className="text-2xl text-gray-700 mb-4">
+                Yêu cầu đã gửi thành công!
+              </p>
+              <div className="bg-white rounded-2xl p-6 shadow-inner max-w-2xl mx-auto">
+                <p className="text-lg text-gray-600">
+                  Thời gian duyệt: <span className="text-red-600 font-bold">Trong 24 giờ</span>
+                </p>
+                <p className="text-lg text-gray-600 mt-3">
+                  Email: <strong>{user.email}</strong>
+                </p>
+              </div>
             </div>
           )}
 
-          {/* CHƯA CÓ SP */}
+          {/* ĐÃ DUYỆT – CHƯA CÓ SẢN PHẨM */}
           {user.role === "SELLER" && user.sellerUpgradeStatus === "APPROVED" && products.length === 0 && !loading && (
-            <div className="bg-green-50 rounded-2xl p-10 text-center border-2 border-green-200">
-              <i className="fa-solid fa-box-open text-7xl text-green-600 mb-6"></i>
-              <p className="text-3xl font-bold mb-4">Chưa có sản phẩm</p>
-              <p className="text-lg mb-8">Đăng ngay sản phẩm đầu tiên!</p>
-              <Button type="primary" size="large" className="bg-green-600 h-14 text-xl px-12" onClick={() => window.location.href = "/listings/new"}>
-                Đăng sản phẩm
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-12 text-center border-4 border-green-200">
+              <i className="fa-solid fa-gift text-9xl text-green-600 mb-8"></i>
+              <p className="text-4xl font-bold mb-6 text-green-800">Chào mừng Seller mới!</p>
+              <Button 
+                type="primary" 
+                size="large" 
+                className="bg-green-600 h-16 text-2xl px-16 rounded-2xl"
+                onClick={() => window.location.href = "/listings/new"}
+              >
+                Đăng sản phẩm ngay
               </Button>
             </div>
           )}
 
-          {/* CÓ SP */}
+          {/* CÓ SẢN PHẨM */}
           {products.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {products.map(p => (
-                <Card key={p.productid} hoverable cover={<img src={p.images?.[0] || "https://via.placeholder.com/300"} alt={p.productname} className="h-56 object-cover" />}
-                  onClick={() => window.location.href = `/listings/${p.productid}`} className="shadow-lg hover:shadow-2xl transition">
-                  <div className="p-4">
-                    <h4 className="font-bold text-lg line-clamp-2">{p.productname}</h4>
-                    <p className="text-red-600 font-bold text-2xl mt-2">{p.cost?.toLocaleString()}đ</p>
-                    <span className={`inline-block px-4 py-1 rounded-full text-sm mt-3 ${p.status === "DANG_BAN" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+                <Card
+                  key={p.productid}
+                  hoverable
+                  cover={<img src={p.images?.[0] || "https://via.placeholder.com/400"} alt={p.productname} className="h-64 object-cover rounded-t-3xl" />}
+                  onClick={() => window.location.href = `/listings/${p.productid}`}
+                  className="shadow-2xl hover:shadow-3xl rounded-3xl overflow-hidden transition"
+                >
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold line-clamp-2 mb-3">{p.productname}</h3>
+                    <p className="text-3xl font-bold text-red-600 mb-4">{p.cost?.toLocaleString()}đ</p>
+                    <span className={`px-5 py-2 rounded-full text-sm font-bold ${p.status === "DANG_BAN" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
                       {p.status === "DANG_BAN" ? "Đang bán" : "Tạm ẩn"}
                     </span>
                   </div>
@@ -203,11 +224,26 @@ export default function UserProfile() {
               ))}
             </div>
           )}
-          {loading && <div className="text-center py-16"><Spin size="large" /></div>}
+
+          {loading && <div className="text-center py-20"><Spin size="large" /></div>}
         </div>
 
-        {/* MODAL TRỞ THÀNH SELLER */}
-        <BecomeSellerModal visible={showModal} onClose={() => setShowModal(false)} />
+        {/* MODAL – TỰ ĐỘNG CẬP NHẬT USER */}
+        <BecomeSellerModal
+          visible={showModal}
+          onClose={() => setShowModal(false)}
+          onSuccess={async () => {
+            message.loading("Đang cập nhật trạng thái...", 1.5);
+            try {
+              const res = await get("/api/client/profile");
+              updateUser(res.profile); // CẬP NHẬT CONTEXT NGAY LẬP TỨC
+              message.success("ĐÃ GỬI! Bạn đang chờ duyệt");
+            } catch (err) {
+              console.error(err);
+              message.error("Lỗi cập nhật trạng thái");
+            }
+          }}
+        />
       </main>
     </div>
   );
