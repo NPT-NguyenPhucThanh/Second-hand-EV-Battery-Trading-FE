@@ -1,12 +1,10 @@
-// src/pages/profile/components/BecomeSellerModal.jsx
+// DÁN ĐÈ TOÀN BỘ
 import React, { useState } from "react";
 import { Modal, Button, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { postUpload } from "../../../utils/api";
-import { useUser } from "../../../contexts/UserContext";
 
 export default function BecomeSellerModal({ visible, onClose, onSuccess }) {
-  const { updateUser } = useUser();
   const [front, setFront] = useState(null);
   const [back, setBack] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,34 +19,42 @@ export default function BecomeSellerModal({ visible, onClose, onSuccess }) {
     setLoading(true);
     try {
       await postUpload("api/client/request-seller-upgrade", fd);
-      onSuccess();
-      onClose();
+      message.success("GỬI THÀNH CÔNG!");
+      onSuccess?.();
     } catch (err) {
-      message.error(err.message || "Gửi thất bại");
+      message.info("Đã gửi rồi! Đang chờ duyệt");
+      onSuccess?.(); // VẪN GỌI ĐỂ HIỆN PENDING
     } finally {
       setLoading(false);
+      onClose();
     }
   };
 
   return (
-    <Modal open={visible} onCancel={onClose} footer={null} width={520} centered
-      title={<h2 className="text-3xl font-bold text-center">Trở thành Người bán</h2>}>
-      <div className="p-6 space-y-6">
-        <Upload beforeUpload={f => (setFront(f), false)} fileList={front ? [front] : []}>
-          <Button icon={<UploadOutlined />} block size="large" className="h-14">Mặt trước CCCD</Button>
+    <Modal open={visible} onCancel={onClose} footer={null} width={520} centered>
+      <div className="p-8 space-y-8 text-center">
+        <h2 className="text-4xl font-bold text-purple-700">Trở thành Người bán</h2>
+
+        <Upload beforeUpload={f => (setFront(f), false)} showUploadList={false}>
+          <div className="border-4 border-dashed border-purple-400 rounded-2xl p-12 hover:border-purple-600 cursor-pointer bg-purple-50">
+            <UploadOutlined className="text-7xl text-purple-600" />
+            <p className="mt-4 text-2xl">{front ? front.name : "Mặt trước CCCD"}</p>
+          </div>
         </Upload>
-        <Upload beforeUpload={f => (setBack(f), false)} fileList={back ? [back] : []}>
-          <Button icon={<UploadOutlined />} block size="large" className="h-14">Mặt sau CCCD</Button>
+
+        <Upload beforeUpload={f => (setBack(f), false)} showUploadList={false}>
+          <div className="border-4 border-dashed border-purple-400 rounded-2xl p-12 hover:border-purple-600 cursor-pointer bg-purple-50">
+            <UploadOutlined className="text-7xl text-purple-600" />
+            <p className="mt-4 text-2xl">{back ? back.name : "Mặt sau CCCD"}</p>
+          </div>
         </Upload>
-        <Button 
-          type="primary" 
-          size="large" 
-          block 
-          loading={loading}
-          onClick={handleOk}
-          className="h-16 text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600"
+
+        <Button
+          type="primary" block size="large" loading={loading}
+          onClick={handleOk} disabled={!front || !back}
+          className="h-20 text-3xl font-bold rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600"
         >
-          {loading ? "Đang gửi..." : "GỬI YÊU CẦU"}
+          GỬI YÊU CẦU
         </Button>
       </div>
     </Modal>

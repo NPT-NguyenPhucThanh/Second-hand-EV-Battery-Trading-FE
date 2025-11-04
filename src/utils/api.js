@@ -47,23 +47,16 @@ export const postUpload = async (path, formData) => {
   const token = getToken();
   const res = await fetch(`${API_DOMAIN}${path}`, {
     method: "POST",
+    credentials: "include",
     headers: {
       ...(token && { Authorization: `Bearer ${token}` }),
-      // KHÔNG ĐẶT Content-Type → trình duyệt tự thêm boundary
     },
     body: formData,
   });
 
   const text = await res.text();
-  if (!res.ok) {
-    throw new Error(text || `Lỗi ${res.status}`);
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
+  if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+  return text ? JSON.parse(text) : {};
 };
 
 export default { get, post, put, del, patch, postUpload };

@@ -1,4 +1,3 @@
-// src/pages/profile/UserProfile.jsx
 import React, { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
 import { Button, Card, Spin, message } from "antd";
@@ -6,7 +5,7 @@ import { get } from "../../../utils/api";
 import BecomeSellerModal from "../components/BecomeSellerModal";
 
 export default function UserProfile() {
-  const { user, updateUser } = useUser(); // DÙNG updateUser CÓ SẴN
+  const { user, updateUser } = useUser();
   const [editingPhone, setEditingPhone] = useState(false);
   const [editingBirthDate, setEditingBirthDate] = useState(false);
   const [phone, setPhone] = useState(user?.phone || "");
@@ -16,6 +15,7 @@ export default function UserProfile() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 🟦 Load danh sách sản phẩm nếu là seller
   useEffect(() => {
     if (!user || user.role !== "SELLER") {
       setLoading(false);
@@ -26,16 +26,28 @@ export default function UserProfile() {
         const res = await get("api/seller/products");
         setProducts(res.products || []);
       } catch {
-        setProducts([
-          { productid: 1, productname: "Pin 48V Pro", cost: 12500000, images: [""], status: "DANG_BAN" },
-          { productid: 2, productname: "Sạc 60V", cost: 8900000, images: [""], status: "DANG_BAN" }
-        ]);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
     fetch();
   }, [user]);
+
+  // 🟩 Hàm reload thông tin user sau khi gửi request seller upgrade
+  const reloadUserProfile = async () => {
+    try {
+      const res = await get("api/client/profile");
+      if (res?.profile) {
+        updateUser(res.profile);
+        localStorage.setItem("user", JSON.stringify(res.profile));
+        message.success("Tài khoản đã cập nhật trạng thái mới nhất!");
+      }
+    } catch (err) {
+      console.error("Không thể tải lại user:", err);
+      message.warning("Không thể tải lại thông tin user, thử lại sau.");
+    }
+  };
 
   if (!user) {
     return (
@@ -99,47 +111,77 @@ export default function UserProfile() {
         <h2 className="text-2xl font-semibold text-gray-800 mb-1">Hồ Sơ Của Tôi</h2>
         <p className="text-gray-500 text-sm mb-8">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
 
-        {/* Form cũ */}
+        {/* Form thông tin cơ bản */}
         <div className="flex flex-col md:flex-row gap-10 mb-12">
           <form className="flex-1 space-y-6">
-            <div><label className="block text-gray-600 text-sm mb-1">Tên đăng nhập</label>
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Tên đăng nhập</label>
               <p className="text-gray-800">{user.email}</p>
             </div>
-            <div><label className="block text-gray-600 text-sm mb-1">Tên</label>
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Tên</label>
               <input type="text" defaultValue={user.username || ""} className="w-full border rounded-md p-2" />
             </div>
-            <div><label className="block text-gray-600 text-sm mb-1">Số điện thoại</label>
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Số điện thoại</label>
               {editingPhone ? (
                 <div className="flex gap-2">
                   <input value={phone} onChange={e => setPhone(e.target.value)} className="border rounded p-2 flex-1" />
                   <button type="button" onClick={() => setEditingPhone(false)} className="text-blue-500">Lưu</button>
                 </div>
               ) : (
-                <p className="text-gray-800">{phone || "Chưa cập nhật"} <span onClick={() => setEditingPhone(true)} className="text-blue-500 cursor-pointer hover:underline">Thay Đổi</span></p>
+                <p className="text-gray-800">
+                  {phone || "Chưa cập nhật"}{" "}
+                  <span onClick={() => setEditingPhone(true)} className="text-blue-500 cursor-pointer hover:underline">
+                    Thay Đổi
+                  </span>
+                </p>
               )}
             </div>
-            <div><label className="block text-gray-600 text-sm mb-1">Ngày sinh</label>
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Ngày sinh</label>
               {editingBirthDate ? (
                 <div className="flex gap-2">
-                  <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} className="border rounded p-2" />
+                  <input
+                    type="date"
+                    value={birthDate}
+                    onChange={e => setBirthDate(e.target.value)}
+                    className="border rounded p-2"
+                  />
                   <button type="button" onClick={() => setEditingBirthDate(false)} className="text-blue-500">Lưu</button>
                 </div>
               ) : (
-                <p className="text-gray-800">{birthDate || "**/**/****"} <span onClick={() => setEditingBirthDate(true)} className="text-blue-500 cursor-pointer hover:underline">Thay Đổi</span></p>
+                <p className="text-gray-800">
+                  {birthDate || "**/**/****"}{" "}
+                  <span onClick={() => setEditingBirthDate(true)} className="text-blue-500 cursor-pointer hover:underline">
+                    Thay Đổi
+                  </span>
+                </p>
               )}
             </div>
-            <button type="submit" className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded font-medium">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded font-medium"
+            >
               Lưu
             </button>
           </form>
+
+          {/* Avatar */}
           <div className="flex flex-col items-center">
             <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-300 to-blue-500 flex items-center justify-center overflow-hidden shadow-md">
-              {user.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : <i className="fa-regular fa-user text-white text-5xl"></i>}
+              {user.avatar ? (
+                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <i className="fa-regular fa-user text-white text-5xl"></i>
+              )}
             </div>
             <button className="mt-4 px-4 py-1 border border-blue-400 text-blue-600 rounded text-sm hover:bg-blue-50">
               Chọn Ảnh
             </button>
-            <p className="text-xs text-gray-400 text-center mt-2">Dụng lượng file tối đa 1 MB<br />Định dạng: JPEG, PNG</p>
+            <p className="text-xs text-gray-400 text-center mt-2">
+              Dụng lượng file tối đa 1 MB<br />Định dạng: JPEG, PNG
+            </p>
           </div>
         </div>
 
@@ -150,15 +192,15 @@ export default function UserProfile() {
             Sản phẩm đang bán
           </h3>
 
-          {/* CHƯA LÀ SELLER */}
-          {user.role !== "SELLER" && (
+          {/* 1. CHƯA LÀ SELLER */}
+          {user.role !== "SELLER" && !user.sellerUpgradeStatus && (
             <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-12 text-center border-4 border-indigo-200 shadow-xl">
               <i className="fa-solid fa-crown text-9xl text-purple-600 mb-8"></i>
               <p className="text-4xl font-bold mb-6 text-purple-900">Mở shop riêng ngay hôm nay!</p>
               <p className="text-xl text-gray-700 mb-10">Chỉ 30 giây → Upload CCCD → Chờ duyệt → Bán hàng!</p>
-              <Button 
-                type="primary" 
-                size="large" 
+              <Button
+                type="primary"
+                size="large"
                 className="h-16 text-2xl px-16 rounded-2xl shadow-lg"
                 onClick={() => setShowModal(true)}
               >
@@ -167,14 +209,12 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* ĐANG CHỜ DUYỆT – HIỆN NGAY SAU KHI GỬI */}
-          {user.role === "SELLER" && user.sellerUpgradeStatus === "PENDING" && (
+          {/* 2. PENDING */}
+          {user.sellerUpgradeStatus === "PENDING" && (
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-3xl p-12 text-center border-4 border-yellow-300 shadow-2xl">
               <i className="fa-solid fa-clock text-9xl text-yellow-600 mb-8 animate-pulse"></i>
               <p className="text-5xl font-bold text-yellow-800 mb-6">ĐANG CHỜ DUYỆT</p>
-              <p className="text-2xl text-gray-700 mb-4">
-                Yêu cầu đã gửi thành công!
-              </p>
+              <p className="text-2xl text-gray-700 mb-4">Yêu cầu đã gửi thành công!</p>
               <div className="bg-white rounded-2xl p-6 shadow-inner max-w-2xl mx-auto">
                 <p className="text-lg text-gray-600">
                   Thời gian duyệt: <span className="text-red-600 font-bold">Trong 24 giờ</span>
@@ -186,37 +226,51 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* ĐÃ DUYỆT – CHƯA CÓ SẢN PHẨM */}
+          {/* 3. APPROVED */}
           {user.role === "SELLER" && user.sellerUpgradeStatus === "APPROVED" && products.length === 0 && !loading && (
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-12 text-center border-4 border-green-200">
               <i className="fa-solid fa-gift text-9xl text-green-600 mb-8"></i>
               <p className="text-4xl font-bold mb-6 text-green-800">Chào mừng Seller mới!</p>
-              <Button 
-                type="primary" 
-                size="large" 
+              <Button
+                type="primary"
+                size="large"
                 className="bg-green-600 h-16 text-2xl px-16 rounded-2xl"
-                onClick={() => window.location.href = "/listings/new"}
+                onClick={() => (window.location.href = "/listings/new")}
               >
                 Đăng sản phẩm ngay
               </Button>
             </div>
           )}
 
-          {/* CÓ SẢN PHẨM */}
-          {products.length > 0 && (
+          {/* 4. APPROVED + có sản phẩm */}
+          {user.role === "SELLER" && user.sellerUpgradeStatus === "APPROVED" && products.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {products.map(p => (
+              {products.map((p) => (
                 <Card
                   key={p.productid}
                   hoverable
-                  cover={<img src={p.images?.[0] || "https://via.placeholder.com/400"} alt={p.productname} className="h-64 object-cover rounded-t-3xl" />}
-                  onClick={() => window.location.href = `/listings/${p.productid}`}
+                  cover={
+                    <img
+                      src={p.images?.[0] || "https://via.placeholder.com/400"}
+                      alt={p.productname}
+                      className="h-64 object-cover rounded-t-3xl"
+                    />
+                  }
+                  onClick={() => (window.location.href = `/listings/${p.productid}`)}
                   className="shadow-2xl hover:shadow-3xl rounded-3xl overflow-hidden transition"
                 >
                   <div className="p-6">
                     <h3 className="text-xl font-bold line-clamp-2 mb-3">{p.productname}</h3>
-                    <p className="text-3xl font-bold text-red-600 mb-4">{p.cost?.toLocaleString()}đ</p>
-                    <span className={`px-5 py-2 rounded-full text-sm font-bold ${p.status === "DANG_BAN" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+                    <p className="text-3xl font-bold text-red-600 mb-4">
+                      {p.cost?.toLocaleString()}đ
+                    </p>
+                    <span
+                      className={`px-5 py-2 rounded-full text-sm font-bold ${
+                        p.status === "DANG_BAN"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
                       {p.status === "DANG_BAN" ? "Đang bán" : "Tạm ẩn"}
                     </span>
                   </div>
@@ -225,24 +279,18 @@ export default function UserProfile() {
             </div>
           )}
 
-          {loading && <div className="text-center py-20"><Spin size="large" /></div>}
+          {loading && (
+            <div className="text-center py-20">
+              <Spin size="large" />
+            </div>
+          )}
         </div>
 
-        {/* MODAL – TỰ ĐỘNG CẬP NHẬT USER */}
+        {/* MODAL */}
         <BecomeSellerModal
           visible={showModal}
           onClose={() => setShowModal(false)}
-          onSuccess={async () => {
-            message.loading("Đang cập nhật trạng thái...", 1.5);
-            try {
-              const res = await get("/api/client/profile");
-              updateUser(res.profile); // CẬP NHẬT CONTEXT NGAY LẬP TỨC
-              message.success("ĐÃ GỬI! Bạn đang chờ duyệt");
-            } catch (err) {
-              console.error(err);
-              message.error("Lỗi cập nhật trạng thái");
-            }
-          }}
+          onSuccess={reloadUserProfile}
         />
       </main>
     </div>
