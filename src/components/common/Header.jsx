@@ -8,9 +8,11 @@ import {
   AppstoreOutlined,
   ShoppingCartOutlined,
   HeartOutlined,
+  MessageOutlined,
   BoxPlotOutlined, // ICON GÓI HÀNG – CHUẨN, KHÔNG LỖI
 } from "@ant-design/icons";
 import React, { useState, useEffect, useRef } from "react";
+import { useNotifications } from "../../contexts/NotificationContext.jsx";
 
 /* ----------------------- ICONS ----------------------- */
 const User = (props) => (
@@ -102,6 +104,11 @@ function UserProfileDropdown() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    logout(); // Xóa thông tin đăng nhập
+    navigate("/login"); // Điều hướng về trang login
+  };
+
   if (!user || !user.username) return null;
 
   return (
@@ -149,7 +156,7 @@ function UserProfileDropdown() {
       <DropdownMenuSeparator />
 
       <div className="py-1">
-        <DropdownMenuItem onClick={logout}>
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-3 h-4 w-4 text-zinc-500" />
           Đăng xuất
         </DropdownMenuItem>
@@ -163,6 +170,8 @@ export default function Header() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
+
+  const { totalUnreadMessages } = useNotifications();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -242,6 +251,11 @@ export default function Header() {
 
             {user && (
               <>
+              <Link to="/messages">
+                  <Badge count={totalUnreadMessages} size="small" offset={[0, 5]}> 
+                    <Button type="text" shape="circle" icon={<MessageOutlined style={{ fontSize: "20px", color: "white" }} />} />
+                  </Badge>
+                </Link>
                 <Link to="/favorites">
                   <Badge count={0} size="small" offset={[0, 5]}>
                     <Button type="text" shape="circle" icon={<HeartOutlined style={{ fontSize: "20px", color: "white" }} />} />

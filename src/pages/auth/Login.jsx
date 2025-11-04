@@ -66,6 +66,7 @@ const Login = () => {
           username: response.username,
           email: response.email,
           roles: response.roles,
+          userId: response.userId,
         },
         response.token
       ); // Hoặc login(response) nếu muốn đầy đủ

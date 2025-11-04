@@ -30,6 +30,7 @@ import {
 } from "../../../utils/services/productService";
 import { toast } from "sonner"; // Import sonner cho toast
 import api from "../../../utils/api";
+import ChatModal from "../../chat/components/ChatModal";
 
 function currency(value) {
   return value.toLocaleString("vi-VN") + " ₫";
@@ -42,6 +43,7 @@ export default function ListingDetail() {
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const nagivate = useNavigate();
 
   useEffect(() => {
@@ -68,7 +70,17 @@ export default function ListingDetail() {
       } else if (action === "buy") {
         // Xử lý các action khác (buy, chat) như cũ
         nagivate(`/checkout/deposit/${id}`); // Giả định chuyển đến trang đặt cọc
-      }
+      } else if (action === "chat") {
+        if (item?.seller?.sellerId) {
+          setIsChatModalOpen(true); // Chỉ cần mở modal
+        } else {
+          toast.error("Không tìm thấy thông tin người bán.");
+        }
+        } else {
+          toast.error("Không tìm thấy thông tin người bán.");
+        }
+        // === KẾT THÚC THAY ĐỔI ===
+      
     } catch (error) {
       console.error("Error in handleAction:", error);
       toast.error("Lỗi khi thực hiện hành động. Vui lòng thử lại.");
@@ -430,6 +442,13 @@ export default function ListingDetail() {
           </div>
         </div>
       </div>
+      <ChatModal
+        open={isChatModalOpen}
+        onClose={() => setIsChatModalOpen(false)}
+        sellerId={item?.seller?.sellerId}
+        sellerName={item?.seller?.displayName || item?.seller?.username}
+      />
     </div>
+    
   );
 }

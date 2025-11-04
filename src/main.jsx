@@ -1,5 +1,5 @@
 // src/main.jsx
-
+window.global = window;
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -9,16 +9,19 @@ import { UserProvider } from "./contexts/UserContext.jsx";
 // import { AuthProvider } from "./contexts/AuthContext.jsx"; // 1. XÓA DÒNG NÀY
 import { ThemeProvider } from "./contexts/ThemeContext";
 import ThemeWrapper from "./ThemeWrapper"; 
+import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     {/* <AuthProvider> // 2. XÓA DÒNG NÀY */}
       <UserProvider>
+        <NotificationProvider>
         <ThemeProvider>
           <ThemeWrapper>
             <RouterProvider router={router} />
           </ThemeWrapper>
         </ThemeProvider>
+        </NotificationProvider>
       </UserProvider>
     {/* </AuthProvider> // 3. XÓA DÒNG NÀY */}
   </StrictMode>

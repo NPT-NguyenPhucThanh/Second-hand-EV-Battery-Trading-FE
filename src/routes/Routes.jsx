@@ -5,6 +5,10 @@ import { createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import NotFound from "../pages/404page/NotFound";
+// Import MemberLayout (nó sẽ được dùng bên trong Guard)
+import MemberLayout from "../layouts/MemberLayout"; 
+
+// === PAGES ===
 import Home from "../pages/home/pages/Home";
 import Login from "../pages/auth/Login";
 import ProfilePage from "../pages/profile/ProfilePage";
@@ -12,6 +16,9 @@ import NewPost from "../pages/post/NewPost";
 import Cart from "../pages/cart/pages/CartPage";
 import ListingDetail from "../pages/home/components/ListingDetail";
 import SellerProfile from "../pages/profile/components/SellerProfile";
+import SearchResult from "../pages/home/components/SearchResult";
+
+// === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
 import SellerUpgradePage from "../pages/admin/SellerUpgrade";
 import UserManagement from "../pages/admin/UserManagement";
@@ -23,11 +30,22 @@ import SystemManagement from "../pages/admin/SystemManagement";
 import RevenueManagement from "../pages/admin/RevenueManagement";
 import PostManagement from "../pages/admin/PostManagement";
 import TransactionManagement from "../pages/admin/TransactionManagement";
-import SearchResults from "../pages/home/components/SearchResult";
 import DisputeManagement from "../pages/admin/DisputeManagement";
 import UserPackageManagement from "../pages/admin/UserPackageManagement";
+
+// === GUARDS & ROLES ===
 import MemberRouteGuard from "../components/auth/MemberRouteGuard";
 import AdminRouteGuard from "../components/auth/AdminRouteGuard";
+
+// === CÁC TRANG BỊ THIẾU (THÊM VÀO) ===
+import Deposite from "../pages/checkout/Deposite";
+import BuyPackage from "../components/seller/BuyPackage";
+import PackageDetail from "../components/seller/PackageDetail";
+import MyPackages from "../components/seller/MyPackages";
+import PaymentCheckout from "../components/seller/PaymentCheckout";
+import PaymentResult from "../components/seller/PaymentResult";
+// import ChatPage from "../pages/chat/ChatPage";
+import MessengerPage from "../pages/chat/MessengerPage";
 
 const ROLES = {
   BUYER: "BUYER",
@@ -47,7 +65,7 @@ export const routes = [
       />
     ),
     children: [
-      { index: true, element: <PostManagement /> }, 
+      { index: true, element: <PostManagement /> },
       { path: "user-upgrade", element: <SellerUpgradePage /> },
       { path: "orders", element: <TransactionManagement /> },
       { path: "refund", element: <RefundManagement /> },
@@ -68,7 +86,7 @@ export const routes = [
       />
     ),
     children: [
-      { index: true, element: <Dashboard /> }, 
+      { index: true, element: <Dashboard /> },
       { path: "posts", element: <PostManagement /> },
       { path: "users", element: <UserManagement /> },
       { path: "packages", element: <PackageManagement /> },
@@ -84,18 +102,26 @@ export const routes = [
   // === MEMBER & PUBLIC ROUTES ===
   {
     path: "/",
-    element: <MemberRouteGuard />, 
+    // SỬA LẠI THÀNH MEMBERROUTEGUARD ĐỂ FIX LỖI STAFF LOGIN
+    element: <MemberRouteGuard />,
     children: [
-      { index: true, element: <Home /> }, 
+      { index: true, element: <Home /> },
       { path: "cart", element: <Cart /> },
       { path: "profile", element: <ProfilePage /> },
+      { path: "listings/new", element: <NewPost /> },
       { path: "listings/:id", element: <ListingDetail /> },
-      { path: "search", element: <SearchResults /> },
-      { path: "sellers/:id", element: <SellerProfile /> },
-      {
-        path: "listings/new",
-        element: <NewPost />,
-      },
+      { path: "sellers/:id", element: <SellerProfile /> }, // chưa gắn
+      { path: "search", element: <SearchResult /> },
+      // { path: "chat/:sellerId", element: <ChatPage /> },
+      { path: "messages", element: <MessengerPage /> },
+
+      // === CÁC ROUTE GÓI DỊCH VỤ VÀ THANH TOÁN ===
+      { path: "checkout/deposit/:orderId", element: <Deposite /> },
+      { path: "seller/packages", element: <BuyPackage /> },
+      { path: "seller/packages/:packageid", element: <PackageDetail /> },
+      { path: "seller/my-packages", element: <MyPackages /> },
+      { path: "payment/checkout", element: <PaymentCheckout /> },
+      { path: "payment/result", element: <PaymentResult /> },
     ],
   },
 
