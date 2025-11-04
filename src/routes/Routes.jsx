@@ -6,7 +6,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import NotFound from "../pages/404page/NotFound";
 // Import MemberLayout (nó sẽ được dùng bên trong Guard)
-import MemberLayout from "../layouts/MemberLayout"; 
+import MemberLayout from "../layouts/MemberLayout";
 
 // === PAGES ===
 import Home from "../pages/home/pages/Home";
@@ -17,6 +17,16 @@ import Cart from "../pages/cart/pages/CartPage";
 import ListingDetail from "../pages/home/components/ListingDetail";
 import SellerProfile from "../pages/profile/components/SellerProfile";
 import SearchResult from "../pages/home/components/SearchResult";
+
+//=== CHECKOUT PAGES ===
+import Checkout from "../pages/checkout/Checkout";
+import CheckoutSuccess from "../pages/checkout/CheckoutSuccess";
+import DepositCar from "../pages/checkout/DepositCar";
+import ConfirmPin from "../pages/checkout/ConfirmPin";
+
+//=== VNPAY PAGES ===
+import PayPage from "../pages/vnpay/PayPage";
+import PaymentReturn from "../pages/vnpay/PaymentReturn";
 
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
@@ -38,7 +48,7 @@ import MemberRouteGuard from "../components/auth/MemberRouteGuard";
 import AdminRouteGuard from "../components/auth/AdminRouteGuard";
 
 // === CÁC TRANG BỊ THIẾU (THÊM VÀO) ===
-import Deposite from "../pages/checkout/Deposite";
+
 import BuyPackage from "../components/seller/BuyPackage";
 import PackageDetail from "../components/seller/PackageDetail";
 import MyPackages from "../components/seller/MyPackages";
@@ -116,12 +126,18 @@ export const routes = [
       { path: "messages", element: <MessengerPage /> },
 
       // === CÁC ROUTE GÓI DỊCH VỤ VÀ THANH TOÁN ===
-      { path: "checkout/deposit/:orderId", element: <Deposite /> },
+      { path: "checkout/:productId", element: <Checkout /> },
+      { path: "checkout/success/:orderId", element: <CheckoutSuccess /> },
+      { path: "checkout/deposit/:orderId", element: <DepositCar /> },
+      { path: "checkout/confirm-pin/:orderId", element: <ConfirmPin /> },
       { path: "seller/packages", element: <BuyPackage /> },
       { path: "seller/packages/:packageid", element: <PackageDetail /> },
       { path: "seller/my-packages", element: <MyPackages /> },
       { path: "payment/checkout", element: <PaymentCheckout /> },
       { path: "payment/result", element: <PaymentResult /> },
+      //=== VNPAY ROUTES ===
+      { path: "checkout/pay/:orderId", element: <PayPage /> },
+      { path: "payment/vnpay-return", element: <PaymentReturn /> },
     ],
   },
 
