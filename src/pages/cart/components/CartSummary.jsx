@@ -1,24 +1,21 @@
+// src/components/cart/CartSummary.jsx
 import React from "react";
+import { formatVND } from "../../../utils/format";
 
-/**
- *  CartSummary.jsx
- * Hiển thị tổng tiền và nút Checkout
- * Props:
- *  - total: tổng tiền
- *  - onCheckout: function()
- *
- * 🔧 Sau này gắn API:
- * POST /api/buyer/orders/checkout
- */
 const CartSummary = ({ total, onCheckout }) => {
   return (
-    <div className="mt-6 flex justify-between items-center border-t pt-4">
-      <strong className="text-xl text-gray-900">Total: ${total}</strong>
+    <div className="border-t pt-6">
+      <div className="flex justify-between items-center mb-4">
+        <span className="text-xl font-bold">Tổng cộng:</span>
+        <span className="text-2xl font-bold text-green-600">
+          {formatVND(total)}
+        </span>
+      </div>
       <button
         onClick={onCheckout}
-        className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition"
+        className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition"
       >
-        Checkout
+        Thanh toán ngay
       </button>
     </div>
   );

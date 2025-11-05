@@ -1,64 +1,61 @@
-// CartPage.jsx (Sửa lớn: Sử dụng api.js để gọi API thay vì fetch trực tiếp. Sửa endpoint checkout để khớp mô tả (/api/buyer/checkout thay vì /api/buyer/orders/checkout nếu cần, nhưng giữ nguyên nếu theo code cũ. Ở đây tôi sửa thành /api/buyer/checkout theo mô tả cuối cùng. Thêm import api. Giữ token nếu có.)
-
-import React, { useState, useEffect } from "react";
-import Cart from "../components/Cart.jsx";
-import { toast } from "sonner"; // Import sonner cho toast (cài đặt nếu chưa: npm install sonner)
-import api from "../../../utils/api.js"; // Import api.js (giả định đường dẫn đúng, ví dụ: src/api.js)
+// src/pages/cart/pages/CartPage.jsx
+import React from "react";
+import { useCart } from "../../../hooks/useCart";
+import Cart from "../components/Cart";
+import { Link } from "react-router-dom";
+import { ShoppingCart, ArrowLeft } from "lucide-react";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems, removeFromCart, checkout, loading } = useCart();
 
-  // Fetch cart từ API sử dụng api.get
-  const fetchCart = async () => {
-    try {
-      const data = await api.get("api/buyer/cart");
-      console.log("API Response:", data);
-      setCartItems(data.items || []); // Giả định response có field 'items'
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-      toast.error("Có lỗi khi tải giỏ hàng.");
-    }
-  };
+  // === TÍNH TỔNG (đã +5%) ===
+  const total = cartItems
+    .reduce((sum, item) => sum + item.price * 1.05 * item.quantity, 0)
+    .toFixed(2);
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  // Xóa sản phẩm: Sử dụng api.del rồi refetch
-  const handleRemoveItem = async (id) => {
-    try {
-      await api.del(`api/buyer/cart/remove/${id}`);
-      toast.success("Đã xóa sản phẩm khỏi giỏ hàng.");
-      fetchCart(); // Refetch để cập nhật UI
-    } catch (error) {
-      console.error("Error removing item:", error);
-      toast.error("Có lỗi khi xóa sản phẩm.");
-    }
-  };
-
-  // Thanh toán: Sử dụng api.post rồi xử lý
-  const handleCheckout = async () => {
-    try {
-      await api.post("api/buyer/checkout", { cartItems }); // Sửa endpoint thành /api/buyer/checkout theo mô tả, gửi cart nếu cần
-      toast.success("Thanh toán thành công!");
-      setCartItems([]); // Clear cart sau checkout
-      // Optional: Redirect to order confirmation page
-      // window.location.href = "/orders";
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      toast.error("Có lỗi khi thanh toán.");
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600">Đang tải giỏ hàng...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="pt-20 min-h-screen bg-gray-100 py-8">
-      <main className="container mx-auto">
-        <Cart
-          cartItems={cartItems}
-          onRemoveItem={handleRemoveItem}
-          onCheckout={handleCheckout}
-        />
-      </main>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-16">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="flex items-center justify-between mb-8">
+          <Link to="/" className="flex items-center gap-2 text-blue-600 hover:text-green-600 transition">
+            <ArrowLeft className="w-5 h-5" /> Tiếp tục mua sắm
+          </Link>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+            Giỏ hàng của bạn
+          </h1>
+        </div>
+
+        {cartItems.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+            <ShoppingCart className="w-24 h-24 text-gray-300 mx-auto mb-4" />
+            <p className="text-xl text-gray-600 mb-6">Giỏ hàng trống</p>
+            <Link
+              to="/"
+              className="inline-block bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-xl transform hover:scale-105 transition"
+            >
+              Khám phá sản phẩm
+            </Link>
+          </div>
+        ) : (
+          <Cart
+            cartItems={cartItems}
+            onRemoveItem={removeFromCart}
+            onCheckout={checkout}
+            total={total}
+          />
+        )}
+      </div>
     </div>
   );
 };
