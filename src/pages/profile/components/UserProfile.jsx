@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
-import { Button, Card, Spin, message } from "antd";
+import { Button, Card, Spin, message, Alert } from "antd";
 import { get } from "../../../utils/api";
 import BecomeSellerModal from "../components/BecomeSellerModal";
+import { getSellerUpgradeStatus, getUserProfile, updateUserProfile, changePassword as svcChangePassword } from "../../../utils/services/userService";
 
 export default function UserProfile() {
   const { user, updateUser } = useUser();
@@ -10,10 +11,36 @@ export default function UserProfile() {
   const [editingBirthDate, setEditingBirthDate] = useState(false);
   const [phone, setPhone] = useState(user?.phone || "");
   const [birthDate, setBirthDate] = useState(user?.birthDate || "");
+  const [username, setUsername] = useState(user?.displayname || user?.username || "");
   
   const [showModal, setShowModal] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sellerStatus, setSellerStatus] = useState("");
+  const [viewMode, setViewMode] = useState("profile"); // 'profile' | 'password'
+
+  // Password form states
+  const [oldPass, setOldPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+
+  // Check seller status on mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (user) {
+        try {
+          const result = await getSellerUpgradeStatus();
+          console.log("[UserProfile] Got seller status:", result);
+          if (result?.upgradeStatus) {
+            setSellerStatus(result.upgradeStatus);
+          }
+        } catch (err) {
+          console.error("[UserProfile] Error checking seller status:", err);
+        }
+      }
+    };
+    checkStatus();
+  }, [user]);
 
   // 🟦 Load danh sách sản phẩm nếu là seller
   useEffect(() => {
@@ -37,15 +64,70 @@ export default function UserProfile() {
   // 🟩 Hàm reload thông tin user sau khi gửi request seller upgrade
   const reloadUserProfile = async () => {
     try {
-      const res = await get("api/client/profile");
-      if (res?.profile) {
-        updateUser(res.profile);
-        localStorage.setItem("user", JSON.stringify(res.profile));
+      const res = await getUserProfile();
+      // getUserProfile will normalize and update localStorage; it returns normalized user object
+      if (res) {
+        updateUser(res);
         message.success("Tài khoản đã cập nhật trạng thái mới nhất!");
+        // Sync local form fields
+        setUsername(res.displayname || res.username || "");
+        setPhone(res.phone || "");
+        setBirthDate(res.dateofbirth || res.dateOfBirth || "");
+        setSellerStatus(res.sellerUpgradeStatus || "");
       }
     } catch (err) {
       console.error("Không thể tải lại user:", err);
       message.warning("Không thể tải lại thông tin user, thử lại sau.");
+    }
+  };
+
+  // Cập nhật hồ sơ (displayname, phone, dateofbirth)
+  const handleUpdate = async (e) => {
+    e && e.preventDefault && e.preventDefault();
+    try {
+      const payload = {
+        displayname: username,
+        phone,
+        dateofbirth: birthDate
+      };
+      const res = await updateUserProfile(payload);
+      if (res) {
+        await reloadUserProfile();
+        message.success("Cập nhật hồ sơ thành công");
+      } else {
+        throw new Error("Cập nhật thất bại");
+      }
+    } catch (err) {
+      console.error("Profile update failed:", err);
+      message.error(err.message || "Có lỗi xảy ra khi cập nhật hồ sơ");
+    }
+  };
+
+  // Đổi mật khẩu (stay in same page)
+  const handleChangePassword = async (e) => {
+    e && e.preventDefault && e.preventDefault();
+    if (newPass !== confirmPass) {
+      message.error("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+    if (!newPass || newPass.length < 6) {
+      message.error("Mật khẩu mới phải ít nhất 6 ký tự!");
+      return;
+    }
+    try {
+      const res = await svcChangePassword(oldPass, newPass);
+      if (res?.status === "success" || res === true) {
+        setOldPass("");
+        setNewPass("");
+        setConfirmPass("");
+        message.success("Đổi mật khẩu thành công!");
+        setViewMode("profile");
+      } else {
+        throw new Error(res?.message || "Đổi mật khẩu thất bại");
+      }
+    } catch (err) {
+      console.error("Password change failed:", err);
+      message.error(err.message || "Có lỗi xảy ra khi đổi mật khẩu");
     }
   };
 
@@ -87,7 +169,12 @@ export default function UserProfile() {
             <li className="flex items-center space-x-2 hover:text-blue-500 cursor-pointer">
               <i className="fa-solid fa-location-dot"></i><span>Địa Chỉ</span>
             </li>
-            <li className="flex items-center space-x-2 hover:text-blue-500 cursor-pointer">
+            <li
+              className="flex items-center space-x-2 hover:text-blue-500 cursor-pointer"
+              onClick={() => setViewMode("password")}
+              role="button"
+              tabIndex={0}
+            >
               <i className="fa-solid fa-lock"></i><span>Đổi Mật Khẩu</span>
             </li>
             <li className="flex items-center space-x-2 hover:text-blue-500 cursor-pointer">
@@ -113,59 +200,113 @@ export default function UserProfile() {
 
         {/* Form thông tin cơ bản */}
         <div className="flex flex-col md:flex-row gap-10 mb-12">
-          <form className="flex-1 space-y-6">
-            <div>
-              <label className="block text-gray-600 text-sm mb-1">Tên đăng nhập</label>
-              <p className="text-gray-800">{user.email}</p>
-            </div>
-            <div>
-              <label className="block text-gray-600 text-sm mb-1">Tên</label>
-              <input type="text" defaultValue={user.username || ""} className="w-full border rounded-md p-2" />
-            </div>
-            <div>
-              <label className="block text-gray-600 text-sm mb-1">Số điện thoại</label>
-              {editingPhone ? (
-                <div className="flex gap-2">
-                  <input value={phone} onChange={e => setPhone(e.target.value)} className="border rounded p-2 flex-1" />
-                  <button type="button" onClick={() => setEditingPhone(false)} className="text-blue-500">Lưu</button>
-                </div>
-              ) : (
-                <p className="text-gray-800">
-                  {phone || "Chưa cập nhật"}{" "}
-                  <span onClick={() => setEditingPhone(true)} className="text-blue-500 cursor-pointer hover:underline">
-                    Thay Đổi
-                  </span>
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-gray-600 text-sm mb-1">Ngày sinh</label>
-              {editingBirthDate ? (
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={birthDate}
-                    onChange={e => setBirthDate(e.target.value)}
-                    className="border rounded p-2"
-                  />
-                  <button type="button" onClick={() => setEditingBirthDate(false)} className="text-blue-500">Lưu</button>
-                </div>
-              ) : (
-                <p className="text-gray-800">
-                  {birthDate || "**/**/****"}{" "}
-                  <span onClick={() => setEditingBirthDate(true)} className="text-blue-500 cursor-pointer hover:underline">
-                    Thay Đổi
-                  </span>
-                </p>
-              )}
-            </div>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded font-medium"
-            >
-              Lưu
-            </button>
-          </form>
+          {viewMode === "profile" ? (
+            <form onSubmit={handleUpdate} className="flex-1 space-y-6">
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Tên đăng nhập</label>
+                <p className="text-gray-800">{user.email}</p>
+              </div>
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Tên</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full border rounded-md p-2"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Số điện thoại</label>
+                {editingPhone ? (
+                  <div className="flex gap-2">
+                    <input value={phone} onChange={e => setPhone(e.target.value)} className="border rounded p-2 flex-1" />
+                    <button type="button" onClick={() => setEditingPhone(false)} className="text-blue-500">Lưu</button>
+                  </div>
+                ) : (
+                  <p className="text-gray-800">
+                    {phone || "Chưa cập nhật"}{" "}
+                    <span onClick={() => setEditingPhone(true)} className="text-blue-500 cursor-pointer hover:underline">
+                      Thay Đổi
+                    </span>
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Ngày sinh</label>
+                {editingBirthDate ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={birthDate}
+                      onChange={e => setBirthDate(e.target.value)}
+                      className="border rounded p-2"
+                    />
+                    <button type="button" onClick={() => setEditingBirthDate(false)} className="text-blue-500">Lưu</button>
+                  </div>
+                ) : (
+                  <p className="text-gray-800">
+                    {birthDate || "**/**/****"}{" "}
+                    <span onClick={() => setEditingBirthDate(true)} className="text-blue-500 cursor-pointer hover:underline">
+                      Thay Đổi
+                    </span>
+                  </p>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded font-medium"
+              >
+                Lưu
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleChangePassword} className="flex-1 space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Đổi mật khẩu</h3>
+                <button type="button" className="text-sm text-blue-500" onClick={() => setViewMode("profile")}>Quay lại</button>
+              </div>
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Mật khẩu cũ</label>
+                <input
+                  type="password"
+                  value={oldPass}
+                  onChange={e => setOldPass(e.target.value)}
+                  required
+                  className="w-full border rounded-md p-2"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Mật khẩu mới</label>
+                <input
+                  type="password"
+                  value={newPass}
+                  onChange={e => setNewPass(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full border rounded-md p-2"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Xác nhận mật khẩu</label>
+                <input
+                  type="password"
+                  value={confirmPass}
+                  onChange={e => setConfirmPass(e.target.value)}
+                  required
+                  className="w-full border rounded-md p-2"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-gradient-to-r from-red-400 to-red-600 text-white rounded font-medium"
+                >
+                  Đổi mật khẩu
+                </button>
+                <button type="button" onClick={() => setViewMode("profile")} className="px-6 py-2 border rounded">Hủy</button>
+              </div>
+            </form>
+          )}
 
           {/* Avatar */}
           <div className="flex flex-col items-center">
