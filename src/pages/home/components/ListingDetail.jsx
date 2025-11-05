@@ -28,9 +28,10 @@ import {
   getProductById,
   checkAuth,
 } from "../../../utils/services/productService";
-import { toast } from "sonner"; // Import sonner cho toast
+import { toast } from "sonner"; 
 import api from "../../../utils/api";
 import ChatModal from "../../chat/components/ChatModal";
+import { useUser } from "../../../contexts/UserContext.jsx";
 
 function currency(value) {
   return value.toLocaleString("vi-VN") + " ₫";
@@ -44,6 +45,7 @@ export default function ListingDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const { user: currentUser } = useUser();
   const nagivate = useNavigate();
 
   useEffect(() => {
@@ -62,6 +64,8 @@ export default function ListingDetail() {
     fetchProduct();
   }, [id]);
 
+  const isOwner = currentUser && item?.seller?.sellerId === currentUser.userId;
+
   const handleAction = async (action) => {
     try {
       if (action === "cart") {
@@ -76,11 +80,10 @@ export default function ListingDetail() {
         } else {
           toast.error("Không tìm thấy thông tin người bán.");
         }
-        } else {
-          toast.error("Không tìm thấy thông tin người bán.");
-        }
-        // === KẾT THÚC THAY ĐỔI ===
-      
+      } else {
+        toast.error("Không tìm thấy thông tin người bán.");
+      }
+      // === KẾT THÚC THAY ĐỔI ===
     } catch (error) {
       console.error("Error in handleAction:", error);
       toast.error("Lỗi khi thực hiện hành động. Vui lòng thử lại.");
@@ -343,13 +346,15 @@ export default function ListingDetail() {
                     <ShoppingCart className="w-5 h-5" />
                     Thêm vào giỏ hàng
                   </button>
-                  <button
-                    onClick={() => handleAction("chat")}
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                    Liên hệ ngay
-                  </button>
+                  {!isOwner && (
+                    <button
+                      onClick={() => handleAction("chat")}
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      Liên hệ ngay
+                    </button>
+                  )}
                 </div>
 
                 {/* Stats */}
@@ -449,6 +454,5 @@ export default function ListingDetail() {
         sellerName={item?.seller?.displayName || item?.seller?.username}
       />
     </div>
-    
   );
 }
