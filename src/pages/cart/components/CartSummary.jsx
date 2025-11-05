@@ -1,12 +1,15 @@
 // src/components/cart/CartSummary.jsx
 import React from "react";
+import { formatVND } from "../../../utils/format";
 
 const CartSummary = ({ total, onCheckout }) => {
   return (
     <div className="border-t pt-6">
       <div className="flex justify-between items-center mb-4">
         <span className="text-xl font-bold">Tổng cộng:</span>
-        <span className="text-2xl font-bold text-green-600">${total}</span>
+        <span className="text-2xl font-bold text-green-600">
+          {formatVND(total)}
+        </span>
       </div>
       <button
         onClick={onCheckout}

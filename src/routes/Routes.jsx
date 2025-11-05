@@ -5,7 +5,6 @@ import { createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import NotFound from "../pages/404page/NotFound";
-// Import MemberLayout (nó sẽ được dùng bên trong Guard)
 import MemberLayout from "../layouts/MemberLayout";
 
 // === PAGES ===
@@ -18,15 +17,15 @@ import ListingDetail from "../pages/home/components/ListingDetail";
 import SellerProfile from "../pages/profile/components/SellerProfile";
 import SearchResult from "../pages/home/components/SearchResult";
 
-//=== CHECKOUT PAGES ===
+// === CHECKOUT PAGES ===
 import Checkout from "../pages/checkout/Checkout";
-import CheckoutSuccess from "../pages/checkout/CheckoutSuccess";
-import DepositCar from "../pages/checkout/DepositCar";
-import ConfirmPin from "../pages/checkout/ConfirmPin";
+import CheckoutSuccess from "../pages/checkout/CheckoutSuccess"; // ĐÚNG
+import DepositCar from "../pages/checkout/DepositCar";           // ĐÚNG
+import ConfirmPin from "../pages/checkout/ConfirmPin";           // ĐÚNG
 
-//=== VNPAY PAGES ===
-import PayPage from "../pages/vnpay/PayPage";
-import PaymentReturn from "../pages/vnpay/PaymentReturn";
+// === VNPAY PAGES (TÁCH RIÊNG) ===
+import PaymentCheckout from "../pages/checkout/PaymentCheckout"; // ĐÚNG
+import PaymentResult from "../pages/checkout/PaymentResult";       // ĐÚNG
 
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
@@ -47,15 +46,12 @@ import UserPackageManagement from "../pages/admin/UserPackageManagement";
 import MemberRouteGuard from "../components/auth/MemberRouteGuard";
 import AdminRouteGuard from "../components/auth/AdminRouteGuard";
 
-// === CÁC TRANG BỊ THIẾU (THÊM VÀO) ===
-
+// === SELLER PACKAGE PAGES ===
 import BuyPackage from "../components/seller/BuyPackage";
 import PackageDetail from "../components/seller/PackageDetail";
 import MyPackages from "../components/seller/MyPackages";
-import PaymentCheckout from "../components/seller/PaymentCheckout";
-import PaymentResult from "../components/seller/PaymentResult";
-// import ChatPage from "../pages/chat/ChatPage";
 import MessengerPage from "../pages/chat/MessengerPage";
+import VnpayReturn from "../pages/checkout/VnpayReturn";
 
 const ROLES = {
   BUYER: "BUYER",
@@ -112,7 +108,6 @@ export const routes = [
   // === MEMBER & PUBLIC ROUTES ===
   {
     path: "/",
-    // SỬA LẠI THÀNH MEMBERROUTEGUARD ĐỂ FIX LỖI STAFF LOGIN
     element: <MemberRouteGuard />,
     children: [
       { index: true, element: <Home /> },
@@ -120,24 +115,24 @@ export const routes = [
       { path: "profile", element: <ProfilePage /> },
       { path: "listings/new", element: <NewPost /> },
       { path: "listings/:id", element: <ListingDetail /> },
-      { path: "sellers/:id", element: <SellerProfile /> }, // chưa gắn
+      { path: "sellers/:id", element: <SellerProfile /> },
       { path: "search", element: <SearchResult /> },
-      // { path: "chat/:sellerId", element: <ChatPage /> },
       { path: "messages", element: <MessengerPage /> },
 
-      // === CÁC ROUTE GÓI DỊCH VỤ VÀ THANH TOÁN ===
+      // === CHECKOUT FLOW ===
       { path: "checkout/:productId", element: <Checkout /> },
       { path: "checkout/success/:orderId", element: <CheckoutSuccess /> },
       { path: "checkout/deposit/:orderId", element: <DepositCar /> },
       { path: "checkout/confirm-pin/:orderId", element: <ConfirmPin /> },
+
+      // === VNPAY FLOW ===
+      { path: "checkout/payment", element: <PaymentCheckout /> },
+      { path: "payment/vnpay-return", element: <VnpayReturn /> },
+
+      // === GÓI DỊCH VỤ SELLER ===
       { path: "seller/packages", element: <BuyPackage /> },
       { path: "seller/packages/:packageid", element: <PackageDetail /> },
       { path: "seller/my-packages", element: <MyPackages /> },
-      { path: "payment/checkout", element: <PaymentCheckout /> },
-      { path: "payment/result", element: <PaymentResult /> },
-      //=== VNPAY ROUTES ===
-      { path: "checkout/pay/:orderId", element: <PayPage /> },
-      { path: "payment/vnpay-return", element: <PaymentReturn /> },
     ],
   },
 

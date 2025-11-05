@@ -18,7 +18,7 @@ import { getProductById } from "../../../utils/services/productService";
 import { toast } from "sonner";
 import api from "../../../utils/api";
 import ChatModal from "../../chat/components/ChatModal";
-
+import {useCart} from "../../../hooks/useCart";
 function currency(value) {
   return value.toLocaleString("vi-VN") + " ₫";
 }
@@ -36,7 +36,7 @@ const requireAuth = (action, callback) => {
 export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+const { addToCart: addToCartHook, loading: cartLoading } = useCart();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -73,13 +73,16 @@ export default function ListingDetail() {
 
       // 2. THÊM VÀO GIỎ HÀNG (CHỈ PIN)
       else if (action === "cart") {
-        if (item.product.type !== "Battery") {
-          toast.error("Chỉ sản phẩm pin mới được thêm vào giỏ hàng");
-          return;
-        }
-        if (!requireAuth("thêm vào giỏ hàng")) return;
-        await addToCart(id, 1);
-      }
+      // if (item.product.type !== "Battery") {
+      //   toast.error("Chỉ sản phẩm pin mới được thêm vào giỏ hàng");
+      //   return;
+      // }
+      if (!requireAuth("thêm vào giỏ hàng")) return;
+
+      // DÙNG HOOK THAY VÌ GỌI API TRỰC TIẾP
+      console.log(id, 1)
+      await addToCartHook(id, 1);
+    }
 
       // 3. LIÊN HỆ (CHAT)
       else if (action === "chat") {
@@ -117,21 +120,21 @@ export default function ListingDetail() {
   };
 
   // === API: Thêm vào giỏ hàng ===
-  const addToCart = async (productId, quantity = 1) => {
-    try {
-      await api.post("api/buyer/cart/add", null, {
-        params: { productId, quantity },
-      });
-      toast.success("Đã thêm vào giỏ hàng thành công!");
-    } catch (error) {
-      if (error.response?.status === 401) {
-        toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-        localStorage.removeItem("token");
-      } else {
-        toast.error("Không thể thêm vào giỏ hàng");
-      }
-    }
-  };
+  // const addToCart = async (productId, quantity = 1) => {
+  //   try {
+  //     await api.post("api/buyer/cart/add", null, {
+  //       params: { productId, quantity },
+  //     });
+  //     toast.success("Đã thêm vào giỏ hàng thành công!");
+  //   } catch (error) {
+  //     if (error.response?.status === 401) {
+  //       toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+  //       localStorage.removeItem("token");
+  //     } else {
+  //       toast.error("Không thể thêm vào giỏ hàng");
+  //     }
+  //   }
+  // };
 
   // === LOADING & ERROR UI ===
   if (loading) {

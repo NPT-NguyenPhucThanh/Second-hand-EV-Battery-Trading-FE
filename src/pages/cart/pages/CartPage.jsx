@@ -8,15 +8,10 @@ import { ShoppingCart, ArrowLeft } from "lucide-react";
 const CartPage = () => {
   const { cartItems, removeFromCart, checkout, loading } = useCart();
 
-  // Tính tổng tiền (đã +5%)
-  const calculateTotal = () => {
-    return cartItems
-      .reduce((total, item) => {
-        const priceWithTax = item.price * 1.05;
-        return total + priceWithTax * item.quantity;
-      }, 0)
-      .toFixed(2);
-  };
+  // === TÍNH TỔNG (đã +5%) ===
+  const total = cartItems
+    .reduce((sum, item) => sum + item.price * 1.05 * item.quantity, 0)
+    .toFixed(2);
 
   if (loading) {
     return (
@@ -32,21 +27,15 @@ const CartPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-16">
       <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-blue-600 hover:text-green-600 transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Tiếp tục mua sắm
+          <Link to="/" className="flex items-center gap-2 text-blue-600 hover:text-green-600 transition">
+            <ArrowLeft className="w-5 h-5" /> Tiếp tục mua sắm
           </Link>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
             Giỏ hàng của bạn
           </h1>
         </div>
 
-        {/* Nội dung giỏ hàng */}
         {cartItems.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
             <ShoppingCart className="w-24 h-24 text-gray-300 mx-auto mb-4" />
@@ -63,7 +52,7 @@ const CartPage = () => {
             cartItems={cartItems}
             onRemoveItem={removeFromCart}
             onCheckout={checkout}
-            total={calculateTotal()}
+            total={total}
           />
         )}
       </div>

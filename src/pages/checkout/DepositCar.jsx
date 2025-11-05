@@ -1,4 +1,3 @@
-// src/features/checkout/DepositCar.jsx
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../../utils/api";
@@ -17,63 +16,56 @@ export default function DepositCar() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!form.transactionLocation || !form.appointmentDate) {
-    toast.error("Vui lòng điền đầy đủ thông tin");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    // BƯỚC 1: Lưu thông tin đặt cọc
-    const depositRes = await api.post(
-      `api/buyer/orders/${orderId}/deposit`,
-      null,
-      {
-        params: {
-          transactionLocation: form.transactionLocation,
-          appointmentDate: form.appointmentDate,
-          transferOwnership: form.transferOwnership,
-          changePlate: form.changePlate,
-        },
-      }
-    );
-
-    // Kiểm tra response có nextStep không
-    const nextStep = depositRes.data.nextStep;
-    if (!nextStep || nextStep.endpoint !== "api/payment/create-payment-url") {
-      throw new Error("Không có hướng dẫn thanh toán");
+    e.preventDefault();
+    if (!form.transactionLocation || !form.appointmentDate) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
     }
 
-    // BƯỚC 2: Gọi API tạo URL VNPay
-    const paymentRes = await api.post(
-      nextStep.endpoint,
-      null,
-      {
-        params: nextStep.params, // { orderId, transactionType }
+    setLoading(true);
+    try {
+      // BƯỚC 1: Lưu thông tin đặt cọc
+      const depositRes = await api.post(
+        `/api/buyer/orders/${orderId}/deposit`,
+        null,
+        {
+          params: {
+            transactionLocation: form.transactionLocation,
+            appointmentDate: form.appointmentDate,
+            transferOwnership: form.transferOwnership,
+            changePlate: form.changePlate,
+          },
+        }
+      );
+
+      const nextStep = depositRes.data.nextStep;
+      if (!nextStep || nextStep.endpoint !== "api/payment/create-payment-url") {
+        throw new Error("Không có bước thanh toán");
       }
-    );
 
-    const paymentUrl = paymentRes.data.paymentUrl;
-    if (!paymentUrl) {
-      throw new Error("Không nhận được URL thanh toán");
+      // BƯỚC 2: Gọi API tạo URL VNPay
+      const paymentRes = await api.post(nextStep.endpoint, null, {
+        params: nextStep.params,
+      });
+
+      const { paymentUrl, transactionCode } = paymentRes.data;
+      if (!paymentUrl) throw new Error("Không nhận được URL thanh toán");
+
+      // LƯU transactionCode
+      localStorage.setItem("pendingTransaction", transactionCode);
+
+      toast.success("Chuyển sang VNPay...");
+      window.location.href = paymentUrl;
+    } catch (err) {
+      console.error("Lỗi đặt cọc:", err);
+      toast.error(
+        err.response?.data?.message ||
+        err.message ||
+        "Lỗi xử lý đặt cọc"
+      );
+      setLoading(false);
     }
-
-    // Redirect sang VNPay
-    window.location.href = paymentUrl;
-
-  } catch (err) {
-    console.error(err);
-    toast.error(
-      err.response?.data?.message || 
-      err.message || 
-      "Lỗi xử lý đặt cọc"
-    );
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-12">
@@ -149,7 +141,7 @@ export default function DepositCar() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            Sau khi thanh toán, bạn sẽ nhận biên lai và lịch hẹn giao dịch.
+            Sau khi thanh toán, bạn sẽ được chuyển sang VNPay để xác nhận.
           </div>
         </div>
       </div>

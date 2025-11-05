@@ -7,16 +7,21 @@ export default function CheckoutSuccess() {
   const { orderId } = useParams();
   const navigate = useNavigate();
 
-  // src/features/checkout/CheckoutSuccess.jsx
   useEffect(() => {
     const raw = localStorage.getItem(`order_${orderId}`);
-    if (!raw) return navigate("/");
+    if (!raw) {
+      toast.error("Không tìm thấy thông tin đơn hàng");
+      return navigate("/");
+    }
 
     const { type } = JSON.parse(raw);
 
+    // Xe điện: Đặt cọc 10% → Form → VNPay
     if (type === "Car EV") {
       navigate(`/checkout/deposit/${orderId}`, { replace: true });
-    } else if (type === "Battery") {
+    }
+    // Pin: Thanh toán 100% → VNPay → Chờ ship
+    else if (type === "Battery") {
       navigate(`/checkout/confirm-pin/${orderId}`, { replace: true });
     } else {
       toast.error("Loại sản phẩm không hỗ trợ");
