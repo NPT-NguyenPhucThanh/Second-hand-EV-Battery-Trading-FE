@@ -19,10 +19,10 @@ import SearchResult from "../pages/home/components/SearchResult";
 
 // === CHECKOUT PAGES ===
 import Checkout from "../pages/checkout/Checkout";
-import DepositCar from "../pages/checkout/DepositCar";           
+import DepositCar from "../pages/checkout/DepositCar"; 
+import DepositSuccess from "../pages/checkout/DepositSuccess";          
 import ConfirmPin from "../pages/checkout/ConfirmPin";           
 
-// === VNPAY PAGES (TÁCH RIÊNG) ===
 //import PaymentCheckout from "../pages/checkout/PaymentCheckout";
 import PaymentResult from "../pages/checkout/PaymentResult";       
 
@@ -136,6 +136,7 @@ export const routes = [
       { path: "checkout/:productId", element: <Checkout /> },
      
       { path: "checkout/deposit/:orderId", element: <DepositCar /> },
+      { path: "deposit-success", element: <DepositSuccess /> },
       { path: "checkout/confirm-pin/:orderId", element: <ConfirmPin /> },
 
       // VNPAY (Private)

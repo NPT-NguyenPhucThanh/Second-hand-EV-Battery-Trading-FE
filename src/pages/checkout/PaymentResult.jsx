@@ -63,7 +63,7 @@ export default function PaymentResult() {
             <Button
               type="primary"
               size="large"
-              onClick={() => navigate(result.transaction?.type === "Car EV" ? `/checkout/deposit/${result.transaction.orderId}` : "/orders")}
+              onClick={() => navigate(result.transaction?.type === "Car EV" ? `/checkout/deposit/${result.transaction.orderId}` : "/profile")}
               className="w-full h-12"
             >
               {isSuccess && result.transaction?.type === "Car EV" ? "Xem lịch hẹn" : "Xem đơn hàng"}
