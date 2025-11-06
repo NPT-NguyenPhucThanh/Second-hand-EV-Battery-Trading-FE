@@ -17,32 +17,41 @@ export default function ConfirmPin() {
     }
 
     setLoading(true);
+  
     try {
-      const res = await api.post("api/payment/create-payment-url", null, {
-        params: {
-          orderId: Number(orderId),
-          transactionType: "FINAL_PAYMENT", // hoặc "BATTERY_PAYMENT"
-        },
+      //  Gọi API tạo payment URL
+      const response = await api.post("api/payment/create-payment-url", {
+        orderId: Number(orderId),
+        transactionType: "FINAL_PAYMENT",
+      });
+      
+      console.log("Payment response:", response);
+      
+      //  Destructure response
+      const { paymentUrl, transactionCode, status, message } = response;
+
+      //  Kiểm tra status và paymentUrl
+      if (status !== "success" || !paymentUrl) {
+        throw new Error(message || "Không nhận được URL thanh toán");
+      }
+      //  Lưu transactionCode để xử lý callback từ VNPay
+      localStorage.setItem("pendingTransaction", transactionCode);
+      localStorage.setItem("pendingOrderId", orderId);
+
+      //  Hiển thị thông báo
+      toast.success("Đang chuyển đến VNPay...", {
+        duration: 2000,
       });
 
-      // LẤY paymentUrl TỪ RESPONSE
-      const { paymentUrl, transactionCode, message } = res.data;
-
-      if (!paymentUrl) {
-        throw new Error("Không nhận được URL thanh toán");
-      }
-
-      // LƯU transactionCode (dùng cho vnpay-return)
-      localStorage.setItem("pendingTransaction", transactionCode);
-
-      toast.success("Đang chuyển đến VNPay...");
-      window.location.href = paymentUrl;
+      //  Đợi 1 giây rồi redirect (cho user kịp đọc thông báo)
+      setTimeout(() => {
+        window.location.href = paymentUrl;
+      }, 1000);
+      
     } catch (err) {
-      console.error("Lỗi thanh toán pin:", err);
+      console.error("Lỗi thanh toán:", err);
       toast.error(
-        err.response?.data?.message ||
-        err.message ||
-        "Không thể tạo thanh toán. Vui lòng thử lại."
+        err.message || "Không thể tạo thanh toán. Vui lòng thử lại."
       );
       setLoading(false);
     }
@@ -57,14 +66,17 @@ export default function ConfirmPin() {
             Thanh toán 100% – Pin
           </h1>
           <p className="text-gray-600 mb-8">
-            Mã đơn: <strong>#{orderId}</strong><br />
-            <span className="text-sm">Sau thanh toán, pin sẽ được giao trong 3-5 ngày</span>
+            Mã đơn: <strong>#{orderId}</strong>
+            <br />
+            <span className="text-sm">
+              Sau thanh toán, pin sẽ được giao trong 3-5 ngày
+            </span>
           </p>
 
           <button
             onClick={handlePayment}
             disabled={loading}
-            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-12 py-5 rounded-xl font-bold text-xl hover:shadow-2xl transform hover:scale-105 transition flex items-center gap-3 mx-auto disabled:opacity-50"
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-12 py-5 rounded-xl font-bold text-xl hover:shadow-2xl transform hover:scale-105 transition flex items-center gap-3 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CreditCard className="w-8 h-8" />
             {loading ? "Đang xử lý..." : "Thanh toán qua VNPay"}
@@ -72,7 +84,8 @@ export default function ConfirmPin() {
 
           <button
             onClick={() => navigate("/")}
-            className="mt-6 text-blue-600 hover:text-green-500 font-medium"
+            disabled={loading}
+            className="mt-6 text-blue-600 hover:text-green-500 font-medium disabled:opacity-50"
           >
             ← Về trang chủ
           </button>

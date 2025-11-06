@@ -19,12 +19,12 @@ import SearchResult from "../pages/home/components/SearchResult";
 
 // === CHECKOUT PAGES ===
 import Checkout from "../pages/checkout/Checkout";
-import CheckoutSuccess from "../pages/checkout/CheckoutSuccess"; // ĐÚNG
+
 import DepositCar from "../pages/checkout/DepositCar";           // ĐÚNG
 import ConfirmPin from "../pages/checkout/ConfirmPin";           // ĐÚNG
 
 // === VNPAY PAGES (TÁCH RIÊNG) ===
-import PaymentCheckout from "../pages/checkout/PaymentCheckout"; // ĐÚNG
+import DepositSuccess from "../pages/checkout/DepositSuccess";
 import PaymentResult from "../pages/checkout/PaymentResult";       // ĐÚNG
 
 // === ADMIN PAGES ===
@@ -121,13 +121,13 @@ export const routes = [
 
       // === CHECKOUT FLOW ===
       { path: "checkout/:productId", element: <Checkout /> },
-      { path: "checkout/success/:orderId", element: <CheckoutSuccess /> },
+     
       { path: "checkout/deposit/:orderId", element: <DepositCar /> },
       { path: "checkout/confirm-pin/:orderId", element: <ConfirmPin /> },
 
       // === VNPAY FLOW ===
-      { path: "checkout/payment", element: <PaymentCheckout /> },
-      { path: "payment/vnpay-return", element: <VnpayReturn /> },
+      {path: "/deposit-success", element: <DepositSuccess />},
+      { path: "checkout/vnpay-return", element: <VnpayReturn /> },
 
       // === GÓI DỊCH VỤ SELLER ===
       { path: "seller/packages", element: <BuyPackage /> },
