@@ -14,7 +14,7 @@ export const createPaymentUrl = async (orderId, transactionType) => {
       null,
       { orderId, transactionType }
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Lỗi tạo payment URL:", error);
     throw error;

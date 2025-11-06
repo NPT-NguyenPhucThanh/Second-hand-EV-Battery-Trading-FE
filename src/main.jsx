@@ -11,7 +11,7 @@ import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // <StrictMode>
     <UserProvider>
       <NotificationProvider>
         <ThemeProvider>
@@ -33,5 +33,5 @@ createRoot(document.getElementById("root")).render(
         </ThemeProvider>
       </NotificationProvider>
     </UserProvider>
-  </StrictMode>
+  // </StrictMode>
 );

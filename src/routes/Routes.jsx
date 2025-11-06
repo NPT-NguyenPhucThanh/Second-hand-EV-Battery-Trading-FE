@@ -25,6 +25,8 @@ import ConfirmPin from "../pages/checkout/ConfirmPin";
 
 //import PaymentCheckout from "../pages/checkout/PaymentCheckout";
 import PaymentResult from "../pages/checkout/PaymentResult";
+import PaymentReturnPage from "../pages/payment/PaymentReturnPage";   
+import PayPage from "../pages/vnpay/PayPage";    
 
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
@@ -113,9 +115,9 @@ export const routes = [
     children: [
       { index: true, element: <Home /> },
       { path: "listings/:id", element: <ListingDetail /> },
-      { path: "sellers/:id", element: <SellerProfile /> },
-      { path: "search", element: <SearchResult /> },
-      { path: "seller/:sellerId", element: <SellerProfile /> },
+      { path: "sellers/:id", element: <SellerProfile /> }, 
+      { path: "search", element: <SearchResult /> }, 
+      { path: "/payment-return", element: <PaymentReturnPage /> },
       { path: "payment/vnpay-return", element: <VnpayReturn /> },
     ],
   },
@@ -141,7 +143,8 @@ export const routes = [
 
       // VNPAY (Private)
       //{ path: "checkout/payment", element: <PaymentCheckout /> },
-      { path: "payment/result", element: <PaymentResult /> },
+      { path: "checkout/final-payment/:orderId", element: <PayPage /> },
+      { path: "payment/result", element: <PaymentResult /> }, 
 
       // GÓI DỊCH VỤ SELLER (Private)
       { path: "seller/packages", element: <BuyPackage /> },

@@ -1,13 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
+import { useNavigate } from "react-router-dom"; 
+import api from "../../../utils/api"; 
+import { Tag, Button, Spin, Empty } from "antd"; 
+
+const currency = (value) => {
+  if (value === null || value === undefined) return "0 ₫";
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
+};
+
+const OrderStatusTag = ({ status }) => {
+  let color = "default";
+  if (status === "DA_DUYET") color = "cyan";
+  if (status === "DA_HOAN_TAT") color = "success";
+  if (status === "CHO_DUYET" || status === "CHO_DAT_COC") color = "processing";
+  if (status === "BI_TU_CHOI" || status === "DA_HUY" || status === "THAT_BAI") color = "error";
+  if (status === "TRANH_CHAP") color = "warning";
+  
+  return <Tag color={color}>{status}</Tag>;
+};
 
 export default function ProfilePage() {
   const { user } = useUser();
+  const navigate = useNavigate();
 
   const [editingPhone, setEditingPhone] = useState(false);
   const [editingBirthDate, setEditingBirthDate] = useState(false);
   const [phone, setPhone] = useState(user?.phone || "");
   const [birthDate, setBirthDate] = useState(user?.birthDate || "");
+
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [errorOrders, setErrorOrders] = useState(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user) return;
+      setLoadingOrders(true);
+      try {
+        const response = await api.get("api/buyer/orders");
+        if (response.status === "success") {
+          const sortedOrders = (response.orders || []).sort(
+            (a, b) => new Date(b.createdat) - new Date(a.createdat)
+          );
+          setOrders(sortedOrders);
+        } else {
+          setErrorOrders(response.message || "Không thể tải đơn hàng.");
+        }
+      } catch (err) {
+        setErrorOrders(err.message || "Lỗi kết nối.");
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+    fetchOrders();
+  }, [user]);
 
   if (!user) {
     return (
@@ -26,6 +76,10 @@ export default function ProfilePage() {
       </div>
     );
   }
+
+  const handleFinalPayment = (orderId) => {
+    navigate(`/checkout/final-payment/${orderId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -209,6 +263,77 @@ export default function ProfilePage() {
             </p>
           </div>
         </div>
+
+
+              {/* --- 8. Add Order History Section --- */}
+        <hr className="my-10" />
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Lịch Sử Đơn Hàng</h2>
+          {loadingOrders ? (
+            <div className="text-center">
+              <Spin size="large" />
+              <p>Đang tải lịch sử đơn hàng...</p>
+            </div>
+          ) : errorOrders ? (
+            <Empty description={`Không thể tải đơn hàng: ${errorOrders}`} />
+          ) : orders.length === 0 ? (
+            <Empty description="Bạn chưa có đơn hàng nào." />
+          ) : (
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <div key={order.orderid} className="border rounded-lg p-4 flex justify-between items-center">
+                  <div>
+                    <p className="font-bold">Đơn hàng #{order.orderid}</p>
+                    <p className="text-sm text-gray-600">Ngày đặt: {new Date(order.createdat).toLocaleDateString("vi-VN")}</p>
+                    <p className="font-semibold">Tổng tiền: {currency(order.totalfinal)}</p>
+                  </div>
+                  <div className="text-right">
+                    <OrderStatusTag status={order.status} />
+                    
+                    {/* NÚT THANH TOÁN 90% */}
+                    {order.status === "DA_DUYET" && (
+                      <Button
+                        type="primary"
+                        onClick={() => handleFinalPayment(order.orderid)}
+                        style={{ marginTop: '8px' }}
+                      >
+                        Thanh toán 90% còn lại
+                      </Button>
+                    )}
+
+                    {/* NÚT THANH TOÁN LẠI (NẾU 90% THẤT BẠI) */}
+                    {order.status === "THAT_BAI" && order.paymentmethod === "VNPAY" && (
+                       <Button
+                        danger
+                        type="primary"
+                        onClick={() => handleFinalPayment(order.orderid)}
+                        style={{ marginTop: '8px' }}
+                      >
+                        Thanh toán lại
+                      </Button>
+                    )}
+                    
+                     {/* NÚT THANH TOÁN LẠI (NẾU ĐẶT CỌC 10% THẤT BẠI) */}
+                    {order.status === "THAT_BAI" && order.paymentmethod === "VNPAY" && (
+                       <Button
+                        danger
+                        type="primary"
+                        onClick={() => navigate(`/checkout/deposit/${order.orderid}`)}
+                        style={{ marginTop: '8px' }}
+                      >
+                        Đặt cọc lại 10%
+                      </Button>
+                    )}
+
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* ---------------------------------- */}
+
+
       </main>
     </div>
   );

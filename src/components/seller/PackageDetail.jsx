@@ -1,7 +1,7 @@
 // src/components/seller/PackageDetail.jsx
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Spin, Alert, Button } from "antd";
+import { Spin, Alert, Button, message } from "antd"; // Import 'message'
 import { usePackages } from "../../services/packageService";
 import { 
   CheckCircleFilled, 
@@ -9,6 +9,12 @@ import {
   ClockCircleOutlined, 
   DollarOutlined 
 } from "@ant-design/icons";
+
+// === START: IMPORT THÊM ===
+import { toast } from "sonner";
+import api from "../../utils/api"; // Import wrapper API
+import { createPaymentUrl } from "../../utils/services/paymentService"; // Import service thanh toán
+// === END: IMPORT THÊM ===
 
 const BatteryIcon = ({ className }) => (
   <svg
@@ -35,6 +41,10 @@ export default function PackageDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // === START: THÊM STATE LOADING CHO NÚT MUA ===
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // === END: THÊM STATE ===
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -48,6 +58,73 @@ export default function PackageDetail() {
     };
     load();
   }, [packageid, getPackageById]);
+
+  // === START: HÀM XỬ LÝ MUA GÓI (SỬA LẠI API ĐÚNG) ===
+  const handlePurchase = async () => {
+    if (!pkg) return;
+
+    setIsSubmitting(true);
+    const loadingToast = toast.loading("Đang tạo đơn hàng, vui lòng chờ...");
+
+    try {
+      // BƯỚC 1: Gọi API tạo đơn hàng (SỬ DỤNG API "PURCHASE" MỚI ĐÚNG)
+      const orderResponse = await api.post(
+        "api/seller/packages/purchase", 
+        { packageId: pkg.packageid } // Gửi packageId trong body
+      );
+
+      if (orderResponse.status !== "success") {
+        // Lỗi này xảy ra khi backend từ chối (ví dụ: đã có gói)
+        throw new Error(orderResponse.message || "Không thể tạo đơn hàng");
+      }
+
+      const orderId = orderResponse.orderId;
+      if (!orderId) {
+        throw new Error("Không nhận được Order ID từ máy chủ.");
+      }
+
+      toast.loading("Đang tạo link thanh toán...", { id: loadingToast });
+
+      // BƯỚC 2: Gọi API tạo URL thanh toán (theo PaymentController.java)
+      const paymentResponse = await createPaymentUrl(
+        orderId, 
+        "PACKAGE_PURCHASE" // Loại giao dịch
+      );
+
+      if (paymentResponse.status !== "success") {
+        throw new Error(paymentResponse.message || "Không thể tạo link thanh toán");
+      }
+
+      const { paymentUrl, transactionCode } = paymentResponse;
+
+      // BƯỚC 3: Lưu thông tin và chuyển hướng
+      localStorage.setItem("pendingTransaction", transactionCode);
+      localStorage.setItem("pendingOrderId", orderId);
+
+      toast.success("Đang chuyển hướng đến cổng thanh toán...", { id: loadingToast });
+      
+      // Chuyển hướng người dùng sang trang VNPay
+      setTimeout(() => {
+        window.location.href = paymentUrl;
+      }, 1500);
+
+    } catch (err) {
+      console.error("Lỗi khi mua gói:", err);
+      let errorMessage = "Mua gói thất bại. Vui lòng thử lại.";
+      try {
+        // Cố gắng parse lỗi JSON từ server (nếu có)
+        const errorJson = JSON.parse(err.message);
+        errorMessage = errorJson.message || errorMessage;
+      } catch (e) {
+        // Nếu không phải JSON, dùng message gốc
+        errorMessage = err.message || errorMessage;
+      }
+      
+      toast.error(errorMessage, { id: loadingToast, duration: 5000 });
+      setIsSubmitting(false); // Mở lại nút nếu lỗi
+    }
+  };
+  // === END: HÀM XỬ LÝ MUA GÓI ===
 
   if (loading) return <div className="flex justify-center items-center min-h-screen pt-20"><Spin size="large" /></div>;
   if (error) return <Alert message="Lỗi" description={error} type="error" showIcon className="max-w-2xl mx-auto mt-20" />;
@@ -104,16 +181,18 @@ export default function PackageDetail() {
                   <p className="text-2xl font-bold text-green-600 mt-2">{limit}</p>
                 </div>
 
-                {/* NÚT MUA NGAY → TỰ ĐỘNG HIỆN QR */}
+                {/* === START: CẬP NHẬT NÚT MUA GÓI === */}
                 <Button
                   type="primary"
                   size="large"
-                  onClick={() => navigate(`/payment/checkout?packageid=${pkg.packageid}`)}
+                  onClick={handlePurchase} // SỬA: GỌI HÀM MỚI
                   className="w-full h-14 text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-emerald-600 hover:to-green-600 shadow-lg"
-                  disabled={pkg.isActive}
+                  disabled={pkg.isActive || isSubmitting} // SỬA: THÊM isSubmitting
+                  loading={isSubmitting} // SỬA: THÊM loading state
                 >
-                  {pkg.isActive ? "ĐÃ KÍCH HOẠT" : "MUA NGAY"}
+                  {pkg.isActive ? "ĐÃ KÍCH HOẠT" : (isSubmitting ? "Đang xử lý..." : "MUA NGAY")}
                 </Button>
+                {/* === END: CẬP NHẬT NÚT MUA GÓI === */}
               </div>
 
               <div className="space-y-8">
