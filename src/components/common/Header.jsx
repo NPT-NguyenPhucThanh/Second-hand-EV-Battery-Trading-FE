@@ -106,7 +106,7 @@ function UserProfileDropdown() {
 
   const handleLogout = () => {
     logout(); // Xóa thông tin đăng nhập
-    navigate("/login"); // Điều hướng về trang login
+    navigate("/"); // Điều hướng về trang login
   };
 
   if (!user || !user.username) return null;

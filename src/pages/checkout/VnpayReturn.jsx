@@ -30,7 +30,7 @@ export default function VNPayReturn() {
 
           // Chuyển đến trang thành công sau 2 giây
           setTimeout(() => {
-            navigate(`/order-success/${orderId}`);
+           navigate(`/payment/result?vnp_TxnRef=${transactionCode}`);
           }, 2000);
         } else {
           // ❌ Thanh toán thất bại

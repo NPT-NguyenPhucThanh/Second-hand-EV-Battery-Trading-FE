@@ -28,14 +28,21 @@ export const NotificationProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    // Tải lần đầu khi xác thực
-    fetchUnreadCount();
-    
-    // Tự động kiểm tra tin nhắn mới mỗi 30 giây
-    const interval = setInterval(fetchUnreadCount, 30000); 
+    // Chỉ chạy khi isAuthenticated là true
+    if (isAuthenticated) {
+      // Tải lần đầu khi xác thực
+      fetchUnreadCount();
+      
+      // Tự động kiểm tra tin nhắn mới mỗi 30 giây
+      const interval = setInterval(fetchUnreadCount, 30000); 
 
-    return () => clearInterval(interval); // Dọn dẹp khi unmount
-  }, [fetchUnreadCount]);
+      // Dọn dẹp khi unmount HOẶC khi isAuthenticated thay đổi
+      return () => clearInterval(interval);
+    } else {
+      // Nếu không đăng nhập (vừa logout), đảm bảo count là 0
+      setTotalUnreadMessages(0);
+    }
+  }, [fetchUnreadCount, isAuthenticated]); // <-- THÊM isAuthenticated VÀO ĐÂY
 
   const value = {
     totalUnreadMessages,
