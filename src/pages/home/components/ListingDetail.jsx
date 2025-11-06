@@ -1,4 +1,3 @@
-// src/features/home/components/ListingDetail.jsx
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Heart,
@@ -20,6 +19,7 @@ import { useUser } from "../../../contexts/UserContext.jsx";
 import { getProductById } from "../../../utils/services/productService";
 import api from "../../../utils/api";
 import { useCart } from "../../../hooks/useCart";
+
 function currency(value) {
   return value.toLocaleString("vi-VN") + " ₫";
 }
@@ -36,7 +36,7 @@ const requireAuth = (action, callback) => {
 
 export default function ListingDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // ← CHỈ 1 DÒNG
   const { addToCart: addToCartHook, loading: cartLoading } = useCart();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,6 @@ export default function ListingDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const { user: currentUser } = useUser();
-  const nagivate = useNavigate();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -61,6 +60,7 @@ export default function ListingDetail() {
       }
     };
     fetchProduct();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
   const isOwner = currentUser && item?.seller?.sellerId === currentUser.userId;
@@ -75,17 +75,16 @@ export default function ListingDetail() {
         });
       }
 
-      // 2. THÊM VÀO GIỎ HÀNG (CHỈ PIN)
+      // 2. THÊM VÀO GIỎ HÀNG
       else if (action === "cart") {
-        // if (item.product.type !== "Battery") {
-        //   toast.error("Chỉ sản phẩm pin mới được thêm vào giỏ hàng");
-        //   return;
-        // }
         if (!requireAuth("thêm vào giỏ hàng")) return;
 
-        // DÙNG HOOK THAY VÌ GỌI API TRỰC TIẾP
-        console.log(id, 1);
-        await addToCartHook(id, 1);
+        try {
+          await addToCartHook(id, 1);
+          toast.success("Đã thêm vào giỏ hàng thành công!");
+        } catch (err) {
+          toast.error("Không thể thêm vào giỏ hàng. Vui lòng thử lại.");
+        }
       }
 
       // 3. LIÊN HỆ (CHAT)
@@ -103,42 +102,22 @@ export default function ListingDetail() {
         if (!requireAuth("lưu sản phẩm")) return;
         setIsFavorite(!isFavorite);
         toast.success(isFavorite ? "Đã bỏ lưu" : "Đã lưu sản phẩm!");
-        // TODO: Gọi API lưu yêu thích ở đây nếu cần
       }
 
-      // 5. XEM ẢNH CHI TIẾT (thumbnail)
+      // 5. XEM ẢNH CHI TIẾT
       else if (action === "viewImage") {
-        if (!requireAuth("xem ảnh chi tiết")) return;
         setSelectedImage(action.index);
       }
 
-      // 6. XEM HỒ SƠ NGƯỜI BÁN
+      // 6. XEM HỒ SƠ NGƯỜI BÁN → BỎ requireAuth
       else if (action === "viewSeller") {
-        if (!requireAuth("xem hồ sơ người bán")) return;
-        navigate(`/sellers/${item.seller.sellerId}`);
+        navigate(`/seller/${item.seller.sellerId}`); // ← ĐÚNG ĐƯỜNG DẪN
       }
     } catch (error) {
       console.error("Error in handleAction:", error);
       toast.error("Đã có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
-
-  // === API: Thêm vào giỏ hàng ===
-  // const addToCart = async (productId, quantity = 1) => {
-  //   try {
-  //     await api.post("api/buyer/cart/add", null, {
-  //       params: { productId, quantity },
-  //     });
-  //     toast.success("Đã thêm vào giỏ hàng thành công!");
-  //   } catch (error) {
-  //     if (error.response?.status === 401) {
-  //       toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-  //       localStorage.removeItem("token");
-  //     } else {
-  //       toast.error("Không thể thêm vào giỏ hàng");
-  //     }
-  //   }
-  // };
 
   // === LOADING & ERROR UI ===
   if (loading) {
@@ -173,7 +152,7 @@ export default function ListingDetail() {
 
   // === RENDER CHÍNH ===
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-8">
+    <div className="pt-20 min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-8">
       <div className="container mx-auto px-4">
         {/* Breadcrumb */}
         <Link
@@ -371,9 +350,10 @@ export default function ListingDetail() {
                     <button
                       onClick={() => handleAction("cart")}
                       className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl transform hover:scale-105 transition"
+                      disabled={cartLoading}
                     >
                       <ShoppingCart className="w-5 h-5" />
-                      Thêm vào giỏ hàng
+                      {cartLoading ? "Đang thêm..." : "Thêm vào giỏ hàng"}
                     </button>
                   )}
 
@@ -421,7 +401,7 @@ export default function ListingDetail() {
                 </h3>
                 <button
                   onClick={() => handleAction("viewSeller")}
-                  className="w-full text-left flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl mb-6 group"
+                  className="w-full text-left flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl mb-6 group hover:shadow-md transition"
                 >
                   <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold text-2xl flex items-center justify-center group-hover:scale-110 transition">
                     {item.seller.displayName[0].toUpperCase()}

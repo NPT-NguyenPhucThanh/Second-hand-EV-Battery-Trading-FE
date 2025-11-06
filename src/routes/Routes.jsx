@@ -115,7 +115,7 @@ export const routes = [
       { path: "listings/:id", element: <ListingDetail /> },
       { path: "sellers/:id", element: <SellerProfile /> },
       { path: "search", element: <SearchResult /> },
-
+      { path: "seller/:sellerId", element: <SellerProfile /> },
       { path: "payment/vnpay-return", element: <VnpayReturn /> },
     ],
   },

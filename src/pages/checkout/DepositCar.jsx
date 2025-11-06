@@ -20,60 +20,84 @@ export default function DepositCar() {
   // ✅ Helper: Convert datetime-local to backend format
   const formatDateTimeForBackend = (datetimeLocal) => {
     if (!datetimeLocal) return "";
-    
+
     // Input: "2025-11-12T15:00"
     // Output: "2025-11-12 15:00:00"
     const date = new Date(datetimeLocal);
-    
+
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = '00';
-    
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = "00";
+
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!formData.transactionLocation || !formData.appointmentDate) {
-    toast.error("Vui lòng điền đầy đủ thông tin");
-    return;
-  }
+    if (!formData.transactionLocation || !formData.appointmentDate) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
 
-  setLoading(true);
+    if (!orderId) {
+      toast.error("Thiếu mã đơn hàng");
+      return;
+    }
 
-  try {
-    const formattedDate = formatDateTimeForBackend(formData.appointmentDate);
+    setLoading(true);
 
-    const response = await api.post(
-      `api/buyer/orders/${orderId}/deposit`,
-      null,
-      {
+    try {
+      // --- BƯỚC 1: LƯU THÔNG TIN ĐẶT CỌC (Như file cũ) ---
+      const formattedDate = formatDateTimeForBackend(formData.appointmentDate);
+
+      const depositData = {
         transactionLocation: formData.transactionLocation,
         appointmentDate: formattedDate,
         transferOwnership: formData.transferOwnership,
         changePlate: formData.changePlate,
+      };
+
+      // ✅ SỬA LỖI: 'depositData' phải là tham số thứ 2 (body)
+      await api.post(
+        `api/buyer/orders/${orderId}/deposit`,
+        depositData
+      );
+
+      toast.success("Thông tin đã được lưu! Đang tạo thanh toán...");
+
+      // --- BƯỚC 2: TẠO VÀ CHUYỂN HƯỚNG THANH TOÁN (Logic từ ConfirmPin.jsx) ---
+      const params = new URLSearchParams({
+        orderId: Number(orderId),
+        // ✅ THAY ĐỔI: Sử dụng loại giao dịch cho đặt cọc
+        transactionType: "DEPOSIT_PAYMENT", 
+      });
+      const pathWithParams = `api/payment/create-payment-url?${params.toString()}`;
+      
+      const res = await api.post(pathWithParams, null);
+      const { paymentUrl, transactionCode, message } = res;
+
+      if (!paymentUrl) {
+        throw new Error(message || "Không nhận được URL thanh toán");
       }
-    );
+      localStorage.setItem("pendingTransaction", transactionCode);
 
-    console.log("Deposit response:", response);
+      toast.success("Đang chuyển đến VNPay...");
+      window.location.href = paymentUrl;
 
-    toast.success("Thông tin đã được lưu!");
-
-    // CHUYỂN QUA TRANG TRUNG GIAN + TRUYỀN TOÀN BỘ RESPONSE
-    navigate("/deposit-success", {
-      state: { depositResponse: response }, // Truyền toàn bộ response
-    });
-
-  } catch (err) {
-    console.error("Lỗi đặt cọc:", err);
-    toast.error(err.message || "Không thể đặt cọc. Vui lòng thử lại.");
-    setLoading(false);
-  }
-};
+      // Không cần 'navigate' nữa vì đã chuyển trang bằng 'window.location.href'
+      
+    } catch (err) {
+      console.error("Lỗi đặt cọc hoặc tạo thanh toán:", err);
+      toast.error(
+        err.message || "Không thể xử lý. Vui lòng thử lại."
+      );
+      setLoading(false); // Rất quan trọng: reset loading khi có lỗi
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-12">
@@ -160,7 +184,7 @@ export default function DepositCar() {
             <div className="flex gap-4 mt-8">
               <button
                 type="button"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(-1)} // Dùng navigate(-1) để quay lại trang trước
                 disabled={loading}
                 className="flex-1 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
@@ -172,7 +196,7 @@ export default function DepositCar() {
                 className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <CreditCard className="w-5 h-5" />
-                {loading ? "Đang xử lý..." : "Xác nhận đặt cọc"}
+                {loading ? "Đang xử lý..." : "Xác nhận & Thanh toán cọc"}
               </button>
             </div>
           </form>
