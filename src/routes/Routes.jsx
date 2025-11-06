@@ -106,42 +106,54 @@ export const routes = [
     ],
   },
 
-  // === MEMBER & PUBLIC ROUTES ===
+  // === A. PUBLIC-FACING ROUTES (Sử dụng MemberLayout trực tiếp) ===
+  // Những trang này ai cũng xem được và có Header/Footer.
   {
     path: "/",
-    element: <MemberRouteGuard />,
+    element: <MemberLayout />, 
     children: [
-      { index: true, element: <Home /> },
+      { index: true, element: <Home /> }, 
+      { path: "listings/:id", element: <ListingDetail /> },
+      { path: "sellers/:id", element: <SellerProfile /> }, 
+      { path: "search", element: <SearchResult /> }, 
+      
+      { path: "payment/vnpay-return", element: <VnpayReturn /> },
+    ],
+  },
+
+  // === B. PRIVATE MEMBER ROUTES (Sử dụng MemberRouteGuard) ===
+  // Những trang này yêu cầu đăng nhập VÀ cũng dùng MemberLayout (do Guard trả về).
+  {
+    path: "/", // <-- Vẫn dùng root path
+    element: <MemberRouteGuard />, 
+    children: [
+      // Tất cả các trang riêng tư đặt ở đây
       { path: "cart", element: <Cart /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "listings/new", element: <NewPost /> },
-      { path: "listings/:id", element: <ListingDetail /> },
-      { path: "sellers/:id", element: <SellerProfile /> },
-      { path: "search", element: <SearchResult /> },
       { path: "messages", element: <MessengerPage /> },
 
-      // === CHECKOUT FLOW ===
+      // CHECKOUT FLOW (Private)
       { path: "checkout/:productId", element: <Checkout /> },
       { path: "checkout/success/:orderId", element: <CheckoutSuccess /> },
       { path: "checkout/deposit/:orderId", element: <DepositCar /> },
       { path: "checkout/confirm-pin/:orderId", element: <ConfirmPin /> },
 
-      // === VNPAY FLOW ===
+      // VNPAY (Private)
       { path: "checkout/payment", element: <PaymentCheckout /> },
-      { path: "payment/vnpay-return", element: <VnpayReturn /> },
+      { path: "payment/result", element: <PaymentResult /> }, 
 
-      // === GÓI DỊCH VỤ SELLER ===
+      // GÓI DỊCH VỤ SELLER (Private)
       { path: "seller/packages", element: <BuyPackage /> },
       { path: "seller/packages/:packageid", element: <PackageDetail /> },
       { path: "seller/my-packages", element: <MyPackages /> },
-    ],
+    ]
   },
 
-  // === PUBLIC PAGES ===
+  // === C. CÁC TRANG PUBLIC KHÔNG CẦN LAYOUT (Login, NotFound) ===
   { path: "/login", element: <Login /> },
   { path: "*", element: <NotFound /> },
 ];
 
-// === TẠO ROUTER ===
 const router = createBrowserRouter(routes);
 export default router;
