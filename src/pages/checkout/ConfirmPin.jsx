@@ -10,7 +10,7 @@ export default function ConfirmPin() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const handlePayment = async () => {
+const handlePayment = async () => {
     if (!orderId) {
       toast.error("Thiếu mã đơn hàng");
       return;
@@ -18,21 +18,17 @@ export default function ConfirmPin() {
 
     setLoading(true);
     try {
-      const res = await api.post("api/payment/create-payment-url", null, {
-        params: {
-          orderId: Number(orderId),
-          transactionType: "FINAL_PAYMENT", // hoặc "BATTERY_PAYMENT"
-        },
+      const params = new URLSearchParams({
+        orderId: Number(orderId),
+        transactionType: "BATTERY_PAYMENT",
       });
-
-      // LẤY paymentUrl TỪ RESPONSE
-      const { paymentUrl, transactionCode, message } = res.data;
+      const pathWithParams = `api/payment/create-payment-url?${params.toString()}`;
+      const res = await api.post(pathWithParams, null);
+      const { paymentUrl, transactionCode, message } = res;
 
       if (!paymentUrl) {
-        throw new Error("Không nhận được URL thanh toán");
+        throw new Error(message || "Không nhận được URL thanh toán");
       }
-
-      // LƯU transactionCode (dùng cho vnpay-return)
       localStorage.setItem("pendingTransaction", transactionCode);
 
       toast.success("Đang chuyển đến VNPay...");
