@@ -19,13 +19,13 @@ import SearchResult from "../pages/home/components/SearchResult";
 
 // === CHECKOUT PAGES ===
 import Checkout from "../pages/checkout/Checkout";
-import CheckoutSuccess from "../pages/checkout/CheckoutSuccess"; 
+
 import DepositCar from "../pages/checkout/DepositCar";           
 import ConfirmPin from "../pages/checkout/ConfirmPin";           
 
 // === VNPAY PAGES (TÁCH RIÊNG) ===
-import PaymentCheckout from "../pages/checkout/PaymentCheckout";
-import PaymentResult from "../pages/checkout/PaymentResult";       
+// import PaymentCheckout from "../pages/checkout/PaymentCheckout";
+// import PaymentResult from "../pages/checkout/PaymentResult";       
 
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
@@ -127,7 +127,7 @@ export const routes = [
       { path: "checkout/confirm-pin/:orderId", element: <ConfirmPin /> },
 
       // === VNPAY FLOW ===
-      {path: "/deposit-success", element: <DepositSuccess />},
+      // {path: "/deposit-success", element: <DepositSuccess />},
       { path: "checkout/vnpay-return", element: <VnpayReturn /> },
 
       // === GÓI DỊCH VỤ SELLER ===
