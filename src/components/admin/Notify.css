@@ -1,6 +1,6 @@
 .notify-dropdown {
     box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.88);
-    background-color: var(--bg-primary);
+    /* background-color: var(--bg-primary); */
     border-radius: 5px;
     overflow: hidden;
     min-width: 250px;
@@ -63,7 +63,6 @@
     color: #999;
 }
 
-/* Thêm vào cuối file Notify.css */
 .notify__item {
     display: flex;
     align-items: flex-start;

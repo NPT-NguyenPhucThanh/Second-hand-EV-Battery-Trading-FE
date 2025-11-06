@@ -10,14 +10,17 @@ const MemberRouteGuard = () => {
     return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
   }
 
-  if (isAuthenticated) {
-    if (user.roles.includes("STAFF")) {
-      return <Navigate to="/staff" replace />;
-    }
-    if (user.roles.includes("MANAGER")) {
-      return <Navigate to="/manager" replace />;
-    }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
+
+  if (user.roles.includes("STAFF")) {
+    return <Navigate to="/staff" replace />;
+  }
+  if (user.roles.includes("MANAGER")) {
+    return <Navigate to="/manager" replace />;
+  }
+
   return <MemberLayout />;
 };
 

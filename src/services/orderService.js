@@ -12,8 +12,8 @@ export const getOrdersByStatus = async (status) => {
 };
 
 export const approveOrder = async (orderId, payload) => {
-  const response = await post(`api/staff/orders/${orderId}/approve`, payload);
-  return response; // Bỏ đi phép so sánh "=== 'Order processed'"
+    const response = await post(`api/staff/orders/${orderId}/approve`, payload);
+    return response;
 };
 export const getOrderDetails = async (orderId) => {
   // Giả sử backend có API này cho staff

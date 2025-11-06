@@ -1,4 +1,3 @@
-// src/components/common/ThemeToggle.jsx
 import React from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { Button } from "antd";
@@ -13,7 +12,7 @@ export default function ThemeToggle() {
       shape="circle"
       onClick={toggleTheme}
       icon={theme === "light" ? <MoonOutlined /> : <SunOutlined />}
-      style={{ color: "var(--text-primary)" }}
+      style={{ color: "var(--admin-text-primary)", fontSize: '20px'}}
     />
   );
 }

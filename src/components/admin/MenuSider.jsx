@@ -26,11 +26,6 @@ export default function MenuSider() {
   };
 
   const items = [
-     {
-      label: <Link to="/staff">Quản lý bài đăng</Link>,
-      icon: <FileTextOutlined />,
-      key: "/staff",
-    },
     {
       label: (
         <Link to="/staff/user-upgrade">Duyệt Seller</Link>
@@ -47,6 +42,11 @@ export default function MenuSider() {
       label: <Link to="/staff/user-packages">Quản lý gói User</Link>,
       icon: <SolutionOutlined />, 
       key: "/staff/user-packages",
+    },
+         {
+      label: <Link to="/staff/post">Quản lý bài đăng</Link>,
+      icon: <FileTextOutlined />,
+      key: "/staff/post",
     },
     {
       label: <Link to="/staff/warehouse/pending">Chờ nhập kho</Link>,
@@ -80,5 +80,5 @@ export default function MenuSider() {
     },
   ];
 
-  return <Menu mode="inline" items={items} selectedKeys={[selectedKey]}  />;
+  return <Menu mode="inline" items={items} selectedKeys={[selectedKey]} />;
 }

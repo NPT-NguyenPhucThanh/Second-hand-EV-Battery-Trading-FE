@@ -14,11 +14,12 @@ import {
   Phone,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getProductById } from "../../../utils/services/productService";
 import { toast } from "sonner";
-import api from "../../../utils/api";
 import ChatModal from "../../chat/components/ChatModal";
-import {useCart} from "../../../hooks/useCart";
+import { useUser } from "../../../contexts/UserContext.jsx";
+import { getProductById } from "../../../utils/services/productService";
+import api from "../../../utils/api";
+import { useCart } from "../../../hooks/useCart";
 function currency(value) {
   return value.toLocaleString("vi-VN") + " ₫";
 }
@@ -36,13 +37,15 @@ const requireAuth = (action, callback) => {
 export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-const { addToCart: addToCartHook, loading: cartLoading } = useCart();
+  const { addToCart: addToCartHook, loading: cartLoading } = useCart();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const { user: currentUser } = useUser();
+  const nagivate = useNavigate();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -60,7 +63,8 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
     fetchProduct();
   }, [id]);
 
-  // === HÀNH ĐỘNG CHÍNH ===
+  const isOwner = currentUser && item?.seller?.sellerId === currentUser.userId;
+
   const handleAction = async (action) => {
     try {
       // 1. MUA NGAY
@@ -73,16 +77,16 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
 
       // 2. THÊM VÀO GIỎ HÀNG (CHỈ PIN)
       else if (action === "cart") {
-      // if (item.product.type !== "Battery") {
-      //   toast.error("Chỉ sản phẩm pin mới được thêm vào giỏ hàng");
-      //   return;
-      // }
-      if (!requireAuth("thêm vào giỏ hàng")) return;
+        // if (item.product.type !== "Battery") {
+        //   toast.error("Chỉ sản phẩm pin mới được thêm vào giỏ hàng");
+        //   return;
+        // }
+        if (!requireAuth("thêm vào giỏ hàng")) return;
 
-      // DÙNG HOOK THAY VÌ GỌI API TRỰC TIẾP
-      console.log(id, 1)
-      await addToCartHook(id, 1);
-    }
+        // DÙNG HOOK THAY VÌ GỌI API TRỰC TIẾP
+        console.log(id, 1);
+        await addToCartHook(id, 1);
+      }
 
       // 3. LIÊN HỆ (CHAT)
       else if (action === "chat") {
@@ -176,7 +180,9 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
           to="/"
           className="inline-flex items-center text-blue-600 hover:text-green-500 text-sm mb-6 font-medium transition group"
         >
-          <span className="transform group-hover:-translate-x-1 transition">Back</span>
+          <span className="transform group-hover:-translate-x-1 transition">
+            Back
+          </span>
           <span className="ml-2">Quay lại trang chủ</span>
         </Link>
 
@@ -187,7 +193,10 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="relative group">
                 <img
-                  src={item.product.images[selectedImage] || "/placeholder-image.jpg"}
+                  src={
+                    item.product.images[selectedImage] ||
+                    "/placeholder-image.jpg"
+                  }
                   alt={item.product.productname}
                   className="w-full h-96 object-cover group-hover:scale-105 transition duration-500"
                 />
@@ -210,7 +219,9 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
                   className="absolute right-4 top-4 bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:scale-110 transition"
                 >
                   <Heart
-                    className={`w-6 h-6 transition ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"}`}
+                    className={`w-6 h-6 transition ${
+                      isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
+                    }`}
                   />
                 </button>
               </div>
@@ -221,14 +232,20 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
                   {item.product.images.map((img, idx) => (
                     <button
                       key={idx}
-                      onClick={() => handleAction({ action: "viewImage", index: idx })}
+                      onClick={() =>
+                        handleAction({ action: "viewImage", index: idx })
+                      }
                       className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition ${
                         selectedImage === idx
                           ? "border-blue-500 shadow-lg scale-110"
                           : "border-gray-200 hover:border-blue-300"
                       }`}
                     >
-                      <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={img}
+                        alt={`Thumb ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -245,7 +262,9 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
                   <Shield className="w-6 h-6 text-blue-600 mt-1" />
                   <div>
                     <p className="font-semibold text-gray-800 mb-1">Mô tả</p>
-                    <p className="text-gray-600">{item.product.description || "Không có mô tả."}</p>
+                    <p className="text-gray-600">
+                      {item.product.description || "Không có mô tả."}
+                    </p>
                   </div>
                 </div>
 
@@ -253,11 +272,21 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
                   <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl">
                     <Award className="w-6 h-6 text-green-600 mt-1" />
                     <div>
-                      <p className="font-semibold text-gray-800 mb-1">Thông tin</p>
+                      <p className="font-semibold text-gray-800 mb-1">
+                        Thông tin
+                      </p>
                       <p className="text-gray-600">
                         {item.product.type === "Car EV"
-                          ? `${item.product.brandInfo.brand} ${item.product.brandInfo.year} - Biển số: ${item.product.brandInfo.licensePlate || "N/A"}`
-                          : `${item.product.brandInfo.brand} - Dung lượng: ${item.product.brandInfo.capacity} - Tình trạng: ${item.product.brandInfo.condition || "N/A"}`}
+                          ? `${item.product.brandInfo.brand} ${
+                              item.product.brandInfo.year
+                            } - Biển số: ${
+                              item.product.brandInfo.licensePlate || "N/A"
+                            }`
+                          : `${item.product.brandInfo.brand} - Dung lượng: ${
+                              item.product.brandInfo.capacity
+                            } - Tình trạng: ${
+                              item.product.brandInfo.condition || "N/A"
+                            }`}
                       </p>
                     </div>
                   </div>
@@ -274,24 +303,34 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
               {item.feedbacks.length > 0 ? (
                 <ul className="space-y-4">
                   {item.feedbacks.map((review, i) => (
-                    <li key={i} className="p-5 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-100">
+                    <li
+                      key={i}
+                      className="p-5 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-100"
+                    >
                       <div className="flex justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold flex items-center justify-center">
                             {review.buyer.buyerName[0].toUpperCase()}
                           </div>
-                          <span className="font-semibold">{review.buyer.buyerName}</span>
+                          <span className="font-semibold">
+                            {review.buyer.buyerName}
+                          </span>
                         </div>
                         <div className="flex gap-1">
                           {[...Array(review.rating)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                            <Star
+                              key={i}
+                              className="w-4 h-4 text-yellow-400 fill-current"
+                            />
                           ))}
                           {[...Array(5 - review.rating)].map((_, i) => (
                             <Star key={i} className="w-4 h-4 text-gray-300" />
                           ))}
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-2">{review.comment || "Không có bình luận."}</p>
+                      <p className="text-gray-700 mb-2">
+                        {review.comment || "Không có bình luận."}
+                      </p>
                       <p className="text-xs text-gray-500">
                         {new Date(review.createdAt).toLocaleDateString("vi-VN")}
                       </p>
@@ -338,13 +377,15 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
                     </button>
                   )}
 
-                  <button
-                    onClick={() => handleAction("chat")}
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl transform hover:scale-105 transition"
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                    Liên hệ ngay
-                  </button>
+                  {!isOwner && (
+                    <button
+                      onClick={() => handleAction("chat")}
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      Liên hệ ngay
+                    </button>
+                  )}
                 </div>
 
                 {/* Thống kê */}
@@ -352,15 +393,21 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
                   <div className="text-center">
                     <div className="flex items-center gap-1 text-yellow-500 mb-1">
                       <Star className="w-5 h-5 fill-current" />
-                      <span className="font-bold text-lg">{item.averageRating.toFixed(1)}</span>
+                      <span className="font-bold text-lg">
+                        {item.averageRating.toFixed(1)}
+                      </span>
                     </div>
-                    <p className="text-gray-500">{item.totalReviews} đánh giá</p>
+                    <p className="text-gray-500">
+                      {item.totalReviews} đánh giá
+                    </p>
                   </div>
                   <div className="w-px h-12 bg-gray-200"></div>
                   <div className="text-center">
                     <div className="flex items-center gap-1 text-blue-600 mb-1">
                       <Eye className="w-5 h-5" />
-                      <span className="font-bold text-lg">{item.viewCount}</span>
+                      <span className="font-bold text-lg">
+                        {item.viewCount}
+                      </span>
                     </div>
                     <p className="text-gray-500">Lượt xem</p>
                   </div>
@@ -385,8 +432,12 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
                     </p>
                     <div className="flex items-center gap-1 text-yellow-500 text-sm">
                       <Star className="w-4 h-4 fill-current" />
-                      <span className="font-semibold">{item.averageRating.toFixed(1)}</span>
-                      <span className="text-gray-500">({item.totalReviews})</span>
+                      <span className="font-semibold">
+                        {item.averageRating.toFixed(1)}
+                      </span>
+                      <span className="text-gray-500">
+                        ({item.totalReviews})
+                      </span>
                     </div>
                   </div>
                 </button>
@@ -423,8 +474,6 @@ const { addToCart: addToCartHook, loading: cartLoading } = useCart();
           </div>
         </div>
       </div>
-
-      {/* Chat Modal */}
       <ChatModal
         open={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}

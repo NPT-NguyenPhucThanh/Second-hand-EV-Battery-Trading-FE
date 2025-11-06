@@ -16,6 +16,7 @@ export default function SellerUpgradePage() {
   }
   return (
     <>
+    <h2>Duyệt nâng cấp Seller</h2>
       <TableSellerUpgrade sellerUpgrade={sellerUpgrade} onReload={handleReload} />
     </>
   )

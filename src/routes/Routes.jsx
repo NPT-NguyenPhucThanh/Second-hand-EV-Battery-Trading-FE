@@ -19,13 +19,13 @@ import SearchResult from "../pages/home/components/SearchResult";
 
 // === CHECKOUT PAGES ===
 import Checkout from "../pages/checkout/Checkout";
-
-import DepositCar from "../pages/checkout/DepositCar";           // ĐÚNG
-import ConfirmPin from "../pages/checkout/ConfirmPin";           // ĐÚNG
+import CheckoutSuccess from "../pages/checkout/CheckoutSuccess"; 
+import DepositCar from "../pages/checkout/DepositCar";           
+import ConfirmPin from "../pages/checkout/ConfirmPin";           
 
 // === VNPAY PAGES (TÁCH RIÊNG) ===
-import DepositSuccess from "../pages/checkout/DepositSuccess";
-import PaymentResult from "../pages/checkout/PaymentResult";       // ĐÚNG
+import PaymentCheckout from "../pages/checkout/PaymentCheckout";
+import PaymentResult from "../pages/checkout/PaymentResult";       
 
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
@@ -71,8 +71,9 @@ export const routes = [
       />
     ),
     children: [
-      { index: true, element: <PostManagement /> },
+      { index: true, element: <SellerUpgradePage /> },
       { path: "user-upgrade", element: <SellerUpgradePage /> },
+      { path: "post", element: <PostManagement /> },
       { path: "orders", element: <TransactionManagement /> },
       { path: "refund", element: <RefundManagement /> },
       { path: "users", element: <UserManagement /> },

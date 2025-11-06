@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import loginpic from "../../assets/images/loginpic.png";
 import bgimg from "../../assets/images/bgimg.png";
 import { registerUser, loginUser } from "../../utils/services/userService";
@@ -20,7 +20,7 @@ const Login = () => {
   const [error, setError] = useState({});
   const { login } = useUser();
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,9 +69,7 @@ const Login = () => {
           userId: response.userId,
         },
         response.token
-      ); // Hoặc login(response) nếu muốn đầy đủ
-
-      console.log("Login successful:", response);
+      ); 
       setMessage("Login successful!");
       if (response.roles.includes("STAFF")) {
         navigate("/staff");

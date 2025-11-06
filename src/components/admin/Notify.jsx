@@ -188,7 +188,7 @@ export default function Notify() {
         <Button 
           type="text" 
           icon={<BellOutlined 
-            style={{ color: 'var(--text-primary)', fontSize: '20px' }} 
+            style={{ color: 'var(--admin-text-primary)', fontSize: '20px' }} 
           />} 
         />
       </Badge>
