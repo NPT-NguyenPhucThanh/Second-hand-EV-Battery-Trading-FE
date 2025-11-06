@@ -25,6 +25,7 @@ const formatCurrency = (value) => `${(value || 0).toLocaleString('vi-VN')} ₫`;
 export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const fetchApi = async () => {
     setLoading(true);
@@ -33,10 +34,10 @@ export default function Dashboard() {
       if (response && response.status === 'success') {
         setDashboardData(response);
       } else {
-        message.error(response.message || "Không thể tải dữ liệu dashboard!");
+        messageApi.error(response.message || "Không thể tải dữ liệu dashboard!");
       }
     } catch (error) {
-      message.error("Lỗi kết nối đến server!");
+      messageApi.error("Lỗi kết nối đến server!");
     } finally {
       setLoading(false);
     }
@@ -90,6 +91,7 @@ export default function Dashboard() {
 
   return (
     <>
+    {contextHolder}
       {/* KHỐI 1: DOANH THU & NGƯỜI DÙNG */}
       <Title level={3} style={{ marginBottom: 16 }}>Doanh Thu & Người Dùng</Title>
       <Row gutter={[20, 20]}>

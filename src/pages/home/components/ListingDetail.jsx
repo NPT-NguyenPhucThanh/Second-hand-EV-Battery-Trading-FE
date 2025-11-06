@@ -474,8 +474,6 @@ export default function ListingDetail() {
           </div>
         </div>
       </div>
-
-      {/* Chat Modal */}
       <ChatModal
         open={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}

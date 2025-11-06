@@ -1,4 +1,3 @@
-// src/main.jsx
 window.global = window;
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -7,10 +6,8 @@ import { RouterProvider } from "react-router-dom";
 import router from "./routes/Routes";
 import { UserProvider } from "./contexts/UserContext.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import ThemeWrapper from "./ThemeWrapper"; 
 import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 
-// ✅ THÊM 2 DÒNG NÀY
 import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")).render(
@@ -18,10 +15,7 @@ createRoot(document.getElementById("root")).render(
     <UserProvider>
       <NotificationProvider>
         <ThemeProvider>
-          <ThemeWrapper>
             <RouterProvider router={router} />
-            
-            {/* ✅ TOAST HIỆN ĐẸP NHƯ Figma */}
             <Toaster
               richColors
               closeButton
@@ -36,7 +30,6 @@ createRoot(document.getElementById("root")).render(
                 },
               }}
             />
-          </ThemeWrapper>
         </ThemeProvider>
       </NotificationProvider>
     </UserProvider>

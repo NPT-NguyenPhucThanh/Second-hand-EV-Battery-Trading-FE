@@ -1,37 +1,10 @@
-.content {
-   padding: 20px;
+.layout-default {
+  padding-top: 110px;
+  min-height: 100vh;
 }
 
 .header {
-   display: flex;
-   border-bottom: 1px solid #ddd;
-   background: #fff;
-}
-
-.header__logo {
-   width: 200px;
-   height: 120px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   border-right: 1px solid #ddd;
-}
-
-.header__nav {
-   padding: 10px;
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   flex: 1;
-}
-
-.header__nav-left {
-   display: flex;
-   align-items: center;
-   font-size: 20px;
-}
-
-.header {
+  display: flex;
   position: fixed;
   top: 0;
   left: 0;
@@ -39,13 +12,39 @@
   z-index: 1000;
 }
 
-.layout-default {
-  padding-top: 110px; 
+.header__logo {
+  width: 200px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFF;
+  color: var(--admin-text-primary);
+  font-weight: 600; 
+  font-size: 16px; 
+}
+
+.header__nav {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.header__nav-left {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+}
+
+.header__nav-right {
+  margin-right: 50px;
 }
 
 .sider {
   position: fixed;
-  top: 120px; 
+  top: 120px;
   bottom: 0;
 }
 
@@ -53,42 +52,38 @@
   margin-left: 200px; 
   overflow-y: auto;
   margin-top: 20px;
+  padding: 20px;
 }
-
-.header__nav-right{
-   margin-right: 50px;
-}
-
 
 .header {
-   display: flex;
-   background: var(--bg-primary);
-   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--admin-bg-primary);
+  border-bottom: 1px solid var(--admin-border-color);
+  color: var(--admin-text-primary);
 }
 
 .header__logo {
-   border-right: 1px solid var(--border-color);
-}
-
-
-.layout-default {
-  padding-top: 110px; 
-  background-color: var(--bg-secondary);
+  width: 200px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--admin-bg-primary);
+  color: var(--admin-text-primary);
+  font-weight: 600; 
+  font-size: 16px; 
+  border-right: 1px solid var(--admin-border-color);
 }
 
 .sider {
-  position: fixed;
-  top: 120px; 
-  bottom: 0;
-  background-color: var(--bg-primary) !important; /* Thêm !important để ghi đè theme 'light' của Antd */
-  border-right: 1px solid var(--border-color);
+  position: fixed;
+  top: 120px;
+  bottom: 0;
+  background-color: var(--admin-bg-primary) !important;
+  border-right: 1px solid var(--admin-border-color);
 }
-
-.content {
-  margin-left: 200px; 
-  overflow-y: auto;
-  margin-top: 20px;
-  padding: 20px;
-  /* Content sẽ tự động có màu nền của body */
-}
-
