@@ -19,12 +19,11 @@ import SearchResult from "../pages/home/components/SearchResult";
 
 // === CHECKOUT PAGES ===
 import Checkout from "../pages/checkout/Checkout";
-import CheckoutSuccess from "../pages/checkout/CheckoutSuccess"; 
 import DepositCar from "../pages/checkout/DepositCar";           
 import ConfirmPin from "../pages/checkout/ConfirmPin";           
 
 // === VNPAY PAGES (TÁCH RIÊNG) ===
-import PaymentCheckout from "../pages/checkout/PaymentCheckout";
+//import PaymentCheckout from "../pages/checkout/PaymentCheckout";
 import PaymentResult from "../pages/checkout/PaymentResult";       
 
 // === ADMIN PAGES ===
@@ -135,12 +134,12 @@ export const routes = [
 
       // CHECKOUT FLOW (Private)
       { path: "checkout/:productId", element: <Checkout /> },
-      { path: "checkout/success/:orderId", element: <CheckoutSuccess /> },
+     
       { path: "checkout/deposit/:orderId", element: <DepositCar /> },
       { path: "checkout/confirm-pin/:orderId", element: <ConfirmPin /> },
 
       // VNPAY (Private)
-      { path: "checkout/payment", element: <PaymentCheckout /> },
+      //{ path: "checkout/payment", element: <PaymentCheckout /> },
       { path: "payment/result", element: <PaymentResult /> }, 
 
       // GÓI DỊCH VỤ SELLER (Private)

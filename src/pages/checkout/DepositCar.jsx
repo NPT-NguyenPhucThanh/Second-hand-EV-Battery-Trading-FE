@@ -1,148 +1,181 @@
+// src/features/checkout/DepositCar.jsx
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../../utils/api";
 import { toast } from "sonner";
-import { MapPin, Calendar, Car, CreditCard } from "lucide-react";
+import { Calendar, MapPin, Car, CreditCard } from "lucide-react";
 
 export default function DepositCar() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState({
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
     transactionLocation: "",
     appointmentDate: "",
     transferOwnership: false,
-    changePlate: false,
+    changePlate: true,
   });
-  const [loading, setLoading] = useState(false);
+
+  // ✅ Helper: Convert datetime-local to backend format
+  const formatDateTimeForBackend = (datetimeLocal) => {
+    if (!datetimeLocal) return "";
+    
+    // Input: "2025-11-12T15:00"
+    // Output: "2025-11-12 15:00:00"
+    const date = new Date(datetimeLocal);
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = '00';
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.transactionLocation || !form.appointmentDate) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
-      return;
-    }
+  e.preventDefault();
 
-    setLoading(true);
-    try {
-      // BƯỚC 1: Lưu thông tin đặt cọc
-      const depositRes = await api.post(
-        `/api/buyer/orders/${orderId}/deposit`,
-        null,
-        {
-          params: {
-            transactionLocation: form.transactionLocation,
-            appointmentDate: form.appointmentDate,
-            transferOwnership: form.transferOwnership,
-            changePlate: form.changePlate,
-          },
-        }
-      );
+  if (!formData.transactionLocation || !formData.appointmentDate) {
+    toast.error("Vui lòng điền đầy đủ thông tin");
+    return;
+  }
 
-      const nextStep = depositRes.data.nextStep;
-      if (!nextStep || nextStep.endpoint !== "api/payment/create-payment-url") {
-        throw new Error("Không có bước thanh toán");
+  setLoading(true);
+
+  try {
+    const formattedDate = formatDateTimeForBackend(formData.appointmentDate);
+
+    const response = await api.post(
+      `api/buyer/orders/${orderId}/deposit`,
+      null,
+      {
+        transactionLocation: formData.transactionLocation,
+        appointmentDate: formattedDate,
+        transferOwnership: formData.transferOwnership,
+        changePlate: formData.changePlate,
       }
+    );
 
-      // BƯỚC 2: Gọi API tạo URL VNPay
-      const paymentRes = await api.post(nextStep.endpoint, null, {
-        params: nextStep.params,
-      });
+    console.log("Deposit response:", response);
 
-      const { paymentUrl, transactionCode } = paymentRes.data;
-      if (!paymentUrl) throw new Error("Không nhận được URL thanh toán");
+    toast.success("Thông tin đã được lưu!");
 
-      // LƯU transactionCode
-      localStorage.setItem("pendingTransaction", transactionCode);
+    // CHUYỂN QUA TRANG TRUNG GIAN + TRUYỀN TOÀN BỘ RESPONSE
+    navigate("/deposit-success", {
+      state: { depositResponse: response }, // Truyền toàn bộ response
+    });
 
-      toast.success("Chuyển sang VNPay...");
-      window.location.href = paymentUrl;
-    } catch (err) {
-      console.error("Lỗi đặt cọc:", err);
-      toast.error(
-        err.response?.data?.message ||
-        err.message ||
-        "Lỗi xử lý đặt cọc"
-      );
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    console.error("Lỗi đặt cọc:", err);
+    toast.error(err.message || "Không thể đặt cọc. Vui lòng thử lại.");
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-12">
       <div className="container mx-auto px-4 max-w-2xl">
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <Car className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
-              Đặt cọc 10% – Xe điện
-            </h1>
-            <p className="text-gray-600 mt-2">Mã đơn: #{orderId}</p>
-          </div>
+        <div className="bg-white rounded-3xl shadow-2xl p-10">
+          <Car className="w-20 h-20 text-blue-500 mx-auto mb-6" />
+          <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+            Đặt cọc xe
+          </h1>
+          <p className="text-gray-600 mb-8 text-center">
+            Mã đơn: <strong>#{orderId}</strong>
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Địa điểm giao dịch */}
             <div>
-              <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
+              <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
                 <MapPin className="w-5 h-5" />
                 Địa điểm giao dịch
               </label>
               <input
                 type="text"
+                value={formData.transactionLocation}
+                onChange={(e) =>
+                  setFormData({ ...formData, transactionLocation: e.target.value })
+                }
+                placeholder="Nhập địa chỉ giao dịch"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
-                placeholder="VD: 123 Lê Lợi, Q.1, TP.HCM"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-green-500 focus:outline-none"
-                value={form.transactionLocation}
-                onChange={(e) => setForm({ ...form, transactionLocation: e.target.value })}
               />
             </div>
 
+            {/* Ngày hẹn */}
             <div>
-              <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
+              <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
                 <Calendar className="w-5 h-5" />
-                Thời gian hẹn (gặp mặt xem xe)
+                Ngày hẹn giao dịch
               </label>
               <input
                 type="datetime-local"
+                value={formData.appointmentDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, appointmentDate: e.target.value })
+                }
+                min={new Date().toISOString().slice(0, 16)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-green-500 focus:outline-none"
-                value={form.appointmentDate}
-                onChange={(e) => setForm({ ...form, appointmentDate: e.target.value })}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-5 h-5 text-green-600 rounded"
-                  checked={form.transferOwnership}
-                  onChange={(e) => setForm({ ...form, transferOwnership: e.target.checked })}
-                />
-                <span>Sang tên xe</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-5 h-5 text-green-600 rounded"
-                  checked={form.changePlate}
-                  onChange={(e) => setForm({ ...form, changePlate: e.target.checked })}
-                />
-                <span>Đổi biển số</span>
+            {/* Chuyển quyền sở hữu */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="transferOwnership"
+                checked={formData.transferOwnership}
+                onChange={(e) =>
+                  setFormData({ ...formData, transferOwnership: e.target.checked })
+                }
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              />
+              <label htmlFor="transferOwnership" className="text-gray-700">
+                Chuyển quyền sở hữu xe
               </label>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:shadow-xl transform hover:scale-105 transition disabled:opacity-70"
-            >
-              <CreditCard className="w-6 h-6" />
-              {loading ? "Đang chuyển sang VNPay..." : "Thanh toán 10% qua VNPay"}
-            </button>
-          </form>
+            {/* Đổi biển số */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="changePlate"
+                checked={formData.changePlate}
+                onChange={(e) =>
+                  setFormData({ ...formData, changePlate: e.target.checked })
+                }
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              />
+              <label htmlFor="changePlate" className="text-gray-700">
+                Đổi biển số xe
+              </label>
+            </div>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            Sau khi thanh toán, bạn sẽ được chuyển sang VNPay để xác nhận.
-          </div>
+            {/* Buttons */}
+            <div className="flex gap-4 mt-8">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                disabled={loading}
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Quay lại
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <CreditCard className="w-5 h-5" />
+                {loading ? "Đang xử lý..." : "Xác nhận đặt cọc"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

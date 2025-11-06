@@ -1,143 +1,121 @@
-// src/features/checkout/VnpayReturn.jsx
-import { useLocation, useNavigate } from "react-router-dom";
+// src/features/checkout/VNPayReturn.jsx
 import { useEffect, useState } from "react";
-import api from "../../utils/api";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Card, Result, Button, Spin, Alert } from "antd";
-import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
-export default function VnpayReturn() {
-  const location = useLocation();
+export default function VNPayReturn() {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState(null);
-
-  // Lấy params từ URL VNPay trả về
-  const searchParams = new URLSearchParams(location.search);
-  const vnp_TxnRef = searchParams.get("vnp_TxnRef");
-  const vnp_ResponseCode = searchParams.get("vnp_ResponseCode");
-  const vnp_Amount = searchParams.get("vnp_Amount");
+  const [status, setStatus] = useState("processing"); // processing | success | failed
 
   useEffect(() => {
-    const processReturn = async () => {
-      let transactionCode = vnp_TxnRef;
-
-      // Trường hợp 1: VNPay trả về đầy đủ params
-      if (transactionCode && vnp_ResponseCode) {
-        if (vnp_ResponseCode === "00") {
-          toast.success("Thanh toán thành công!");
-        } else {
-          toast.error("Thanh toán thất bại. Mã lỗi: " + vnp_ResponseCode);
-          setResult({ status: "error", message: `Mã lỗi VNPay: ${vnp_ResponseCode}` });
-          setLoading(false);
-          return;
-        }
-      } else {
-        // Trường hợp 2: Không có params → dùng pendingTransaction
-        transactionCode = localStorage.getItem("pendingTransaction");
-        if (!transactionCode) {
-          toast.error("Không tìm thấy thông tin giao dịch");
-          navigate("/");
-          return;
-        }
-        toast.loading("Đang kiểm tra trạng thái...");
-      }
-
+    const processPayment = async () => {
       try {
-        // GỌI API kiểm tra trạng thái
-        const res = await api.get(`/api/payment/transaction-status/${transactionCode}`);
-        const data = res.data;
+        // Lấy response code từ VNPay
+        const vnpResponseCode = searchParams.get("vnp_ResponseCode");
+        const transactionCode = localStorage.getItem("pendingTransaction");
+        const orderId = localStorage.getItem("pendingOrderId");
 
-        setResult({
-          status: data.status || "success",
-          transaction: data.transaction || {
-            transactionCode,
-            amount: vnp_Amount ? vnp_Amount / 100 : 0,
-            paymentDate: new Date().toISOString(),
-            type: data.transaction?.type || "Battery",
-            orderId: data.transaction?.orderId,
-          },
-        });
+        console.log("VNPay Response Code:", vnpResponseCode);
 
-        // XÓA pendingTransaction sau khi dùng
-        localStorage.removeItem("pendingTransaction");
-        toast.dismiss();
-      } catch (err) {
-        console.error("Lỗi kiểm tra giao dịch:", err);
-        toast.error("Không thể xác nhận thanh toán");
-        setResult({ status: "error" });
-      } finally {
-        setLoading(false);
+        if (vnpResponseCode === "00") {
+          // ✅ Thanh toán thành công
+          setStatus("success");
+          toast.success("Thanh toán thành công!");
+
+          // Xóa pending data
+          localStorage.removeItem("pendingTransaction");
+          localStorage.removeItem("pendingOrderId");
+
+          // Chuyển đến trang thành công sau 2 giây
+          setTimeout(() => {
+            navigate(`/order-success/${orderId}`);
+          }, 2000);
+        } else {
+          // ❌ Thanh toán thất bại
+          setStatus("failed");
+          const errorMessage = getVNPayErrorMessage(vnpResponseCode);
+          toast.error(errorMessage);
+
+          setTimeout(() => {
+            navigate(`/confirm-pin/${orderId}`);
+          }, 3000);
+        }
+      } catch (error) {
+        console.error("Lỗi xử lý callback:", error);
+        setStatus("failed");
+        toast.error("Có lỗi xảy ra khi xác nhận thanh toán");
       }
     };
 
-    processReturn();
-  }, [vnp_TxnRef, vnp_ResponseCode, vnp_Amount, navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-        <Spin size="large" tip="Đang xác nhận thanh toán với VNPay..." />
-      </div>
-    );
-  }
-
-  const isSuccess = result?.status === "success";
+    processPayment();
+  }, [searchParams, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-6">
-      <Card className="max-w-lg w-full shadow-2xl rounded-3xl">
-        <Result
-          status={isSuccess ? "success" : "error"}
-          icon={isSuccess ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-          title={isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
-          subTitle={
-            isSuccess
-              ? result.transaction?.type === "Car EV"
-                ? "Đặt cọc 10% đã được ghi nhận. Vui lòng đến địa điểm giao dịch."
-                : "Pin sẽ được giao trong 3-5 ngày làm việc."
-              : result?.message || "Vui lòng thử lại hoặc liên hệ hỗ trợ."
-          }
-          extra={[
-            isSuccess && result.transaction && (
-              <Alert
-                key="info"
-                type="success"
-                showIcon
-                message={
-                  <div className="space-y-2 text-sm">
-                    <div><strong>Mã GD:</strong> {result.transaction.transactionCode}</div>
-                    <div><strong>Số tiền:</strong> {Number(result.transaction.amount).toLocaleString("vi-VN")}₫</div>
-                    <div><strong>Thời gian:</strong> {new Date(result.transaction.paymentDate).toLocaleString("vi-VN")}</div>
-                  </div>
-                }
-                className="mb-6"
-              />
-            ),
-            <Button
-              key="action"
-              type="primary"
-              size="large"
-              block
-              className="h-12 text-lg font-semibold"
-              onClick={() =>
-                navigate(
-                  isSuccess && result.transaction?.type === "Car EV"
-                    ? `/checkout/deposit/${result.transaction.orderId}`
-                    : `/orders`
-                )
-              }
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl p-12 text-center max-w-md">
+        {status === "processing" && (
+          <>
+            <Loader2 className="w-20 h-20 text-blue-500 mx-auto mb-6 animate-spin" />
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Đang xử lý thanh toán...
+            </h1>
+            <p className="text-gray-600">Vui lòng đợi trong giây lát</p>
+          </>
+        )}
+
+        {status === "success" && (
+          <>
+            <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-6" />
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Thanh toán thành công!
+            </h1>
+            <p className="text-gray-600">
+              Đơn hàng của bạn đã được xác nhận
+              <br />
+              Đang chuyển hướng...
+            </p>
+          </>
+        )}
+
+        {status === "failed" && (
+          <>
+            <XCircle className="w-20 h-20 text-red-500 mx-auto mb-6" />
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Thanh toán thất bại
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Vui lòng thử lại hoặc chọn phương thức thanh toán khác
+            </p>
+            <button
+              onClick={() => navigate("/")}
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600"
             >
-              {isSuccess && result.transaction?.type === "Car EV"
-                ? "Xem lịch hẹn giao dịch"
-                : "Xem đơn hàng"}
-            </Button>,
-            <Button key="home" type="link" block onClick={() => navigate("/")}>
               Về trang chủ
-            </Button>,
-          ]}
-        />
-      </Card>
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
+}
+
+// Helper function để hiển thị lỗi VNPay
+function getVNPayErrorMessage(code) {
+  const errors = {
+    "07": "Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường)",
+    "09": "Thẻ/Tài khoản chưa đăng ký dịch vụ InternetBanking",
+    "10": "Thẻ/Tài khoản không đúng số lần nhập mã xác thực OTP",
+    "11": "Đã hết hạn chờ thanh toán",
+    "12": "Thẻ/Tài khoản bị khóa",
+    "13": "Sai mật khẩu xác thực giao dịch (OTP)",
+    "24": "Khách hàng hủy giao dịch",
+    "51": "Tài khoản không đủ số dư",
+    "65": "Tài khoản vượt quá hạn mức giao dịch",
+    "75": "Ngân hàng thanh toán đang bảo trì",
+    "79": "Nhập sai mật khẩu quá số lần quy định",
+  };
+
+  return errors[code] || "Giao dịch thất bại. Vui lòng thử lại";
 }

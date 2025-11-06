@@ -1,29 +1,56 @@
-// src/features/checkout/paymentService.js
-import api from "../../utils/api";
-import { toast } from "sonner";
+// src/utils/services/paymentService.js
+import api from "../api";
 
-// Tạo URL thanh toán VNPay
-export const createPaymentUrl = async (orderId, amount, type) => {
-  const res = await api.post("api/payment/create-payment-url", null, {
-    params: { orderId, amount, transactionType: type },
-  });
-  return res.data;
+/**
+ * Tạo URL thanh toán VNPay
+ * @param {number} orderId - ID đơn hàng
+ * @param {"DEPOSIT" | "FINAL_PAYMENT" | "PACKAGE_PURCHASE"} transactionType - Loại giao dịch
+ * @returns {Promise<{paymentUrl: string, transactionCode: string}>}
+ */
+export const createPaymentUrl = async (orderId, transactionType) => {
+  try {
+    const response = await api.post(
+      "api/payment/create-payment-url",
+      null,
+      { orderId, transactionType }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi tạo payment URL:", error);
+    throw error;
+  }
 };
 
-// Mock thanh toán thành công (sandbox)
-export const mockPaymentSuccess = async (transactionCode, amount, orderId) => {
-  const res = await api.post("api/payment/mock-success", {
-    transactionCode,
-    amount,
-    orderId,
-  });
-  return res.data;
-};
-
-// Kiểm tra trạng thái giao dịch
+/**
+ * Kiểm tra trạng thái giao dịch
+ * @param {string} transactionCode - Mã giao dịch
+ * @returns {Promise<{status: string, transaction: object}>}
+ */
 export const getTransactionStatus = async (transactionCode) => {
-  const res = await api.get("api/payment/status", {
-    params: { transactionCode },
-  });
-  return res.data;
+  try {
+    const response = await api.get(
+      `api/payment/transaction-status/${transactionCode}`
+    );
+    return response;
+  } catch (error) {
+    console.error("Lỗi kiểm tra trạng thái:", error);
+    throw error;
+  }
+};
+
+/**
+ * Mock thanh toán thành công (dùng cho testing)
+ * @param {string} transactionCode - Mã giao dịch
+ * @returns {Promise<object>}
+ */
+export const mockPaymentSuccess = async (transactionCode) => {
+  try {
+    const response = await api.get("api/payment/mock-payment", {
+      transactionCode,
+    });
+    return response;
+  } catch (error) {
+    console.error("Lỗi mock payment:", error);
+    throw error;
+  }
 };

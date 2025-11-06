@@ -17,7 +17,7 @@ export default function Checkout() {
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("VNPAY"); // ← ĐÚNG VỚI SELECT
+  const [paymentMethod, setPaymentMethod] = useState("VNPAY");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -73,26 +73,23 @@ export default function Checkout() {
         paymentMethod,
       };
 
-      console.log("🚀 Gửi checkout:", body); // Debug 1 giây
-
       const res = await api.post("api/buyer/checkout", body);
-      console.log("✅ Response:", res.data); // Debug 1 giây
 
       if (res.status === "success") {
-        const orderId = res.orderId; // ĐÚNG
-        const orderStatus = res.order.status; // ĐÚNG
+        const orderId = res.orderId;
+        const orderStatus = res.order.status;
 
         toast.success(res.message || "Đặt hàng thành công!", {
-          duration: 5000,
+          duration: 3000,
           position: "top-center",
         });
 
         // XE ĐIỆN → ĐẶT CỌC
-        // Trong handleSubmit, phần navigate
         if (orderStatus === "CHO_DAT_COC") {
           navigate(`/checkout/deposit/${orderId}`);
-        } else {
-          // PIN → CHUYỂN NGAY QUA TRANG TẠO URL VNPAY
+        } 
+        // PIN → THANH TOÁN 100%
+        else {
           navigate(`/checkout/confirm-pin/${orderId}`);
         }
       }
@@ -105,6 +102,7 @@ export default function Checkout() {
       setSubmitting(false);
     }
   };
+
   // ================== LOADING ==================
   if (loading) {
     return (
@@ -232,8 +230,6 @@ export default function Checkout() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition"
                 >
                   <option value="VNPAY">Thanh toán qua VNPAY</option>
-                  {/* Nếu backend hỗ trợ thêm COD sau này thì mở khóa */}
-                  {/* <option value="COD">Thanh toán khi nhận hàng (COD)</option> */}
                 </select>
               </div>
 

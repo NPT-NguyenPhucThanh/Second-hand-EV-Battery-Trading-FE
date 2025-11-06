@@ -17,6 +17,7 @@ const handlePayment = async () => {
     }
 
     setLoading(true);
+  
     try {
       const params = new URLSearchParams({
         orderId: Number(orderId),
@@ -34,11 +35,9 @@ const handlePayment = async () => {
       toast.success("Đang chuyển đến VNPay...");
       window.location.href = paymentUrl;
     } catch (err) {
-      console.error("Lỗi thanh toán pin:", err);
+      console.error("Lỗi thanh toán:", err);
       toast.error(
-        err.response?.data?.message ||
-        err.message ||
-        "Không thể tạo thanh toán. Vui lòng thử lại."
+        err.message || "Không thể tạo thanh toán. Vui lòng thử lại."
       );
       setLoading(false);
     }
@@ -53,14 +52,17 @@ const handlePayment = async () => {
             Thanh toán 100% – Pin
           </h1>
           <p className="text-gray-600 mb-8">
-            Mã đơn: <strong>#{orderId}</strong><br />
-            <span className="text-sm">Sau thanh toán, pin sẽ được giao trong 3-5 ngày</span>
+            Mã đơn: <strong>#{orderId}</strong>
+            <br />
+            <span className="text-sm">
+              Sau thanh toán, pin sẽ được giao trong 3-5 ngày
+            </span>
           </p>
 
           <button
             onClick={handlePayment}
             disabled={loading}
-            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-12 py-5 rounded-xl font-bold text-xl hover:shadow-2xl transform hover:scale-105 transition flex items-center gap-3 mx-auto disabled:opacity-50"
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-12 py-5 rounded-xl font-bold text-xl hover:shadow-2xl transform hover:scale-105 transition flex items-center gap-3 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CreditCard className="w-8 h-8" />
             {loading ? "Đang xử lý..." : "Thanh toán qua VNPay"}
@@ -68,7 +70,8 @@ const handlePayment = async () => {
 
           <button
             onClick={() => navigate("/")}
-            className="mt-6 text-blue-600 hover:text-green-500 font-medium"
+            disabled={loading}
+            className="mt-6 text-blue-600 hover:text-green-500 font-medium disabled:opacity-50"
           >
             ← Về trang chủ
           </button>
