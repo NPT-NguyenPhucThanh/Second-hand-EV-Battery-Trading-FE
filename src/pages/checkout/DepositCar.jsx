@@ -64,7 +64,8 @@ export default function DepositCar() {
       // ✅ SỬA LỖI: 'depositData' phải là tham số thứ 2 (body)
       await api.post(
         `api/buyer/orders/${orderId}/deposit`,
-        depositData
+        null, // data (body) là null
+        depositData // params (query string) là depositData
       );
 
       toast.success("Thông tin đã được lưu! Đang tạo thanh toán...");
@@ -73,10 +74,10 @@ export default function DepositCar() {
       const params = new URLSearchParams({
         orderId: Number(orderId),
         // ✅ THAY ĐỔI: Sử dụng loại giao dịch cho đặt cọc
-        transactionType: "DEPOSIT_PAYMENT", 
+        transactionType: "DEPOSIT",
       });
       const pathWithParams = `api/payment/create-payment-url?${params.toString()}`;
-      
+
       const res = await api.post(pathWithParams, null);
       const { paymentUrl, transactionCode, message } = res;
 
@@ -89,12 +90,9 @@ export default function DepositCar() {
       window.location.href = paymentUrl;
 
       // Không cần 'navigate' nữa vì đã chuyển trang bằng 'window.location.href'
-      
     } catch (err) {
       console.error("Lỗi đặt cọc hoặc tạo thanh toán:", err);
-      toast.error(
-        err.message || "Không thể xử lý. Vui lòng thử lại."
-      );
+      toast.error(err.message || "Không thể xử lý. Vui lòng thử lại.");
       setLoading(false); // Rất quan trọng: reset loading khi có lỗi
     }
   };
@@ -122,7 +120,10 @@ export default function DepositCar() {
                 type="text"
                 value={formData.transactionLocation}
                 onChange={(e) =>
-                  setFormData({ ...formData, transactionLocation: e.target.value })
+                  setFormData({
+                    ...formData,
+                    transactionLocation: e.target.value,
+                  })
                 }
                 placeholder="Nhập địa chỉ giao dịch"
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -155,7 +156,10 @@ export default function DepositCar() {
                 id="transferOwnership"
                 checked={formData.transferOwnership}
                 onChange={(e) =>
-                  setFormData({ ...formData, transferOwnership: e.target.checked })
+                  setFormData({
+                    ...formData,
+                    transferOwnership: e.target.checked,
+                  })
                 }
                 className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
               />
