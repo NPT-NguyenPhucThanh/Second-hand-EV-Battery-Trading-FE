@@ -10,7 +10,6 @@ export const getStaffNotification = async (staffId) => {
   return data;
 };
 
-// Thêm hàm mới để xóa thông báo
 export const deleteNotification = async (notificationId) => {
   const response = await del(`api/notifications/${notificationId}`);
   return response;

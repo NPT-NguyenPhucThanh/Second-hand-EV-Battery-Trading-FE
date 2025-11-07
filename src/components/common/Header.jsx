@@ -13,6 +13,7 @@ import {
 } from "@ant-design/icons";
 import React, { useState, useEffect, useRef } from "react";
 import { useNotifications } from "../../contexts/NotificationContext.jsx";
+import Notification from "./Notification";
 
 /* ----------------------- ICONS ----------------------- */
 const User = (props) => (
@@ -180,27 +181,6 @@ export default function Header() {
     navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
   };
 
-  const notifications = [
-    { id: 1, message: "Đơn hàng #1234 đã được gửi." },
-    { id: 2, message: "Tin nhắn mới từ hỗ trợ." },
-    { id: 3, message: "Tin đăng đã được duyệt." },
-  ];
-
-  const notificationContent = (
-    <div className="w-64">
-      <List
-        dataSource={notifications}
-        renderItem={(item) => (
-          <List.Item className="hover:bg-gray-50 cursor-pointer px-2 rounded">
-            <span className="text-gray-700 text-sm">{item.message}</span>
-          </List.Item>
-        )}
-      />
-      {notifications.length === 0 && (
-        <p className="text-gray-500 text-center text-sm">Chưa có thông báo nào</p>
-      )}
-    </div>
-  );
 
   return (
     <header className="bg-gradient-to-r from-blue-500 to-green-400 shadow-md fixed z-50 w-full top-0 h-16 flex items-center justify-between">
@@ -242,12 +222,8 @@ export default function Header() {
               <BoxPlotOutlined />
               <span>Gói dịch vụ</span>
             </Link>
-
-            <Popover content={notificationContent} title="Thông báo" trigger="click" placement="bottomRight">
-              <Badge count={notifications.length} size="small" offset={[0, 5]}>
-                <Button type="text" shape="circle" icon={<NotificationOutlined style={{ fontSize: "20px", color: "white" }} />} />
-              </Badge>
-            </Popover>
+            <Notification />
+            
 
             {user && (
               <>
