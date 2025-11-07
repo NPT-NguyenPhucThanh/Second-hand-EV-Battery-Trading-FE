@@ -6,7 +6,7 @@ import { toast } from "sonner";
 const CART_API = {
   GET: "api/buyer/cart",
   ADD: "api/buyer/cart/add",
-  REMOVE: (itemId) => `api/buyer/cart/remove/${itemId}`,
+  REMOVE: (itemId) => `/api/buyer/cart/remove/${itemId}`,
   CHECKOUT: "api/buyer/checkout",
 };
 
@@ -28,7 +28,7 @@ export const useCart = () => {
       const res = await api.get(CART_API.GET);
       const rawItems = res?.cart?.cart_items || [];
 
-      const mappedItems = rawItems.map(item => ({
+      const mappedItems = rawItems.map((item) => ({
         id: item.itemsid,
         productId: item.products.productid,
         name: item.products.productname,
@@ -51,26 +51,42 @@ export const useCart = () => {
   }, []);
 
   const addToCart = async (productId, quantity = 1) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng");
-      return;
-    }
+  const token = localStorage.getItem("token");
+  if (!token) {
+    toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng");
+    return;
+  }
 
-    if (!productId || quantity < 1) return toast.error("Dữ liệu không hợp lệ");
+  if (!productId || quantity < 1) {
+    toast.error("Dữ liệu không hợp lệ");
+    return;
+  }
 
-    try {
-      await api.post(CART_API.ADD, null, {
-        params: { productId: Number(productId), quantity },
-      });
-      toast.success("Đã thêm vào giỏ!");
-      await fetchCart();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Không thể thêm sản phẩm");
+  try {
+    // GỬI DƯỚI DẠNG BODY JSON THAY VÌ QUERY PARAMS
+    await api.post(CART_API.ADD, {
+      productId: Number(productId),
+      quantity: Number(quantity),
+    });
+
+    toast.success("Đã thêm vào giỏ hàng!");
+    await fetchCart();
+  } catch (err) {
+    console.error("Add to cart error:", err.response?.data || err);
+
+    const message = err?.response?.data?.message || "Không thể thêm sản phẩm";
+    toast.error(message);
+
+    if (err.response?.status === 403 || err.response?.status === 401) {
+      toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+      localStorage.removeItem("token");
+      // window.location.href = '/login';
     }
-  };
+  }
+};
 
   const removeFromCart = async (itemId) => {
+    console.log(itemId);
     const token = localStorage.getItem("token");
     if (!token) return;
 

@@ -53,6 +53,7 @@ import PackageDetail from "../components/seller/PackageDetail";
 import MyPackages from "../components/seller/MyPackages";
 import MessengerPage from "../pages/chat/MessengerPage";
 import VnpayReturn from "../pages/checkout/VnpayReturn";
+// import SellerProfile from "../pages/profile/components/SellerProfile";
 
 const ROLES = {
   BUYER: "BUYER",
@@ -115,10 +116,12 @@ export const routes = [
     children: [
       { index: true, element: <Home /> },
       { path: "listings/:id", element: <ListingDetail /> },
-      { path: "sellers/:id", element: <SellerProfile /> }, 
+      { path: "seller/:sellerId", element: <SellerProfile /> }, 
       { path: "search", element: <SearchResult /> }, 
       { path: "/payment-return", element: <PaymentReturnPage /> },
       { path: "payment/vnpay-return", element: <VnpayReturn /> },
+      { path: "cart", element: <Cart /> },
+      
     ],
   },
 
@@ -129,7 +132,7 @@ export const routes = [
     element: <MemberRouteGuard />,
     children: [
       // Tất cả các trang riêng tư đặt ở đây
-      { path: "cart", element: <Cart /> },
+      
       { path: "profile", element: <ProfilePage /> },
       { path: "listings/new", element: <NewPost /> },
       { path: "messages", element: <MessengerPage /> },

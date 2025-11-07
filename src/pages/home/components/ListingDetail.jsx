@@ -81,6 +81,7 @@ export default function ListingDetail() {
 
         try {
           await addToCartHook(id, 1);
+          console.log(id)
           toast.success("Đã thêm vào giỏ hàng thành công!");
         } catch (err) {
           toast.error("Không thể thêm vào giỏ hàng. Vui lòng thử lại.");
