@@ -54,7 +54,9 @@ export default function TransactionManagement() {
       }
       
       if (response && response.status === 'success') {
-        setOrders(response.orders || []);
+        const fetchedOrders = response.orders || [];
+        fetchedOrders.sort((a, b) => new Date(b.createdat) - new Date(a.createdat));
+         setOrders(fetchedOrders);
       } else {
         message.error(response.message || "Không thể tải danh sách giao dịch!");
       }
@@ -144,14 +146,13 @@ export default function TransactionManagement() {
       title: "Hành động",
       render: (_, record) => (
        <Space>
-            {/* Sửa đổi 7: Xóa Button "Xem chi tiết" */}
             {/*
             <Button size="small" onClick={() => showDetailModal(record.orderid)}>
                 Xem chi tiết
             </Button>
             */}
 
-            {record.status === ORDER_STATUS.CHO_DUYET && (
+            {(record.status === ORDER_STATUS.CHO_DUYET || record.status === ORDER_STATUS.DA_DAT_COC) && (
               <Button type="primary" size="small" onClick={() => showModal(record)}>
                   Xử lý
               </Button>
