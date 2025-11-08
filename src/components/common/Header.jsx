@@ -1,15 +1,13 @@
 // src/components/layout/Header.jsx
-import { Button, Popover, List, Badge, Dropdown } from "antd";
+import { Button, Badge, Dropdown } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../contexts/UserContext.jsx";
 import {
   NotificationOutlined,
-  DownOutlined,
-  AppstoreOutlined,
   ShoppingCartOutlined,
   HeartOutlined,
   MessageOutlined,
-  BoxPlotOutlined, // ICON GÓI HÀNG – CHUẨN, KHÔNG LỖI
+  BoxPlotOutlined,
 } from "@ant-design/icons";
 import React, { useState, useEffect, useRef } from "react";
 import { useNotifications } from "../../contexts/NotificationContext.jsx";
@@ -35,6 +33,13 @@ const CreditCard = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <rect width="20" height="14" x="2" y="5" rx="2" />
     <line x1="2" x2="22" y1="10" y2="10" />
+  </svg>
+);
+
+const Package = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M3 8h18M8 4v16" />
   </svg>
 );
 
@@ -75,7 +80,6 @@ const DropdownMenu = ({ children, trigger }) => {
         <div
           className="origin-top-right absolute right-0 mt-2 w-72 rounded-xl shadow-xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in-0 zoom-in-95 p-2"
           role="menu"
-          aria-orientation="vertical"
         >
           {children}
         </div>
@@ -100,14 +104,14 @@ const DropdownMenuItem = ({ children, onClick }) => (
 
 const DropdownMenuSeparator = () => <div className="my-2 h-px bg-zinc-200" />;
 
-/* ----------------------- HỒ SƠ NGƯỜI DÙNG ----------------------- */
+/* ----------------------- HỒ SƠ NGƯỜI DÙNG (CẬP NHẬT) ----------------------- */
 function UserProfileDropdown() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout(); // Xóa thông tin đăng nhập
-    navigate("/"); // Điều hướng về trang login
+    logout();
+    navigate("/");
   };
 
   if (!user || !user.username) return null;
@@ -125,6 +129,7 @@ function UserProfileDropdown() {
         </button>
       }
     >
+      {/* Header Info */}
       <div className="px-3 py-3 border-b border-zinc-200">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -138,20 +143,18 @@ function UserProfileDropdown() {
         </div>
       </div>
 
+      {/* Menu Items */}
       <div className="py-1">
         <DropdownMenuItem onClick={() => navigate("/profile")}>
           <User className="mr-3 h-4 w-4 text-zinc-500" />
           Trang cá nhân
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-3 h-4 w-4 text-zinc-500" />
-          Cài đặt
+        <DropdownMenuItem onClick={() => navigate("/seller/packages")}>
+          <Package className="mr-3 h-4 w-4 text-zinc-500" />
+          Gói dịch vụ
         </DropdownMenuItem>
-        {/* LỊCH SỬ THANH TOÁN */}
-        <DropdownMenuItem onClick={() => navigate("/seller/my-packages")}>
-          <CreditCard className="mr-3 h-4 w-4 text-zinc-500" />
-          Lịch sử thanh toán
-        </DropdownMenuItem>
+        
+      
       </div>
 
       <DropdownMenuSeparator />
@@ -166,12 +169,11 @@ function UserProfileDropdown() {
   );
 }
 
-/* ----------------------- HEADER CHÍNH ----------------------- */
+/* ----------------------- HEADER CHÍNH (ĐÃ DỌN DẸP) ----------------------- */
 export default function Header() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
-
   const { totalUnreadMessages } = useNotifications();
 
   const handleSearch = (e) => {
@@ -180,7 +182,6 @@ export default function Header() {
     if (!trimmed) return;
     navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
   };
-
 
   return (
     <header className="bg-gradient-to-r from-blue-500 to-green-400 shadow-md fixed z-50 w-full top-0 h-16 flex items-center justify-between">
@@ -209,26 +210,14 @@ export default function Header() {
             </div>
           </form>
 
-          {/* MENU PHẢI */}
+          {/* MENU PHẢI - ĐÃ DỌN SẠCH */}
           <div className="flex items-center space-x-4">
-            <CategoryDropdown />
-            <Link to="/support" className="text-white font-bold">Hỗ trợ</Link>
-
-            {/* XEM CÁC GÓI DỊCH VỤ – DẪN ĐẾN MUA GÓI */}
-            <Link 
-              to="/seller/packages" 
-              className="text-white font-bold hover:underline flex items-center space-x-1"
-            >
-              <BoxPlotOutlined />
-              <span>Gói dịch vụ</span>
-            </Link>
             <Notification />
-            
 
             {user && (
               <>
-              <Link to="/messages">
-                  <Badge count={totalUnreadMessages} size="small" offset={[0, 5]}> 
+                <Link to="/messages">
+                  <Badge count={totalUnreadMessages} size="small" offset={[0, 5]}>
                     <Button type="text" shape="circle" icon={<MessageOutlined style={{ fontSize: "20px", color: "white" }} />} />
                   </Badge>
                 </Link>
@@ -260,35 +249,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  );
-}
-
-/* ----------------------- DANH MỤC ----------------------- */
-export function CategoryDropdown() {
-  const items = [
-    {
-      key: "bike",
-      label: "Xe điện",
-      children: [
-        { key: "vinfast", label: <Link to="/categories/bike/vinfast">VinFast</Link> },
-        { key: "wuling", label: <Link to="/categories/bike/wuling">Wuling</Link> },
-      ],
-    },
-    {
-      key: "batteries",
-      label: "Pin",
-      children: [
-        { key: "lithium", label: "Pin Lithium-ion" },
-        { key: "solid", label: "Pin thể rắn" },
-      ],
-    },
-  ];
-
-  return (
-    <Dropdown menu={{ items }} placement="bottomLeft" arrow>
-      <Button type="text" className="font-bold" icon={<AppstoreOutlined style={{ color: "white" }} />} style={{ color: "white" }}>
-        Danh mục <DownOutlined style={{ fontSize: "12px", marginLeft: "4px", color: "white" }} />
-      </Button>
-    </Dropdown>
   );
 }

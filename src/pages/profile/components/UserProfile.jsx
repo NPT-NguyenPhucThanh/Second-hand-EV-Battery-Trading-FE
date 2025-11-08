@@ -23,6 +23,7 @@ import DisputesContent from "../DisputesContent";
 import CurrentPackageContent from "../CurrentPackageContent";
 import ViewMyProductContent from "../ViewMyProductContent";
 import MySellingContent from "../MySellingContent";
+import RevenueContent from "../RevenueContent";
 const MENU = {
   PROFILE: "profile",
   ORDERS: "orders",
@@ -30,6 +31,7 @@ const MENU = {
   PACKAGE: "package",
   MY_ORDERS: "my_orders",
   MY_PRODUCTS: "my_products",
+  REVENUE: "revenue",
   VOUCHERS: "vouchers",
 };
 
@@ -235,6 +237,9 @@ export default function ProfilePage() {
     if (activeMenu === MENU.MY_PRODUCTS){
       return <MySellingContent/>
     }
+    if (activeMenu === MENU.REVENUE){
+      return <RevenueContent/>
+    }
     return (
       <div className="text-center py-16 text-gray-500">
         <i className="fa-regular fa-face-meh text-6xl mb-4"></i>
@@ -294,6 +299,14 @@ export default function ProfilePage() {
               active={activeMenu === MENU.MY_PRODUCTS}
               onClick={() => setActiveMenu(MENU.MY_PRODUCTS)}
             />
+          
+            <MenuItem
+              
+             icon="fa-regular fa-bell"
+              label="Thống kê doanh thu"
+              active={activeMenu === MENU.REVENUE}
+              onClick={() => setActiveMenu(MENU.REVENUE)}
+               />
           </ul>
 
           <hr className="my-4" />
