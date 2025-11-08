@@ -4,19 +4,32 @@ import { useUser } from "../../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import api from "../../../utils/api";
 import { Alert, Button, Modal, Form, Upload, message, Spin } from "antd";
-import { SolutionOutlined, CheckCircleOutlined, SyncOutlined, CloseCircleOutlined, UploadOutlined } from "@ant-design/icons";
-import { getSelfUpgradeStatus, requestSellerUpgrade, resubmitSellerUpgrade } from "../../../services/sellerUpgradeService";
+import {
+  SolutionOutlined,
+  CheckCircleOutlined,
+  SyncOutlined,
+  CloseCircleOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import {
+  getSelfUpgradeStatus,
+  requestSellerUpgrade,
+  resubmitSellerUpgrade,
+} from "../../../services/sellerUpgradeService";
 
 import ProfileInfo from "../../profile/ProfileInfo";
 import OrderHistoryContent from "../../profile/OrderHistoryContent";
 import DisputesContent from "../DisputesContent";
+import CurrentPackageContent from "../CurrentPackageContent";
+import ViewMyProductContent from "../ViewMyProductContent";
+import MySellingContent from "../MySellingContent";
 const MENU = {
   PROFILE: "profile",
   ORDERS: "orders",
   DISPUTES: "disputes",
-  ADDRESS: "address",
-  PASSWORD: "password",
-  NOTIFICATIONS: "notifications",
+  PACKAGE: "package",
+  MY_ORDERS: "my_orders",
+  MY_PRODUCTS: "my_products",
   VOUCHERS: "vouchers",
 };
 
@@ -34,6 +47,7 @@ export default function ProfilePage() {
   const [form] = Form.useForm();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     const fetchUpgradeStatus = async () => {
       if (!user) return;
       setStatusLoading(true);
@@ -41,7 +55,7 @@ export default function ProfilePage() {
         const res = await getSelfUpgradeStatus();
         if (res.status === "success") {
           setUpgradeStatus(res.upgradeStatus);
-          if (res.upgradeStatus === 'REJECTED') {
+          if (res.upgradeStatus === "REJECTED") {
             setRejectionReason(res.rejectionReason);
           }
         }
@@ -58,8 +72,13 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <p className="text-gray-700 mb-4">Bạn cần đăng nhập để xem trang cá nhân.</p>
-          <a href="/login" className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+          <p className="text-gray-700 mb-4">
+            Bạn cần đăng nhập để xem trang cá nhân.
+          </p>
+          <a
+            href="/login"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
             Đăng nhập
           </a>
         </div>
@@ -86,7 +105,7 @@ export default function ProfilePage() {
 
     try {
       let res;
-      if (upgradeStatus === 'REJECTED') {
+      if (upgradeStatus === "REJECTED") {
         res = await resubmitSellerUpgrade(formData);
       } else {
         res = await requestSellerUpgrade(formData);
@@ -94,7 +113,7 @@ export default function ProfilePage() {
 
       if (res.status === "success") {
         message.success(res.message);
-        setUpgradeStatus(res.upgradeStatus || 'PENDING');
+        setUpgradeStatus(res.upgradeStatus || "PENDING");
         setIsModalOpen(false);
       } else {
         throw new Error(res.message || "Gửi yêu cầu thất bại");
@@ -109,7 +128,12 @@ export default function ProfilePage() {
   const normFile = (e) => (Array.isArray(e) ? e : e && e.fileList);
 
   const renderUpgradeSection = () => {
-    if (statusLoading) return <div className="text-center p-4"><Spin /></div>;
+    if (statusLoading)
+      return (
+        <div className="text-center p-4">
+          <Spin />
+        </div>
+      );
 
     if (user.roles?.includes("SELLER")) {
       return (
@@ -151,7 +175,11 @@ export default function ProfilePage() {
             description={
               <>
                 <p>Lý do: {rejectionReason || "Không có lý do cụ thể."}</p>
-                <Button type="primary" onClick={showUpgradeModal} style={{ marginTop: 10 }}>
+                <Button
+                  type="primary"
+                  onClick={showUpgradeModal}
+                  style={{ marginTop: 10 }}
+                >
                   Gửi lại yêu cầu
                 </Button>
               </>
@@ -164,8 +192,10 @@ export default function ProfilePage() {
       default:
         return (
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-            <SolutionOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-            <p className="mt-2 text-gray-700">Bạn muốn trở thành Người bán để đăng bán sản phẩm?</p>
+            <SolutionOutlined style={{ fontSize: "24px", color: "#1890ff" }} />
+            <p className="mt-2 text-gray-700">
+              Bạn muốn trở thành Người bán để đăng bán sản phẩm?
+            </p>
             <Button type="primary" onClick={showUpgradeModal} className="mt-2">
               Nâng cấp ngay
             </Button>
@@ -181,7 +211,9 @@ export default function ProfilePage() {
           <ProfileInfo />
           <hr className="my-10" />
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Trở thành Người bán</h2>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              Trở thành Người bán
+            </h2>
             {renderUpgradeSection()}
           </div>
         </>
@@ -191,10 +223,18 @@ export default function ProfilePage() {
     if (activeMenu === MENU.ORDERS) {
       return <OrderHistoryContent />;
     }
-    if (activeMenu === MENU.DISPUTES){
-      return <DisputesContent/>
+    if (activeMenu === MENU.DISPUTES) {
+      return <DisputesContent />;
     }
-
+    if (activeMenu === MENU.PACKAGE) {
+      return <CurrentPackageContent />;
+    }
+    if (activeMenu === MENU.MY_ORDERS) {
+      return <ViewMyProductContent />;
+    }
+    if (activeMenu === MENU.MY_PRODUCTS){
+      return <MySellingContent/>
+    }
     return (
       <div className="text-center py-16 text-gray-500">
         <i className="fa-regular fa-face-meh text-6xl mb-4"></i>
@@ -213,12 +253,16 @@ export default function ProfilePage() {
           </div>
           <div>
             <p className="font-semibold text-gray-800">{user.username}</p>
-            <button className="text-sm text-blue-500 hover:underline">Sửa Hồ Sơ</button>
+            <button className="text-sm text-blue-500 hover:underline">
+              Sửa Hồ Sơ
+            </button>
           </div>
         </div>
 
         <nav className="space-y-3 text-gray-700 text-sm">
-          <p className="font-semibold text-gray-400 text-xs uppercase mb-2">Tài Khoản Của Tôi</p>
+          <p className="font-semibold text-gray-400 text-xs uppercase mb-2">
+            Tài Khoản Của Tôi
+          </p>
           <ul className="space-y-2">
             <MenuItem
               icon="fa-regular fa-user"
@@ -234,21 +278,21 @@ export default function ProfilePage() {
             />
             <MenuItem
               icon="fa-solid fa-location-dot"
-              label="Địa Chỉ"
-              active={activeMenu === MENU.ADDRESS}
-              onClick={() => setActiveMenu(MENU.ADDRESS)}
+              label="Gói Dịch Vụ"
+              active={activeMenu === MENU.PACKAGE}
+              onClick={() => setActiveMenu(MENU.PACKAGE)}
             />
             <MenuItem
               icon="fa-solid fa-lock"
-              label="Đổi Mật Khẩu"
-              active={activeMenu === MENU.PASSWORD}
-              onClick={() => setActiveMenu(MENU.PASSWORD)}
+              label="Sản phẩm được mua"
+              active={activeMenu === MENU.MY_ORDERS}
+              onClick={() => setActiveMenu(MENU.MY_ORDERS)}
             />
             <MenuItem
               icon="fa-regular fa-bell"
-              label="Cài Đặt Thông Báo"
-              active={activeMenu === MENU.NOTIFICATIONS}
-              onClick={() => setActiveMenu(MENU.NOTIFICATIONS)}
+              label="Sản phẩm đang bán"
+              active={activeMenu === MENU.MY_PRODUCTS}
+              onClick={() => setActiveMenu(MENU.MY_PRODUCTS)}
             />
           </ul>
 
@@ -278,15 +322,33 @@ export default function ProfilePage() {
 
       {/* Modal nâng cấp */}
       <Modal
-        title={upgradeStatus === 'REJECTED' ? "Gửi lại yêu cầu nâng cấp" : "Nâng cấp tài khoản Seller"}
+        title={
+          upgradeStatus === "REJECTED"
+            ? "Gửi lại yêu cầu nâng cấp"
+            : "Nâng cấp tài khoản Seller"
+        }
         open={isModalOpen}
         onCancel={handleModalCancel}
         footer={[
-          <Button key="back" onClick={handleModalCancel} disabled={submitting}>Hủy</Button>,
-          <Button key="submit" type="primary" loading={submitting} onClick={() => form.submit()}>Gửi yêu cầu</Button>,
+          <Button key="back" onClick={handleModalCancel} disabled={submitting}>
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={submitting}
+            onClick={() => form.submit()}
+          >
+            Gửi yêu cầu
+          </Button>,
         ]}
       >
-        <Form form={form} layout="vertical" onFinish={handleFormSubmit} disabled={submitting}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleFormSubmit}
+          disabled={submitting}
+        >
           <Alert
             message="Yêu cầu thông tin"
             description="Vui lòng tải lên ảnh chụp 2 mặt Căn cước công dân (CCCD) của bạn để xác thực. (File < 5MB)"
@@ -294,15 +356,39 @@ export default function ProfilePage() {
             showIcon
             style={{ marginBottom: 20 }}
           />
-          <Form.Item name="cccdFront" label="CCCD mặt trước" valuePropName="fileList" getValueFromEvent={normFile}
-            rules={[{ required: true, message: "Vui lòng tải lên mặt trước CCCD" }]}>
-            <Upload name="cccdFront" listType="picture" maxCount={1} beforeUpload={() => false}>
+          <Form.Item
+            name="cccdFront"
+            label="CCCD mặt trước"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            rules={[
+              { required: true, message: "Vui lòng tải lên mặt trước CCCD" },
+            ]}
+          >
+            <Upload
+              name="cccdFront"
+              listType="picture"
+              maxCount={1}
+              beforeUpload={() => false}
+            >
               <Button icon={<UploadOutlined />}>Chọn file</Button>
             </Upload>
           </Form.Item>
-          <Form.Item name="cccdBack" label="CCCD mặt sau" valuePropName="fileList" getValueFromEvent={normFile}
-            rules={[{ required: true, message: "Vui lòng tải lên mặt sau CCCD" }]}>
-            <Upload name="cccdBack" listType="picture" maxCount={1} beforeUpload={() => false}>
+          <Form.Item
+            name="cccdBack"
+            label="CCCD mặt sau"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            rules={[
+              { required: true, message: "Vui lòng tải lên mặt sau CCCD" },
+            ]}
+          >
+            <Upload
+              name="cccdBack"
+              listType="picture"
+              maxCount={1}
+              beforeUpload={() => false}
+            >
               <Button icon={<UploadOutlined />}>Chọn file</Button>
             </Upload>
           </Form.Item>
