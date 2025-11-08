@@ -104,7 +104,7 @@ export default function DisputesContent() {
     try {
       const res = await api.post("api/buyer/dispute", {
         orderId: values.orderId,
-        reason: values.reason,
+        reasonType: values.reason,
         description: values.description || "",
       });
 

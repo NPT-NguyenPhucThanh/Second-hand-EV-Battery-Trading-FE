@@ -14,6 +14,7 @@ import {
   BarChartOutlined,
   GiftOutlined,
   DollarCircleOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 
 export default function MenuSiderManager() {
@@ -67,6 +68,11 @@ export default function MenuSiderManager() {
           label: <Link to="/manager/users">Quản lý người dùng</Link>,
           icon: <UserOutlined />,
           key: "/manager/users",
+        },
+        {
+          label: <Link to="/manager/products-all">Giám sát sản phẩm</Link>,
+          icon: <AppstoreOutlined />,
+          key: "/manager/products-all",
         },
         {
           label: <Link to="/manager/disputes">Quản lý Tranh chấp</Link>,
