@@ -40,6 +40,7 @@ export default function OrderHistoryContent() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     const fetchOrders = async () => {
       if (!user) return;
       setLoading(true);
@@ -70,6 +71,11 @@ export default function OrderHistoryContent() {
     navigate(`/checkout/deposit/${orderId}`);
   };
 
+  // MỚI: Xem chi tiết giao dịch
+  const handleViewTransactions = (orderId) => {
+    navigate(`/profile/orders/${orderId}/transactions`);
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Lịch Sử Đơn Hàng</h2>
@@ -86,47 +92,87 @@ export default function OrderHistoryContent() {
       ) : (
         <div className="space-y-4">
           {orders.map((order, index) => {
-  const orderNumber = orders.length - index; // Cũ nhất = 1
-  return (
-    <div
-      key={order.orderid}
-      className="border rounded-lg p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition"
-    >
-      <div className="flex-1">
-        <p className="font-bold text-lg">
-          Đơn hàng #{orderNumber} {/* Đánh số từ 1, cũ nhất */}
-          <span className="text-gray-500 ml-2"></span>
-        </p>
-        <p className="text-sm text-gray-600">
-          Ngày đặt: {new Date(order.createdat).toLocaleDateString("vi-VN")}
-        </p>
-        <p className="font-semibold text-lg mt-1">
-          Tổng tiền: {currency(order.totalfinal)}
-        </p>
-      </div>
-      <div className="text-right space-y-2">
-        <OrderStatusTag status={order.status} />
+            const orderNumber = orders.length - index;
+            return (
+              <div
+                key={order.orderid}
+                className="border rounded-lg p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition cursor-pointer"
+                onClick={() => handleViewTransactions(order.orderid)} // Click toàn bộ card
+              >
+                <div className="flex-1">
+                  <p className="font-bold text-lg">
+                    Đơn hàng #{orderNumber}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Ngày đặt: {new Date(order.createdat).toLocaleDateString("vi-VN")}
+                  </p>
+                  <p className="font-semibold text-lg mt-1">
+                    Tổng tiền: {currency(order.totalfinal)}
+                  </p>
+                </div>
 
-        {order.status === "DA_DUYET" && (
-          <Button type="primary" onClick={() => handleFinalPayment(order.orderid)} block>
-            Thanh toán 90% còn lại
-          </Button>
-        )}
+                <div className="text-right space-y-2 flex flex-col items-end">
+                  <OrderStatusTag status={order.status} />
 
-        {order.status === "THAT_BAI" && order.paymentmethod === "VNPAY" && (
-          <>
-            <Button danger type="primary" onClick={() => handleFinalPayment(order.orderid)} block>
-              Thanh toán lại
-            </Button>
-            <Button danger type="link" onClick={() => handleDepositAgain(order.orderid)} block>
-              Đặt cọc lại 10%
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-})}
+                  {/* Nút hành động */}
+                  <div className="flex gap-2 mt-2 flex-wrap justify-end">
+                    {order.status === "DA_DUYET" && (
+                      <Button
+                        type="primary"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFinalPayment(order.orderid);
+                        }}
+                      >
+                        Thanh toán 90%
+                      </Button>
+                    )}
+
+                    {order.status === "THAT_BAI" && order.paymentmethod === "VNPAY" && (
+                      <>
+                        <Button
+                          danger
+                          type="primary"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFinalPayment(order.orderid);
+                          }}
+                        >
+                          Thanh toán lại
+                        </Button>
+                        <Button
+                          danger
+                          type="link"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDepositAgain(order.orderid);
+                          }}
+                        >
+                          Đặt cọc lại
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Luôn có nút Xem chi tiết */}
+                    <Button
+                      type="link"
+                      size="small"
+                      className="text-blue-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewTransactions(order.orderid);
+                      }}
+                    >
+                      Xem chi tiết
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

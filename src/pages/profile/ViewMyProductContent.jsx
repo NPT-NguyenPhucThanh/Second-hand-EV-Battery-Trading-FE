@@ -58,6 +58,7 @@ export default function ViewMyProductContent() {
   const [batteryFilter, setBatteryFilter] = useState("ALL");
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     const fetchOrders = async () => {
       setLoading(true);
       try {

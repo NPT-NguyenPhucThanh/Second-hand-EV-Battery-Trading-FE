@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import api from "../../../utils/api";
+import { Routes, Route } from "react-router-dom";
 import { Alert, Button, Modal, Form, Upload, message, Spin } from "antd";
 import {
   SolutionOutlined,
@@ -24,6 +25,7 @@ import CurrentPackageContent from "../CurrentPackageContent";
 import ViewMyProductContent from "../ViewMyProductContent";
 import MySellingContent from "../MySellingContent";
 import RevenueContent from "../RevenueContent";
+import TransactionContent from "../TransactionContent";
 const MENU = {
   PROFILE: "profile",
   ORDERS: "orders",
@@ -31,6 +33,7 @@ const MENU = {
   PACKAGE: "package",
   MY_ORDERS: "my_orders",
   MY_PRODUCTS: "my_products",
+  TRANSACTION: "transaction",
   REVENUE: "revenue",
   VOUCHERS: "vouchers",
 };
@@ -223,8 +226,13 @@ export default function ProfilePage() {
     }
 
     if (activeMenu === MENU.ORDERS) {
-      return <OrderHistoryContent />;
-    }
+  return (
+    <Routes>
+      <Route path="/" element={<OrderHistoryContent />} />
+      <Route path="orders/:orderId/transactions" element={<TransactionContent />} />
+    </Routes>
+  );
+}
     if (activeMenu === MENU.DISPUTES) {
       return <DisputesContent />;
     }
@@ -240,6 +248,7 @@ export default function ProfilePage() {
     if (activeMenu === MENU.REVENUE){
       return <RevenueContent/>
     }
+  
     return (
       <div className="text-center py-16 text-gray-500">
         <i className="fa-regular fa-face-meh text-6xl mb-4"></i>
@@ -307,6 +316,7 @@ export default function ProfilePage() {
               active={activeMenu === MENU.REVENUE}
               onClick={() => setActiveMenu(MENU.REVENUE)}
                />
+               
           </ul>
 
           <hr className="my-4" />
@@ -314,16 +324,11 @@ export default function ProfilePage() {
           <ul className="space-y-2">
             <MenuItem
               icon="fa-solid fa-box"
-              label="Đơn Mua"
+              label="Lịch sử mua hàng"
               active={activeMenu === MENU.ORDERS}
               onClick={() => setActiveMenu(MENU.ORDERS)}
             />
-            <MenuItem
-              icon="fa-solid fa-ticket"
-              label="Kho Voucher"
-              active={activeMenu === MENU.VOUCHERS}
-              onClick={() => setActiveMenu(MENU.VOUCHERS)}
-            />
+         
           </ul>
         </nav>
       </aside>

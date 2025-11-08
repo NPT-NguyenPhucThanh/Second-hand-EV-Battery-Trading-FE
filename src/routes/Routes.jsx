@@ -16,6 +16,7 @@ import Cart from "../pages/cart/pages/CartPage";
 import ListingDetail from "../pages/home/components/ListingDetail";
 import SellerProfile from "../pages/profile/components/SellerProfile";
 import SearchResult from "../pages/home/components/SearchResult";
+import TransactionContent from "../pages/profile/TransactionContent";
 
 // === CHECKOUT PAGES ===
 import Checkout from "../pages/checkout/Checkout";
@@ -25,8 +26,8 @@ import ConfirmPin from "../pages/checkout/ConfirmPin";
 
 //import PaymentCheckout from "../pages/checkout/PaymentCheckout";
 import PaymentResult from "../pages/checkout/PaymentResult";
-import PaymentReturnPage from "../pages/payment/PaymentReturnPage";   
-import PayPage from "../pages/vnpay/PayPage";    
+import PaymentReturnPage from "../pages/payment/PaymentReturnPage";
+import PayPage from "../pages/vnpay/PayPage";
 
 // === ADMIN PAGES ===
 import Dashboard from "../pages/admin/Dashboard";
@@ -118,12 +119,11 @@ export const routes = [
     children: [
       { index: true, element: <Home /> },
       { path: "listings/:id", element: <ListingDetail /> },
-      { path: "seller/:sellerId", element: <SellerProfile /> }, 
-      { path: "search", element: <SearchResult /> }, 
+      { path: "seller/:sellerId", element: <SellerProfile /> },
+      { path: "search", element: <SearchResult /> },
       { path: "/payment-return", element: <PaymentReturnPage /> },
       { path: "payment/vnpay-return", element: <VnpayReturn /> },
       { path: "cart", element: <Cart /> },
-      
     ],
   },
 
@@ -134,8 +134,17 @@ export const routes = [
     element: <MemberRouteGuard />,
     children: [
       // Tất cả các trang riêng tư đặt ở đây
-      
-      { path: "profile", element: <ProfilePage /> },
+
+      {
+        path: "profile/*",
+        element: <ProfilePage />,
+        children: [
+          {
+            path: "orders/:orderId/transactions",
+            element: <TransactionContent />,
+          },
+        ],
+      },
       { path: "listings/new", element: <NewPost /> },
       { path: "messages", element: <MessengerPage /> },
 
@@ -149,7 +158,7 @@ export const routes = [
       // VNPAY (Private)
       //{ path: "checkout/payment", element: <PaymentCheckout /> },
       { path: "checkout/final-payment/:orderId", element: <PayPage /> },
-      { path: "payment/result", element: <PaymentResult /> }, 
+      { path: "payment/result", element: <PaymentResult /> },
 
       // GÓI DỊCH VỤ SELLER (Private)
       { path: "seller/packages", element: <BuyPackage /> },
