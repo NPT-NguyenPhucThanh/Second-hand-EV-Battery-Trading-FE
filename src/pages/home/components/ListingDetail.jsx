@@ -11,21 +11,50 @@ import {
   Award,
   Mail,
   Phone,
+  ArrowLeft,
+  Battery,
+  Car,
+  Calendar,
+  Gauge,
+  Zap,
+  MapPin,
+  X,
+  Sparkles,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import ChatModal from "../../chat/components/ChatModal";
+import PriceSuggestionModal from "../../../components/common/PriceSuggestionModal";
 import { useUser } from "../../../contexts/UserContext.jsx";
+import { useTheme } from "../../../contexts/ThemeContext.jsx";
 import { getProductById } from "../../../utils/services/productService";
-import api from "../../../utils/api";
 import { useCart } from "../../../hooks/useCart";
+import AuroraText from "../../../components/common/AuroraText";
+
+// 🎨 COLOR SYSTEM - Sync with Home.jsx
+const THEME_COLORS = {
+  dark: {
+    primary: ["#ef4444", "#f97316"],
+    aurora: ["#ef4444", "#f97316", "#fb923c", "#fbbf24", "#ef4444"],
+    border: "rgba(239, 68, 68, 0.2)",
+    hoverOverlay:
+      "linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(249, 115, 22, 0.3))",
+  },
+  light: {
+    primary: ["#3b82f6", "#8b5cf6"],
+    aurora: ["#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#3b82f6"],
+    border: "rgba(59, 130, 246, 0.3)",
+    hoverOverlay:
+      "linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))",
+  },
+};
 
 function currency(value) {
   return value.toLocaleString("vi-VN") + " ₫";
 }
 
 // === HÀM KIỂM TRA ĐĂNG NHẬP CHUNG ===
-const requireAuth = (action, callback) => {
+const requireAuth = (action) => {
   const token = localStorage.getItem("token");
   if (!token) {
     toast.error(`Vui lòng đăng nhập để ${action}`);
@@ -36,7 +65,8 @@ const requireAuth = (action, callback) => {
 
 export default function ListingDetail() {
   const { id } = useParams();
-  const navigate = useNavigate(); // ← CHỈ 1 DÒNG
+  const navigate = useNavigate();
+  const { isDark } = useTheme();
   const { addToCart: addToCartHook, loading: cartLoading } = useCart();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +74,15 @@ export default function ListingDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [aiPriceSuggestion, setAiPriceSuggestion] = useState(null);
+  const [loadingAiPrice, setLoadingAiPrice] = useState(false);
   const { user: currentUser } = useUser();
+
+  // Get theme colors dynamically
+  const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -63,7 +101,88 @@ export default function ListingDetail() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
+  // Scroll to top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const isOwner = currentUser && item?.seller?.sellerId === currentUser.userId;
+
+  // === GỌI AI GỢI Ý GIÁ ===
+  const handleAiPriceSuggestion = async () => {
+    if (!requireAuth("sử dụng AI gợi ý giá")) return;
+
+    setLoadingAiPrice(true);
+    setAiPriceSuggestion(null);
+
+    try {
+      const requestData = {
+        productType: item.product.type,
+        brand: item.product.brandInfo?.brand || "",
+        model: item.product.brandInfo?.model || item.product.productname,
+        year: item.product.brandInfo?.year || new Date().getFullYear(),
+        condition: "Good", // Default
+      };
+
+      // Thêm fields theo loại sản phẩm
+      if (item.product.type === "Battery") {
+        if (item.product.brandInfo?.capacity) {
+          requestData.capacityKwh = parseFloat(item.product.brandInfo.capacity);
+        }
+        if (item.product.brandInfo?.cycleCount) {
+          requestData.cycleCount = parseInt(item.product.brandInfo.cycleCount);
+        }
+      } else if (item.product.type === "Car EV") {
+        if (item.product.brandInfo?.mileage) {
+          requestData.mileageKm = parseInt(item.product.brandInfo.mileage);
+        }
+      }
+
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_URL || "http://localhost:8080"
+        }/api/buyer/ai/suggest-price`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
+
+      if (response.status === 429) {
+        toast.error(
+          "Bạn đã vượt quá giới hạn 10 lần gọi/phút. Vui lòng thử lại sau."
+        );
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Không thể lấy gợi ý giá từ AI");
+      }
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        setAiPriceSuggestion(data.priceSuggestion);
+        setIsPriceModalOpen(true); // Mở modal hiển thị kết quả
+        toast.success("Đã nhận gợi ý giá từ AI!");
+      } else {
+        toast.error(data.message || "Không thể lấy gợi ý giá");
+      }
+    } catch (error) {
+      console.error("AI Price Error:", error);
+      toast.error("Không thể kết nối với AI. Vui lòng thử lại sau.");
+    } finally {
+      setLoadingAiPrice(false);
+    }
+  };
 
   const handleAction = async (action) => {
     try {
@@ -79,11 +198,19 @@ export default function ListingDetail() {
       else if (action === "cart") {
         if (!requireAuth("thêm vào giỏ hàng")) return;
 
+        // XE KHÔNG THỂ THÊM VÀO GIỎ HÀNG
+        if (item.product.type === "Car EV") {
+          toast.error(
+            "Xe điện không thể thêm vào giỏ hàng. Vui lòng mua ngay!"
+          );
+          return;
+        }
+
         try {
           await addToCartHook(id, 1);
-          console.log(id)
+          console.log(id);
           toast.success("Đã thêm vào giỏ hàng thành công!");
-        } catch (err) {
+        } catch {
           toast.error("Không thể thêm vào giỏ hàng. Vui lòng thử lại.");
         }
       }
@@ -123,10 +250,26 @@ export default function ListingDetail() {
   // === LOADING & ERROR UI ===
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 flex items-center justify-center">
+      <div
+        className={`min-h-screen flex items-center justify-center transition-colors duration-500 ${
+          isDark ? "bg-gray-950" : "bg-gray-50"
+        }`}
+      >
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600 font-medium">Đang tải sản phẩm...</p>
+          <div
+            className="inline-block w-16 h-16 border-4 border-t-transparent rounded-full animate-spin"
+            style={{
+              borderColor: colors.primary[0],
+              borderTopColor: "transparent",
+            }}
+          />
+          <p
+            className={`mt-4 text-lg font-medium ${
+              isDark ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            Đang tải sản phẩm...
+          </p>
         </div>
       </div>
     );
@@ -134,15 +277,39 @@ export default function ListingDetail() {
 
   if (error || !item || item.status !== "success") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md text-center">
-          <div className="text-red-500 text-6xl mb-4">Warning</div>
-          <p className="text-gray-700 text-lg mb-6">
+      <div
+        className={`min-h-screen flex items-center justify-center transition-colors duration-500 ${
+          isDark ? "bg-gray-950" : "bg-gray-50"
+        }`}
+      >
+        <div
+          className="rounded-3xl p-12 max-w-md text-center"
+          style={{
+            background: isDark
+              ? "rgba(255, 255, 255, 0.05)"
+              : "rgba(255, 255, 255, 0.9)",
+            backdropFilter: "blur(20px)",
+            border: `2px solid ${colors.border}`,
+            boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <div className="text-6xl mb-4">⚠️</div>
+          <p
+            className={`text-lg mb-6 ${
+              isDark ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
             {error || "Không tìm thấy sản phẩm"}
           </p>
           <Link
             to="/"
-            className="inline-block bg-gradient-to-r from-blue-500 to-green-400 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg transform hover:scale-105 transition"
+            className="inline-block px-8 py-3 rounded-2xl font-bold text-white transition-all duration-300 hover:scale-105 shadow-2xl"
+            style={{
+              background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+              boxShadow: isDark
+                ? "0 10px 40px rgba(239, 68, 68, 0.4)"
+                : "0 10px 40px rgba(59, 130, 246, 0.4)",
+            }}
           >
             Quay lại trang chủ
           </Link>
@@ -153,54 +320,148 @@ export default function ListingDetail() {
 
   // === RENDER CHÍNH ===
   return (
-    <div className="pt-20 min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-8">
-      <div className="container mx-auto px-4">
+    <div
+      className={`pt-20 min-h-screen py-12 transition-colors duration-500 ${
+        isDark ? "bg-gray-950" : "bg-gray-50"
+      }`}
+    >
+      {/* Floating gradient orbs */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+        <div
+          className="absolute top-20 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
+          style={{
+            background: isDark
+              ? "radial-gradient(circle, rgba(239, 68, 68, 0.3), transparent)"
+              : "radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent)",
+            animation: "float 8s ease-in-out infinite",
+          }}
+        />
+        <div
+          className="absolute bottom-20 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
+          style={{
+            background: isDark
+              ? "radial-gradient(circle, rgba(249, 115, 22, 0.3), transparent)"
+              : "radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent)",
+            animation: "float 10s ease-in-out infinite reverse",
+          }}
+        />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Breadcrumb */}
         <Link
           to="/"
-          className="inline-flex items-center text-blue-600 hover:text-green-500 text-sm mb-6 font-medium transition group"
+          className={`inline-flex items-center gap-2 mb-8 px-6 py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 ${
+            isDark ? "text-white" : "text-gray-900"
+          }`}
+          style={{
+            background: isDark
+              ? "rgba(255, 255, 255, 0.05)"
+              : "rgba(255, 255, 255, 0.9)",
+            backdropFilter: "blur(12px)",
+            border: `2px solid ${colors.border}`,
+          }}
         >
-          <span className="transform group-hover:-translate-x-1 transition">
-            Back
-          </span>
-          <span className="ml-2">Quay lại trang chủ</span>
+          <ArrowLeft className="w-5 h-5" />
+          Quay lại trang chủ
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* CỘT TRÁI: HÌNH ẢNH + CHI TIẾT */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Ảnh chính */}
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-              <div className="relative group">
+            {/* Ảnh chính với Glassmorphism */}
+            <div
+              className="rounded-3xl overflow-hidden"
+              style={{
+                background: isDark
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "rgba(255, 255, 255, 0.9)",
+                backdropFilter: "blur(20px)",
+                border: `2px solid ${colors.border}`,
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <div
+                className="relative group cursor-pointer"
+                onClick={() => setIsImageModalOpen(true)}
+              >
                 <img
                   src={
                     item.product.images[selectedImage] ||
                     "/placeholder-image.jpg"
                   }
                   alt={item.product.productname}
-                  className="w-full h-96 object-cover group-hover:scale-105 transition duration-500"
+                  className="w-full h-[500px] object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+
+                {/* Gradient Overlay on Hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                  style={{
+                    background: colors.hoverOverlay,
+                  }}
+                >
+                  <div
+                    className="px-6 py-3 rounded-full text-white font-bold flex items-center gap-2"
+                    style={{
+                      background: "rgba(0, 0, 0, 0.6)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  >
+                    <Eye className="w-5 h-5" />
+                    Xem ảnh toàn màn hình
+                  </div>
+                </div>
+
                 {/* Badges */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                <div className="absolute top-6 left-6 flex flex-col gap-3">
                   {item.product.inWarehouse && (
-                    <span className="bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-1 animate-pulse">
+                    <span
+                      className="px-4 py-2 rounded-full text-sm font-bold text-white flex items-center gap-2 shadow-lg animate-pulse"
+                      style={{
+                        background: "linear-gradient(135deg, #10b981, #059669)",
+                      }}
+                    >
                       <Package className="w-4 h-4" />
-                      Sẵn hàng
+                      Sẵn hàng trong kho
                     </span>
                   )}
-                  <span className="bg-gradient-to-r from-blue-500 to-green-400 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4" />
-                    Hot Deal
+                  <span
+                    className="px-4 py-2 rounded-full text-sm font-bold text-white flex items-center gap-2 shadow-lg"
+                    style={{
+                      background:
+                        item.product.type === "Car EV"
+                          ? "linear-gradient(135deg, #3b82f6, #06b6d4)"
+                          : "linear-gradient(135deg, #8b5cf6, #a855f7)",
+                    }}
+                  >
+                    {item.product.type === "Car EV" ? (
+                      <Car className="w-4 h-4" />
+                    ) : (
+                      <Battery className="w-4 h-4" />
+                    )}
+                    {item.product.type === "Car EV" ? "Xe điện" : "Pin"}
                   </span>
                 </div>
-                {/* Yêu thích */}
+
+                {/* Yêu thích Button */}
                 <button
                   onClick={() => handleAction("favorite")}
-                  className="absolute right-4 top-4 bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:scale-110 transition"
+                  className="absolute right-6 top-6 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
+                  style={{
+                    background: isDark
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : "rgba(255, 255, 255, 0.9)",
+                    backdropFilter: "blur(12px)",
+                  }}
                 >
                   <Heart
                     className={`w-6 h-6 transition ${
-                      isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
+                      isFavorite
+                        ? "fill-red-500 text-red-500"
+                        : isDark
+                        ? "text-white"
+                        : "text-gray-700"
                     }`}
                   />
                 </button>
@@ -208,18 +469,31 @@ export default function ListingDetail() {
 
               {/* Thumbnails */}
               {item.product.images.length > 1 && (
-                <div className="p-4 bg-gray-50 flex gap-3 overflow-x-auto">
+                <div
+                  className="p-6 flex gap-3 overflow-x-auto"
+                  style={{
+                    background: isDark
+                      ? "rgba(255, 255, 255, 0.03)"
+                      : "rgba(0, 0, 0, 0.02)",
+                  }}
+                >
                   {item.product.images.map((img, idx) => (
                     <button
                       key={idx}
-                      onClick={() =>
-                        handleAction({ action: "viewImage", index: idx })
-                      }
-                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition ${
-                        selectedImage === idx
-                          ? "border-blue-500 shadow-lg scale-110"
-                          : "border-gray-200 hover:border-blue-300"
-                      }`}
+                      onClick={() => setSelectedImage(idx)}
+                      className="flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden transition-all duration-300 hover:scale-110"
+                      style={{
+                        border:
+                          selectedImage === idx
+                            ? `3px solid ${colors.primary[0]}`
+                            : isDark
+                            ? "2px solid rgba(255, 255, 255, 0.1)"
+                            : "2px solid rgba(0, 0, 0, 0.1)",
+                        boxShadow:
+                          selectedImage === idx
+                            ? `0 0 20px ${colors.primary[0]}40`
+                            : "none",
+                      }}
                     >
                       <img
                         src={img}
@@ -232,42 +506,175 @@ export default function ListingDetail() {
               )}
             </div>
 
-            {/* Mô tả */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
-                Chi tiết sản phẩm
+            {/* Chi tiết sản phẩm với Glassmorphism */}
+            <div
+              className="rounded-3xl p-8"
+              style={{
+                background: isDark
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "rgba(255, 255, 255, 0.9)",
+                backdropFilter: "blur(20px)",
+                border: `2px solid ${colors.border}`,
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <h2 className="text-2xl font-bold mb-6">
+                <AuroraText
+                  key={`product-detail-${isDark}`}
+                  text="Chi Tiết Sản Phẩm"
+                  colors={colors.aurora}
+                  speed={2}
+                  className="text-2xl font-bold"
+                />
               </h2>
+
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
-                  <Shield className="w-6 h-6 text-blue-600 mt-1" />
-                  <div>
-                    <p className="font-semibold text-gray-800 mb-1">Mô tả</p>
-                    <p className="text-gray-600">
-                      {item.product.description || "Không có mô tả."}
-                    </p>
+                {/* Mô tả */}
+                <div
+                  className="p-6 rounded-2xl"
+                  style={{
+                    background: isDark
+                      ? "rgba(255, 255, 255, 0.03)"
+                      : "rgba(59, 130, 246, 0.05)",
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <Shield
+                      className="w-6 h-6 mt-1 flex-shrink-0"
+                      style={{ color: colors.primary[0] }}
+                    />
+                    <div>
+                      <p
+                        className={`font-semibold mb-2 ${
+                          isDark ? "text-white" : "text-gray-900"
+                        }`}
+                      >
+                        Mô tả sản phẩm
+                      </p>
+                      <p className={isDark ? "text-gray-300" : "text-gray-600"}>
+                        {item.product.description || "Không có mô tả."}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
+                {/* Thông tin chi tiết */}
                 {item.product.brandInfo && (
-                  <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl">
-                    <Award className="w-6 h-6 text-green-600 mt-1" />
-                    <div>
-                      <p className="font-semibold text-gray-800 mb-1">
-                        Thông tin
-                      </p>
-                      <p className="text-gray-600">
-                        {item.product.type === "Car EV"
-                          ? `${item.product.brandInfo.brand} ${
-                              item.product.brandInfo.year
-                            } - Biển số: ${
-                              item.product.brandInfo.licensePlate || "N/A"
-                            }`
-                          : `${item.product.brandInfo.brand} - Dung lượng: ${
-                              item.product.brandInfo.capacity
-                            } - Tình trạng: ${
-                              item.product.brandInfo.condition || "N/A"
-                            }`}
-                      </p>
+                  <div
+                    className="p-6 rounded-2xl"
+                    style={{
+                      background: isDark
+                        ? "rgba(255, 255, 255, 0.03)"
+                        : "rgba(139, 92, 246, 0.05)",
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Award
+                        className="w-6 h-6 mt-1 flex-shrink-0"
+                        style={{ color: colors.primary[1] }}
+                      />
+                      <div className="flex-1">
+                        <p
+                          className={`font-semibold mb-3 ${
+                            isDark ? "text-white" : "text-gray-900"
+                          }`}
+                        >
+                          Thông tin chi tiết
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p
+                              className={`text-sm ${
+                                isDark ? "text-gray-400" : "text-gray-500"
+                              }`}
+                            >
+                              Thương hiệu
+                            </p>
+                            <p
+                              className={`font-medium ${
+                                isDark ? "text-white" : "text-gray-900"
+                              }`}
+                            >
+                              {item.product.brandInfo.brand}
+                            </p>
+                          </div>
+                          {item.product.type === "Car EV" ? (
+                            <>
+                              <div>
+                                <p
+                                  className={`text-sm ${
+                                    isDark ? "text-gray-400" : "text-gray-500"
+                                  }`}
+                                >
+                                  Năm sản xuất
+                                </p>
+                                <p
+                                  className={`font-medium ${
+                                    isDark ? "text-white" : "text-gray-900"
+                                  }`}
+                                >
+                                  {item.product.brandInfo.year}
+                                </p>
+                              </div>
+                              {item.product.brandInfo.licensePlate && (
+                                <div>
+                                  <p
+                                    className={`text-sm ${
+                                      isDark ? "text-gray-400" : "text-gray-500"
+                                    }`}
+                                  >
+                                    Biển số
+                                  </p>
+                                  <p
+                                    className={`font-medium ${
+                                      isDark ? "text-white" : "text-gray-900"
+                                    }`}
+                                  >
+                                    {item.product.brandInfo.licensePlate}
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div>
+                                <p
+                                  className={`text-sm ${
+                                    isDark ? "text-gray-400" : "text-gray-500"
+                                  }`}
+                                >
+                                  Dung lượng
+                                </p>
+                                <p
+                                  className={`font-medium ${
+                                    isDark ? "text-white" : "text-gray-900"
+                                  }`}
+                                >
+                                  {item.product.brandInfo.capacity} kWh
+                                </p>
+                              </div>
+                              {item.product.brandInfo.condition && (
+                                <div>
+                                  <p
+                                    className={`text-sm ${
+                                      isDark ? "text-gray-400" : "text-gray-500"
+                                    }`}
+                                  >
+                                    Tình trạng
+                                  </p>
+                                  <p
+                                    className={`font-medium ${
+                                      isDark ? "text-white" : "text-gray-900"
+                                    }`}
+                                  >
+                                    {item.product.brandInfo.condition}
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -275,24 +682,55 @@ export default function ListingDetail() {
             </div>
 
             {/* Đánh giá */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent flex items-center gap-2">
+            <div
+              className="rounded-2xl p-8"
+              style={{
+                background: isDark
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "rgba(255, 255, 255, 0.9)",
+                backdropFilter: "blur(20px)",
+                border: `2px solid ${colors.border}`,
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <div className="flex items-center gap-3 mb-6">
                 <Star className="w-6 h-6 text-yellow-400 fill-current" />
-                Đánh giá từ người mua
-              </h2>
+                <AuroraText
+                  key={`reviews-${isDark}`}
+                  text="Đánh giá từ người mua"
+                  className="text-2xl font-bold"
+                  colors={colors.aurora}
+                  speed={2}
+                />
+              </div>
               {item.feedbacks.length > 0 ? (
                 <ul className="space-y-4">
                   {item.feedbacks.map((review, i) => (
                     <li
                       key={i}
-                      className="p-5 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-100"
+                      className="p-5 rounded-xl"
+                      style={{
+                        background: isDark
+                          ? "rgba(255, 255, 255, 0.03)"
+                          : "rgba(59, 130, 246, 0.05)",
+                        border: `1px solid ${colors.border}`,
+                      }}
                     >
                       <div className="flex justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold flex items-center justify-center">
+                          <div
+                            className="w-10 h-10 rounded-full text-white font-bold flex items-center justify-center"
+                            style={{
+                              background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                            }}
+                          >
                             {review.buyer.buyerName[0].toUpperCase()}
                           </div>
-                          <span className="font-semibold">
+                          <span
+                            className={`font-semibold ${
+                              isDark ? "text-white" : "text-gray-900"
+                            }`}
+                          >
                             {review.buyer.buyerName}
                           </span>
                         </div>
@@ -308,19 +746,32 @@ export default function ListingDetail() {
                           ))}
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-2">
+                      <p
+                        className={
+                          isDark ? "text-gray-300 mb-2" : "text-gray-700 mb-2"
+                        }
+                      >
                         {review.comment || "Không có bình luận."}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p
+                        className={`text-xs ${
+                          isDark ? "text-gray-500" : "text-gray-500"
+                        }`}
+                      >
                         {new Date(review.createdAt).toLocaleDateString("vi-VN")}
                       </p>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Star className="w-16 h-16 mx-auto mb-3 text-gray-300" />
-                  Chưa có đánh giá nào.
+                <div className="text-center py-8">
+                  <Star
+                    className="w-16 h-16 mx-auto mb-3"
+                    style={{ color: isDark ? "#374151" : "#d1d5db" }}
+                  />
+                  <p className={isDark ? "text-gray-400" : "text-gray-500"}>
+                    Chưa có đánh giá nào.
+                  </p>
                 </div>
               )}
             </div>
@@ -329,11 +780,35 @@ export default function ListingDetail() {
           {/* CỘT PHẢI: GIÁ + HÀNH ĐỘNG */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h1 className="text-2xl font-bold text-gray-800 mb-4 line-clamp-2">
+              <div
+                className="rounded-2xl p-8"
+                style={{
+                  background: isDark
+                    ? "rgba(255, 255, 255, 0.05)"
+                    : "rgba(255, 255, 255, 0.9)",
+                  backdropFilter: "blur(20px)",
+                  border: `2px solid ${colors.border}`,
+                  boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <h1
+                  className={`text-2xl font-bold mb-4 line-clamp-2 ${
+                    isDark ? "text-white" : "text-gray-800"
+                  }`}
+                >
                   {item.product.productname}
                 </h1>
-                <div className="bg-gradient-to-r from-blue-500 to-green-400 text-white text-3xl font-bold p-6 rounded-xl text-center mb-6">
+                <div
+                  className="text-white text-3xl font-bold p-6 rounded-xl text-center mb-6"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                    boxShadow: `0 10px 40px ${
+                      isDark
+                        ? "rgba(239, 68, 68, 0.3)"
+                        : "rgba(59, 130, 246, 0.3)"
+                    }`,
+                  }}
+                >
                   {currency(item.product.cost)}
                 </div>
 
@@ -341,7 +816,10 @@ export default function ListingDetail() {
                 <div className="space-y-3 mb-6">
                   <button
                     onClick={() => handleAction("buy")}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl transform hover:scale-105 transition"
+                    className="w-full text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl transform hover:scale-105 transition"
+                    style={{
+                      background: "linear-gradient(135deg, #10b981, #059669)",
+                    }}
                   >
                     <ShoppingCart className="w-5 h-5" />
                     Mua ngay
@@ -350,7 +828,10 @@ export default function ListingDetail() {
                   {item.product.type === "Battery" && (
                     <button
                       onClick={() => handleAction("cart")}
-                      className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl transform hover:scale-105 transition"
+                      className="w-full text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl transform hover:scale-105 transition"
+                      style={{
+                        background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                      }}
                       disabled={cartLoading}
                     >
                       <ShoppingCart className="w-5 h-5" />
@@ -361,54 +842,137 @@ export default function ListingDetail() {
                   {!isOwner && (
                     <button
                       onClick={() => handleAction("chat")}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                      className="w-full text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                      style={{
+                        background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                      }}
                     >
                       <MessageCircle className="w-5 h-5" />
                       Liên hệ ngay
                     </button>
                   )}
+
+                  {/* AI Price Suggestion Button - GỌI TRỰC TIẾP */}
+                  {!isOwner && (
+                    <button
+                      onClick={handleAiPriceSuggestion}
+                      disabled={loadingAiPrice}
+                      className="w-full text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+                      }}
+                    >
+                      {loadingAiPrice ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Đang phân tích...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-5 h-5" />
+                          AI Gợi ý giá
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {/* Thống kê */}
-                <div className="flex items-center justify-around py-4 border-t border-gray-200 text-sm">
+                <div
+                  className="flex items-center justify-around py-4 text-sm"
+                  style={{
+                    borderTop: `1px solid ${colors.border}`,
+                  }}
+                >
                   <div className="text-center">
                     <div className="flex items-center gap-1 text-yellow-500 mb-1">
                       <Star className="w-5 h-5 fill-current" />
-                      <span className="font-bold text-lg">
+                      <span
+                        className={`font-bold text-lg ${
+                          isDark ? "text-white" : "text-gray-900"
+                        }`}
+                      >
                         {item.averageRating.toFixed(1)}
                       </span>
                     </div>
-                    <p className="text-gray-500">
+                    <p className={isDark ? "text-gray-400" : "text-gray-500"}>
                       {item.totalReviews} đánh giá
                     </p>
                   </div>
-                  <div className="w-px h-12 bg-gray-200"></div>
+                  <div
+                    className="w-px h-12"
+                    style={{ background: colors.border }}
+                  ></div>
                   <div className="text-center">
-                    <div className="flex items-center gap-1 text-blue-600 mb-1">
+                    <div
+                      className="flex items-center gap-1 mb-1"
+                      style={{ color: colors.primary[0] }}
+                    >
                       <Eye className="w-5 h-5" />
-                      <span className="font-bold text-lg">
+                      <span
+                        className={`font-bold text-lg ${
+                          isDark ? "text-white" : "text-gray-900"
+                        }`}
+                      >
                         {item.viewCount}
                       </span>
                     </div>
-                    <p className="text-gray-500">Lượt xem</p>
+                    <p className={isDark ? "text-gray-400" : "text-gray-500"}>
+                      Lượt xem
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Người bán */}
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+              <div
+                className="rounded-2xl p-8"
+                style={{
+                  background: isDark
+                    ? "rgba(255, 255, 255, 0.05)"
+                    : "rgba(255, 255, 255, 0.9)",
+                  backdropFilter: "blur(20px)",
+                  border: `2px solid ${colors.border}`,
+                  boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <h3
+                  key={`seller-title-${isDark}`}
+                  className="text-xl font-bold mb-6"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
                   Thông tin người bán
                 </h3>
                 <button
                   onClick={() => handleAction("viewSeller")}
-                  className="w-full text-left flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl mb-6 group hover:shadow-md transition"
+                  className="w-full text-left flex items-center gap-4 p-4 rounded-xl mb-6 group hover:shadow-md transition"
+                  style={{
+                    background: isDark
+                      ? "rgba(255, 255, 255, 0.03)"
+                      : "rgba(59, 130, 246, 0.05)",
+                  }}
                 >
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold text-2xl flex items-center justify-center group-hover:scale-110 transition">
+                  <div
+                    className="w-16 h-16 rounded-full text-white font-bold text-2xl flex items-center justify-center group-hover:scale-110 transition"
+                    style={{
+                      background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                    }}
+                  >
                     {item.seller.displayName[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-800 truncate group-hover:text-blue-600 transition">
+                    <p
+                      className={`font-bold truncate transition ${
+                        isDark
+                          ? "text-white group-hover:text-orange-400"
+                          : "text-gray-800 group-hover:text-blue-600"
+                      }`}
+                    >
                       {item.seller.displayName}
                     </p>
                     <div className="flex items-center gap-1 text-yellow-500 text-sm">
@@ -416,26 +980,52 @@ export default function ListingDetail() {
                       <span className="font-semibold">
                         {item.averageRating.toFixed(1)}
                       </span>
-                      <span className="text-gray-500">
+                      <span
+                        className={isDark ? "text-gray-400" : "text-gray-500"}
+                      >
                         ({item.totalReviews})
                       </span>
                     </div>
                   </div>
                 </button>
                 <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <Mail className="w-5 h-5 text-blue-500" />
+                  <div
+                    className={`flex items-center gap-3 ${
+                      isDark ? "text-gray-300" : "text-gray-600"
+                    }`}
+                  >
+                    <Mail
+                      className="w-5 h-5"
+                      style={{ color: colors.primary[0] }}
+                    />
                     <span>{item.seller.email}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <Phone className="w-5 h-5 text-green-500" />
+                  <div
+                    className={`flex items-center gap-3 ${
+                      isDark ? "text-gray-300" : "text-gray-600"
+                    }`}
+                  >
+                    <Phone
+                      className="w-5 h-5"
+                      style={{ color: colors.primary[1] }}
+                    />
                     <span>{item.seller.phone || "N/A"}</span>
                   </div>
                 </div>
               </div>
 
               {/* Trust */}
-              <div className="bg-blue-400 rounded-2xl shadow-xl p-6 text-white">
+              <div
+                className="rounded-2xl p-6 text-white"
+                style={{
+                  background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                  boxShadow: `0 10px 40px ${
+                    isDark
+                      ? "rgba(239, 68, 68, 0.3)"
+                      : "rgba(59, 130, 246, 0.3)"
+                  }`,
+                }}
+              >
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3">
                     <Shield className="w-6 h-6" />
@@ -454,12 +1044,112 @@ export default function ListingDetail() {
             </div>
           </div>
         </div>
+
+        {/* Fullscreen Image Modal */}
+        {isImageModalOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{
+              background: "rgba(0, 0, 0, 0.95)",
+              backdropFilter: "blur(10px)",
+            }}
+            onClick={() => setIsImageModalOpen(false)}
+          >
+            <button
+              onClick={() => setIsImageModalOpen(false)}
+              className="absolute top-6 right-6 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-50"
+              style={{
+                background: "rgba(255, 255, 255, 0.2)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+
+            <img
+              src={item.product.images[selectedImage]}
+              alt={item.product.productname}
+              className="max-w-full max-h-[90vh] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            {/* Image Counter */}
+            <div
+              className="absolute bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full text-white font-bold"
+              style={{
+                background: "rgba(0, 0, 0, 0.6)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              {selectedImage + 1} / {item.product.images.length}
+            </div>
+
+            {/* Navigation Arrows */}
+            {item.product.images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImage((prev) =>
+                      prev === 0 ? item.product.images.length - 1 : prev - 1
+                    );
+                  }}
+                  className="absolute left-6 top-1/2 transform -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.2)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  <ArrowLeft className="w-6 h-6 text-white" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImage((prev) =>
+                      prev === item.product.images.length - 1 ? 0 : prev + 1
+                    );
+                  }}
+                  className="absolute right-6 top-1/2 transform -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.2)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  <ArrowLeft className="w-6 h-6 text-white transform rotate-180" />
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Scroll to Top Button */}
+        {showScrollTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 z-40 shadow-2xl"
+            style={{
+              background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+              boxShadow: isDark
+                ? "0 10px 40px rgba(239, 68, 68, 0.5)"
+                : "0 10px 40px rgba(59, 130, 246, 0.5)",
+            }}
+          >
+            <ArrowLeft className="w-6 h-6 text-white transform rotate-90" />
+          </button>
+        )}
       </div>
       <ChatModal
         open={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
         sellerId={item?.seller?.sellerId}
         sellerName={item?.seller?.displayName || item?.seller?.username}
+      />
+
+      {/* AI Price Suggestion Modal - CHỈ HIỂN THỊ KẾT QUẢ */}
+      <PriceSuggestionModal
+        isOpen={isPriceModalOpen}
+        onClose={() => setIsPriceModalOpen(false)}
+        suggestion={aiPriceSuggestion}
       />
     </div>
   );

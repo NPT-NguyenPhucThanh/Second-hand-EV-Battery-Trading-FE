@@ -1,199 +1,396 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Table, Button, Tag, message, Space, Popconfirm, Input, Image, Badge } from "antd";
-import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import { getAllProductsForManager, deleteProductByManager } from "../../../services/managerProductService"; // Dùng service mới
+import {
+  getAllProductsForManager,
+  deleteProductByManager,
+} from "../../../services/managerProductService";
 import { useNavigate } from "react-router-dom";
-
-const { Search } = Input;
-
-// Helper map trạng thái sản phẩm sang Tag màu
-const getStatusTag = (status) => {
-  const statusMap = {
-    CHO_DUYET: { color: "blue", label: "Chờ duyệt" },
-    CHO_KIEM_DUYET: { color: "cyan", label: "Chờ kiểm định" },
-    DA_DUYET: { color: "geekblue", label: "Đã duyệt" },
-    DANG_BAN: { color: "green", label: "Đang bán" },
-    DA_BAN: { color: "volcano", label: "Đã bán" },
-    BI_TU_CHOI: { color: "red", label: "Bị từ chối" },
-    KHONG_DAT_KIEM_DINH: { color: "magenta", label: "Không đạt KĐ" },
-    HET_HAN: { color: "gray", label: "Hết hạn" },
-    REMOVED_FROM_WAREHOUSE: { color: "purple", label: "Đã gỡ" },
-  };
-  // Lấy config từ map, hoặc dùng default nếu không tìm thấy
-  const config = statusMap[status] || { color: "default", label: status };
-  return <Tag color={config.color}>{config.label}</Tag>;
-};
+import { useTheme } from "../../../contexts/ThemeContext";
+import { toast } from "sonner";
+import AuroraText from "../../../components/common/AuroraText";
+import {
+  Car,
+  Battery,
+  Search as SearchIcon,
+  Trash2,
+  User,
+  DollarSign,
+  Package,
+  Loader2,
+  Eye,
+  CheckCircle,
+  Clock,
+  XCircle,
+  AlertCircle,
+  Archive,
+} from "lucide-react";
 
 export default function ProductManagementAll() {
+  const { isDark } = useTheme();
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const navigate = useNavigate();
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const res = await getAllProductsForManager();
-      if (res.status === 'success') {
-        // Gán 'key' cho mỗi row để Ant Design Table hoạt động
-        setAllProducts(res.products.map(p => ({ ...p, key: p.productid })));
+      if (res.status === "success") {
+        setAllProducts(res.products.map((p) => ({ ...p, key: p.productid })));
       } else {
-        message.error(res.message || "Không thể tải danh sách sản phẩm!");
+        toast.error(res.message || "Không thể tải danh sách sản phẩm!");
       }
-    } catch (error) {
-      message.error("Lỗi kết nối khi tải sản phẩm!");
+    } catch (err) {
+      toast.error("Lỗi kết nối khi tải sản phẩm!");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Tải dữ liệu khi component mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Xử lý hành động xóa của Manager
-  const handleDelete = async (productId) => {
+  const handleDelete = async (productId, productName) => {
+    if (
+      !window.confirm(`Xóa "${productName}"? Hành động này không thể hoàn tác!`)
+    )
+      return;
+
     try {
       const res = await deleteProductByManager(productId);
-      // Giả định backend trả về { status: "success", message: "..." }
-      if (res.status === 'success') {
-        message.success(res.message);
-        fetchProducts(); // Tải lại danh sách sau khi xóa
+      if (res.status === "success") {
+        toast.success(res.message);
+        fetchProducts();
       } else {
         throw new Error(res.message);
       }
     } catch (error) {
-      message.error(`Xóa thất bại: ${error.message}`);
+      toast.error(`Xóa thất bại: ${error.message}`);
     }
   };
 
-  // Lọc danh sách sản phẩm dựa trên thanh tìm kiếm
-  const filteredProducts = useMemo(() => {
-    const lowerSearch = searchTerm.toLowerCase();
-    if (!lowerSearch) return allProducts;
-    
-    return allProducts.filter(p =>
-      p.productname.toLowerCase().includes(lowerSearch) ||
-      p.productid.toString().includes(lowerSearch) ||
-      p.type.toLowerCase().includes(lowerSearch) ||
-      (p.users && p.users.username.toLowerCase().includes(lowerSearch))
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      CHO_DUYET: {
+        color: "bg-blue-500/20 text-blue-400",
+        label: "Chờ duyệt",
+        icon: Clock,
+      },
+      CHO_KIEM_DUYET: {
+        color: "bg-cyan-500/20 text-cyan-400",
+        label: "Chờ kiểm định",
+        icon: AlertCircle,
+      },
+      DA_DUYET: {
+        color: "bg-purple-500/20 text-purple-400",
+        label: "Đã duyệt",
+        icon: CheckCircle,
+      },
+      DANG_BAN: {
+        color: "bg-green-500/20 text-green-400",
+        label: "Đang bán",
+        icon: CheckCircle,
+      },
+      DA_BAN: {
+        color: "bg-orange-500/20 text-orange-400",
+        label: "Đã bán",
+        icon: Archive,
+      },
+      BI_TU_CHOI: {
+        color: "bg-red-500/20 text-red-400",
+        label: "Bị từ chối",
+        icon: XCircle,
+      },
+      KHONG_DAT_KIEM_DINH: {
+        color: "bg-red-500/20 text-red-400",
+        label: "Không đạt KĐ",
+        icon: XCircle,
+      },
+      HET_HAN: {
+        color: "bg-gray-500/20 text-gray-400",
+        label: "Hết hạn",
+        icon: Clock,
+      },
+      REMOVED_FROM_WAREHOUSE: {
+        color: "bg-purple-500/20 text-purple-400",
+        label: "Đã gỡ",
+        icon: Archive,
+      },
+    };
+    return (
+      statusMap[status] || {
+        color: "bg-gray-500/20 text-gray-400",
+        label: status,
+        icon: AlertCircle,
+      }
     );
-  }, [allProducts, searchTerm]);
+  };
 
-  // Định nghĩa các cột cho bảng
-  const columns = [
-    { 
-      title: "Mã SP", 
-      dataIndex: "productid", 
-      key: "productid", 
-      width: 80, 
-      sorter: (a, b) => a.productid - b.productid 
-    },
-    {
-      title: "Ảnh",
-      dataIndex: "imgs",
-      key: "imgs",
-      render: (imgs) => (
-        <Image
-          src={imgs && imgs.length > 0 ? imgs[0].url : "/placeholder.jpg"} // Giả sử /placeholder.jpg là ảnh mặc định
-          width={60}
-          preview={{ mask: <EyeOutlined /> }}
+  const filteredProducts = useMemo(() => {
+    let filtered = [...allProducts];
+
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.productname.toLowerCase().includes(lower) ||
+          p.productid.toString().includes(lower) ||
+          p.type.toLowerCase().includes(lower) ||
+          (p.users && p.users.username.toLowerCase().includes(lower))
+      );
+    }
+
+    if (typeFilter !== "all") {
+      filtered = filtered.filter((p) => p.type === typeFilter);
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((p) => p.status === statusFilter);
+    }
+
+    return filtered;
+  }, [allProducts, searchTerm, typeFilter, statusFilter]);
+
+  if (loading) {
+    return (
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          isDark ? "bg-gray-900" : "bg-gray-50"
+        }`}
+      >
+        <Loader2
+          className={`w-12 h-12 animate-spin ${
+            isDark ? "text-purple-400" : "text-purple-500"
+          }`}
         />
-      ),
-    },
-    { 
-      title: "Tên sản phẩm", 
-      dataIndex: "productname", 
-      key: "productname", 
-      ellipsis: true,
-      sorter: (a, b) => a.productname.localeCompare(b.productname)
-    },
-    { 
-      title: "Giá (VNĐ)", 
-      dataIndex: "cost", 
-      key: "cost",
-      render: (cost) => (cost ? cost.toLocaleString('vi-VN') : '0'),
-      sorter: (a, b) => a.cost - b.cost
-    },
-    { 
-      title: "Loại", 
-      dataIndex: "type", 
-      key: "type", 
-      width: 100,
-      filters: [
-        { text: 'Car EV', value: 'Car EV' },
-        { text: 'Battery', value: 'Battery' },
-      ],
-      onFilter: (value, record) => record.type.indexOf(value) === 0,
-    },
-    { 
-      title: "Người bán", 
-      dataIndex: "users", 
-      key: "seller",
-      render: (users) => users ? users.username : 'N/A'
-    },
-    { 
-      title: "Trạng thái", 
-      dataIndex: "status", 
-      key: "status",
-      render: (status) => getStatusTag(status),
-      // Bạn có thể thêm bộ lọc (filters) cho trạng thái ở đây nếu muốn
-    },
-    {
-      title: "Trong kho",
-      dataIndex: "inWarehouse",
-      key: "inWarehouse",
-      render: (inWarehouse) => (
-        inWarehouse ? <Badge status="processing" text="Trong kho" /> : <Badge status="default" text="Ngoài kho" />
-      ),
-      filters: [
-        { text: 'Trong kho', value: true },
-        { text: 'Ngoài kho', value: false },
-      ],
-      onFilter: (value, record) => record.inWarehouse === value,
-    },
-    {
-      title: "Hành động (Manager)",
-      key: "action",
-      fixed: 'right',
-      width: 100,
-      render: (_, record) => (
-        <Space>
-          <Popconfirm
-            title="Xóa sản phẩm vĩnh viễn?"
-            description={`Bạn có chắc muốn xóa "${record.productname}"? Hành động này sẽ xóa sản phẩm và ảnh liên quan trên Cloudinary.`}
-            onConfirm={() => handleDelete(record.productid)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <Button size="small" danger icon={<DeleteOutlined />}>
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+      </div>
+    );
+  }
 
   return (
-    <>
-      <h2>Quản lý Toàn bộ Sản phẩm (Giám sát)</h2>
-      <Search
-        placeholder="Tìm kiếm theo Mã SP, Tên, Loại, Người bán..."
-        onSearch={setSearchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        allowClear
-        style={{ marginBottom: 16, width: '100%' }}
-      />
-      <Table
-        dataSource={filteredProducts}
-        columns={columns}
-        rowKey="key"
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-        scroll={{ x: 1300 }} // Cho phép cuộn ngang trên màn hình nhỏ
-      />
-    </>
+    <div
+      className={`min-h-screen p-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
+    >
+      <div className="mb-8">
+        <AuroraText className="text-4xl font-bold mb-2">
+          Quản Lý Sản Phẩm
+        </AuroraText>
+        <p className={isDark ? "text-gray-400" : "text-gray-600"}>
+          Giám sát toàn bộ sản phẩm trên hệ thống
+        </p>
+      </div>
+
+      <div className="mb-6 space-y-4">
+        <div
+          className={`flex items-center gap-3 p-4 rounded-xl ${
+            isDark ? "bg-gray-800/50" : "bg-white shadow-md"
+          }`}
+        >
+          <SearchIcon className={isDark ? "text-gray-400" : "text-gray-500"} />
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên, mã SP, loại, người bán..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`flex-1 bg-transparent border-none outline-none ${
+              isDark
+                ? "text-white placeholder-gray-500"
+                : "text-gray-900 placeholder-gray-400"
+            }`}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <div className="flex gap-2">
+            {["all", "Car EV", "Battery"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setTypeFilter(type)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  typeFilter === type
+                    ? isDark
+                      ? "bg-purple-500/20 text-purple-400"
+                      : "bg-purple-500 text-white"
+                    : isDark
+                    ? "bg-gray-800/50 text-gray-400 hover:bg-gray-700"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {type === "all" ? "Tất cả" : type}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            {["all", "DANG_BAN", "DA_BAN", "CHO_DUYET"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  statusFilter === status
+                    ? isDark
+                      ? "bg-blue-500/20 text-blue-400"
+                      : "bg-blue-500 text-white"
+                    : isDark
+                    ? "bg-gray-800/50 text-gray-400 hover:bg-gray-700"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {status === "all" ? "Tất cả TT" : getStatusBadge(status).label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredProducts.map((product) => {
+          const statusBadge = getStatusBadge(product.status);
+          const StatusIcon = statusBadge.icon;
+          const TypeIcon = product.type === "Car EV" ? Car : Battery;
+          const productImage =
+            product.imgs && product.imgs.length > 0
+              ? product.imgs[0].url
+              : "/placeholder.jpg";
+
+          return (
+            <div
+              key={product.productid}
+              className={`rounded-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 ${
+                isDark
+                  ? "bg-gray-800/50 backdrop-blur-sm"
+                  : "bg-white shadow-lg"
+              }`}
+            >
+              <div className="relative h-48 overflow-hidden bg-gray-700">
+                <img
+                  src={productImage}
+                  alt={product.productname}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-3 left-3 flex items-center gap-1 px-3 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+                  <TypeIcon className="w-4 h-4 text-white" />
+                  <span className="text-xs font-medium text-white">
+                    {product.type}
+                  </span>
+                </div>
+                {product.inWarehouse && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 px-3 py-1 rounded-lg bg-green-500/80 backdrop-blur-sm">
+                    <Package className="w-4 h-4 text-white" />
+                    <span className="text-xs font-medium text-white">
+                      Trong kho
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4">
+                <h3
+                  className={`font-bold text-lg mb-2 line-clamp-2 ${
+                    isDark ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  {product.productname}
+                </h3>
+
+                <div className="flex items-center gap-2 mb-3">
+                  <DollarSign
+                    className={`w-5 h-5 ${
+                      isDark ? "text-green-400" : "text-green-500"
+                    }`}
+                  />
+                  <span
+                    className={`text-xl font-bold ${
+                      isDark ? "text-green-400" : "text-green-500"
+                    }`}
+                  >
+                    {(product.cost || 0).toLocaleString("vi-VN")} ₫
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 mb-3">
+                  <User
+                    className={`w-4 h-4 ${
+                      isDark ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    {product.users ? product.users.username : "N/A"}
+                  </span>
+                </div>
+
+                <div
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-4 ${statusBadge.color}`}
+                >
+                  <StatusIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    {statusBadge.label}
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      navigate(`/manager/products/${product.productid}`)
+                    }
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium transition-all ${
+                      isDark
+                        ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                  >
+                    <Eye className="w-4 h-4" />
+                    Chi tiết
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleDelete(product.productid, product.productname)
+                    }
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      isDark
+                        ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                        : "bg-red-500 text-white hover:bg-red-600"
+                    }`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <p
+                  className={`text-xs mt-3 text-center ${
+                    isDark ? "text-gray-500" : "text-gray-400"
+                  }`}
+                >
+                  Mã SP: #{product.productid}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {filteredProducts.length === 0 && (
+        <div className="text-center py-12">
+          <Package
+            className={`w-16 h-16 mx-auto mb-4 ${
+              isDark ? "text-gray-600" : "text-gray-400"
+            }`}
+          />
+          <p
+            className={`text-lg ${isDark ? "text-gray-400" : "text-gray-600"}`}
+          >
+            Không tìm thấy sản phẩm nào
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

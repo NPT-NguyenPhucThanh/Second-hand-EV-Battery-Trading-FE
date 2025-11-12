@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { getNotification, deleteNotification } from "../../services/notificationService";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const getReadIdsFromStorage = () => {
   const storedIds = localStorage.getItem("readNotificationIds");
@@ -52,6 +53,7 @@ export default function TailwindNotify() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const { isAuthenticated } = useUser();
+  const { isDark } = useTheme();
   const [unseenCount, setUnseenCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [readIds, setReadIds] = useState(() => getReadIdsFromStorage());
@@ -76,7 +78,7 @@ export default function TailwindNotify() {
         setUnseenCount(newUnseenCount);
         setReadIds(localReadIds);
       }
-    } catch (error) {
+    } catch {
       toast.error("Không thể tải thông báo!");
     } finally {
       setLoading(false);
@@ -102,7 +104,7 @@ export default function TailwindNotify() {
       } else {
         throw new Error(res.message);
       }
-    } catch (error) {
+    } catch {
       toast.error("Xóa thông báo thất bại!");
     }
   };
@@ -135,12 +137,26 @@ export default function TailwindNotify() {
     <div ref={bellRef} className="relative">
       <button
         onClick={handleToggleDropdown}
-        className="relative p-2 rounded-full text-white hover:bg-white/20"
+        className="p-2 rounded-xl transition-all duration-200 hover:scale-110"
+        style={{
+          background: isDark
+            ? 'rgba(255, 255, 255, 0.05)'
+            : 'rgba(0, 0, 0, 0.03)',
+        }}
         aria-label="Thông báo"
       >
-        <Bell className="w-5 h-5" />
+        <Bell 
+          className="w-5 h-5" 
+          style={{ color: isDark ? 'white' : '#1f2937' }}
+        />
         {unseenCount > 0 && (
-          <span className="absolute top-1 right-1 block w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full ring-2 ring-white">
+          <span 
+            className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-white text-xs font-bold rounded-full ring-2"
+            style={{
+              background: 'linear-gradient(135deg, #ef4444, #f97316)',
+              ringColor: isDark ? 'white' : '#f3f4f6',
+            }}
+          >
             {unseenCount > 9 ? '9+' : unseenCount}
           </span>
         )}

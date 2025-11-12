@@ -1,13 +1,15 @@
-// src/features/checkout/DepositCar.jsx
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../../utils/api";
 import { toast } from "sonner";
 import { Calendar, MapPin, Car, CreditCard } from "lucide-react";
+import { useTheme } from "../../contexts/ThemeContext";
+import AuroraText from "../../components/common/AuroraText";
 
 export default function DepositCar() {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -17,7 +19,7 @@ export default function DepositCar() {
     changePlate: true,
   });
 
-  // ✅ Helper: Convert datetime-local to backend format
+  //Convert datetime-local to backend format
   const formatDateTimeForBackend = (datetimeLocal) => {
     if (!datetimeLocal) return "";
 
@@ -98,21 +100,51 @@ export default function DepositCar() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-12">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <div className="bg-white rounded-3xl shadow-2xl p-10">
-          <Car className="w-20 h-20 text-blue-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
-            Đặt cọc xe
-          </h1>
-          <p className="text-gray-600 mb-8 text-center">
-            Mã đơn: <strong>#{orderId}</strong>
-          </p>
+    <div
+      className={`min-h-screen py-12 ${
+        isDark
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+          : "bg-gradient-to-br from-blue-50 via-green-50 to-blue-50"
+      }`}
+    >
+      {/* Floating gradient orbs */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 -left-20 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-green-500/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-full blur-3xl animate-float [animation-delay:2s]" />
+      </div>
+
+      <div className="container mx-auto px-4 max-w-2xl relative">
+        <div
+          className={`rounded-3xl shadow-2xl p-10 backdrop-blur-xl border ${
+            isDark
+              ? "bg-gray-800/90 border-gray-700/50"
+              : "bg-white/90 border-white/50"
+          }`}
+        >
+          <Car
+            className={`w-20 h-20 mx-auto mb-6 ${
+              isDark ? "text-blue-400" : "text-blue-500"
+            }`}
+          />
+
+          <div className="text-center mb-8">
+            <AuroraText text="Đặt cọc xe" className="text-3xl font-bold mb-4" />
+            <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
+              Mã đơn:{" "}
+              <strong className={isDark ? "text-white" : "text-gray-900"}>
+                #{orderId}
+              </strong>
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Địa điểm giao dịch */}
             <div>
-              <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+              <label
+                className={`flex items-center gap-2 font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
                 <MapPin className="w-5 h-5" />
                 Địa điểm giao dịch
               </label>
@@ -126,14 +158,22 @@ export default function DepositCar() {
                   })
                 }
                 placeholder="Nhập địa chỉ giao dịch"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${
+                  isDark
+                    ? "bg-gray-900/50 border-gray-700 text-white placeholder-gray-500"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                } border`}
                 required
               />
             </div>
 
             {/* Ngày hẹn */}
             <div>
-              <label className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+              <label
+                className={`flex items-center gap-2 font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
                 <Calendar className="w-5 h-5" />
                 Ngày hẹn giao dịch
               </label>
@@ -144,13 +184,21 @@ export default function DepositCar() {
                   setFormData({ ...formData, appointmentDate: e.target.value })
                 }
                 min={new Date().toISOString().slice(0, 16)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${
+                  isDark
+                    ? "bg-gray-900/50 border-gray-700 text-white"
+                    : "bg-white border-gray-300 text-gray-900"
+                } border`}
                 required
               />
             </div>
 
             {/* Chuyển quyền sở hữu */}
-            <div className="flex items-center gap-3">
+            <div
+              className={`flex items-center gap-3 p-4 rounded-xl ${
+                isDark ? "bg-gray-900/30" : "bg-gray-50"
+              }`}
+            >
               <input
                 type="checkbox"
                 id="transferOwnership"
@@ -163,13 +211,22 @@ export default function DepositCar() {
                 }
                 className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
               />
-              <label htmlFor="transferOwnership" className="text-gray-700">
+              <label
+                htmlFor="transferOwnership"
+                className={`cursor-pointer ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
                 Chuyển quyền sở hữu xe
               </label>
             </div>
 
             {/* Đổi biển số */}
-            <div className="flex items-center gap-3">
+            <div
+              className={`flex items-center gap-3 p-4 rounded-xl ${
+                isDark ? "bg-gray-900/30" : "bg-gray-50"
+              }`}
+            >
               <input
                 type="checkbox"
                 id="changePlate"
@@ -179,7 +236,12 @@ export default function DepositCar() {
                 }
                 className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
               />
-              <label htmlFor="changePlate" className="text-gray-700">
+              <label
+                htmlFor="changePlate"
+                className={`cursor-pointer ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
                 Đổi biển số xe
               </label>
             </div>
@@ -188,16 +250,20 @@ export default function DepositCar() {
             <div className="flex gap-4 mt-8">
               <button
                 type="button"
-                onClick={() => navigate(-1)} // Dùng navigate(-1) để quay lại trang trước
+                onClick={() => navigate(-1)}
                 disabled={loading}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                    : "bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300"
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 Quay lại
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 transform transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
               >
                 <CreditCard className="w-5 h-5" />
                 {loading ? "Đang xử lý..." : "Xác nhận & Thanh toán cọc"}

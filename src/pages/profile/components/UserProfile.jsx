@@ -1,22 +1,31 @@
-// ProfilePage.jsx
 import React, { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
-import { useNavigate } from "react-router-dom";
-import api from "../../../utils/api";
 import { Routes, Route } from "react-router-dom";
-import { Alert, Button, Modal, Form, Upload, message, Spin } from "antd";
 import {
-  SolutionOutlined,
-  CheckCircleOutlined,
-  SyncOutlined,
-  CloseCircleOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
+  Loader,
+  CheckCircle,
+  Clock,
+  XCircle,
+  User,
+  ShoppingBag,
+  Package,
+  AlertTriangle,
+  Crown,
+  TrendingUp,
+  FileText,
+  Upload as UploadIcon,
+  X,
+  Send,
+  ChevronRight,
+} from "lucide-react";
 import {
   getSelfUpgradeStatus,
   requestSellerUpgrade,
   resubmitSellerUpgrade,
 } from "../../../services/sellerUpgradeService";
+import { toast } from "sonner";
+import { useTheme } from "../../../contexts/ThemeContext";
+import AuroraText from "../../../components/common/AuroraText";
 
 import ProfileInfo from "../../profile/ProfileInfo";
 import OrderHistoryContent from "../../profile/OrderHistoryContent";
@@ -26,6 +35,27 @@ import ViewMyProductContent from "../ViewMyProductContent";
 import MySellingContent from "../MySellingContent";
 import RevenueContent from "../RevenueContent";
 import TransactionContent from "../TransactionContent";
+
+const THEME_COLORS = {
+  dark: {
+    primary: ["#ef4444", "#f97316"],
+    aurora: ["#ef4444", "#f97316", "#fb923c", "#fbbf24", "#ef4444"],
+    border: "rgba(239, 68, 68, 0.2)",
+    text: {
+      primary: "#ffffff",
+      secondary: "#e5e7eb", // gray-200 - Much brighter for dark mode
+    },
+  },
+  light: {
+    primary: ["#3b82f6", "#8b5cf6"],
+    aurora: ["#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#3b82f6"],
+    border: "rgba(59, 130, 246, 0.3)",
+    text: {
+      primary: "#1f2937",
+      secondary: "#6b7280",
+    },
+  },
+};
 const MENU = {
   PROFILE: "profile",
   ORDERS: "orders",
@@ -38,18 +68,88 @@ const MENU = {
   VOUCHERS: "vouchers",
 };
 
+// 🎯 Menu Item Component - Bento Card Style
+const MenuCard = ({
+  icon,
+  label,
+  description,
+  active,
+  onClick,
+  gradient,
+  isDark,
+  colors,
+}) => (
+  <button
+    onClick={onClick}
+    className="group relative w-full text-left p-6 rounded-3xl transition-all duration-300 hover:scale-105"
+    style={{
+      background: active
+        ? `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`
+        : isDark
+        ? "rgba(255, 255, 255, 0.05)"
+        : "rgba(255, 255, 255, 0.9)",
+      backdropFilter: "blur(20px)",
+      border: `2px solid ${active ? "transparent" : colors.border}`,
+      boxShadow: active
+        ? isDark
+          ? "0 20px 60px rgba(239, 68, 68, 0.3)"
+          : "0 20px 60px rgba(59, 130, 246, 0.3)"
+        : "0 10px 30px rgba(0, 0, 0, 0.05)",
+    }}
+  >
+    <div className="flex items-start justify-between mb-3">
+      <div
+        className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+        style={{
+          background: active
+            ? "rgba(255, 255, 255, 0.2)"
+            : gradient || `${colors.primary[0]}20`,
+        }}
+      >
+        <div style={{ color: active ? "#fff" : colors.primary[0] }}>{icon}</div>
+      </div>
+      <ChevronRight
+        className={`w-5 h-5 transition-transform duration-300 ${
+          active
+            ? "translate-x-1 text-white"
+            : isDark
+            ? "text-gray-200"
+            : "text-gray-600"
+        }`}
+      />
+    </div>
+    <h3
+      className={`text-lg font-bold mb-1 ${
+        active ? "text-white" : isDark ? "text-white" : "text-gray-900"
+      }`}
+    >
+      {label}
+    </h3>
+    {description && (
+      <p
+        className={`text-sm ${
+          active ? "text-white/80" : isDark ? "text-gray-200" : "text-gray-600"
+        }`}
+      >
+        {description}
+      </p>
+    )}
+  </button>
+);
+
 export default function ProfilePage() {
+  const { isDark } = useTheme();
+  const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
   const { user } = useUser();
-  const navigate = useNavigate();
 
   const [activeMenu, setActiveMenu] = useState(MENU.PROFILE);
-
   const [upgradeStatus, setUpgradeStatus] = useState(null);
   const [statusLoading, setStatusLoading] = useState(true);
   const [rejectionReason, setRejectionReason] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form] = Form.useForm();
+  const [cccdFront, setCccdFront] = useState(null);
+  const [cccdBack, setCccdBack] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -64,8 +164,8 @@ export default function ProfilePage() {
             setRejectionReason(res.rejectionReason);
           }
         }
-      } catch (err) {
-        message.error("Không thể tải trạng thái nâng cấp.");
+      } catch {
+        toast.error("Không thể tải trạng thái nâng cấp.");
       } finally {
         setStatusLoading(false);
       }
@@ -75,16 +175,57 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <p className="text-gray-700 mb-4">
-            Bạn cần đăng nhập để xem trang cá nhân.
+      <div className="min-h-screen pt-20 pb-20 px-6 relative overflow-hidden flex items-center justify-center">
+        {/* Floating Orbs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div
+            className="absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse"
+            style={{
+              background: `radial-gradient(circle, ${colors.primary[0]}, transparent)`,
+            }}
+          />
+        </div>
+
+        {/* Not Logged In Card */}
+        <div
+          className="relative z-10 rounded-3xl p-12 text-center max-w-md"
+          style={{
+            background: isDark
+              ? "rgba(255, 255, 255, 0.05)"
+              : "rgba(255, 255, 255, 0.9)",
+            backdropFilter: "blur(20px)",
+            border: `2px solid ${colors.border}`,
+          }}
+        >
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
+            style={{
+              background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+            }}
+          >
+            <User className="w-10 h-10 text-white" />
+          </div>
+          <h2
+            className={`text-2xl font-bold mb-4 ${
+              isDark ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Bạn chưa đăng nhập
+          </h2>
+          <p className={`mb-6 ${isDark ? "text-gray-200" : "text-gray-600"}`}>
+            Vui lòng đăng nhập để xem trang cá nhân
           </p>
           <a
             href="/login"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            className="inline-block px-8 py-4 rounded-2xl font-bold text-white transition-all duration-300 hover:scale-105"
+            style={{
+              background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+              boxShadow: isDark
+                ? "0 10px 40px rgba(239, 68, 68, 0.3)"
+                : "0 10px 40px rgba(59, 130, 246, 0.3)",
+            }}
           >
-            Đăng nhập
+            Đăng nhập ngay
           </a>
         </div>
       </div>
@@ -94,19 +235,20 @@ export default function ProfilePage() {
   const showUpgradeModal = () => setIsModalOpen(true);
   const handleModalCancel = () => {
     setIsModalOpen(false);
-    form.resetFields();
+    setCccdFront(null);
+    setCccdBack(null);
   };
 
-  const handleFormSubmit = async (values) => {
-    if (!values.cccdFront || !values.cccdBack) {
-      message.error("Vui lòng tải lên đủ 2 mặt CCCD");
+  const handleFormSubmit = async () => {
+    if (!cccdFront || !cccdBack) {
+      toast.error("Vui lòng tải lên đủ 2 mặt CCCD");
       return;
     }
 
     setSubmitting(true);
     const formData = new FormData();
-    formData.append("cccdFront", values.cccdFront[0].originFileObj);
-    formData.append("cccdBack", values.cccdBack[0].originFileObj);
+    formData.append("cccdFront", cccdFront);
+    formData.append("cccdBack", cccdBack);
 
     try {
       let res;
@@ -117,93 +259,195 @@ export default function ProfilePage() {
       }
 
       if (res.status === "success") {
-        message.success(res.message);
+        toast.success(res.message);
         setUpgradeStatus(res.upgradeStatus || "PENDING");
         setIsModalOpen(false);
+        setCccdFront(null);
+        setCccdBack(null);
       } else {
         throw new Error(res.message || "Gửi yêu cầu thất bại");
       }
     } catch (err) {
-      message.error(err.message);
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const normFile = (e) => (Array.isArray(e) ? e : e && e.fileList);
-
   const renderUpgradeSection = () => {
-    if (statusLoading)
+    if (statusLoading) {
       return (
-        <div className="text-center p-4">
-          <Spin />
+        <div
+          className="p-8 rounded-2xl text-center"
+          style={{
+            background: isDark
+              ? "rgba(255, 255, 255, 0.05)"
+              : "rgba(255, 255, 255, 0.9)",
+            backdropFilter: "blur(20px)",
+            border: `2px solid ${colors.border}`,
+          }}
+        >
+          <Loader
+            className="w-8 h-8 mx-auto mb-3 animate-spin"
+            style={{ color: colors.primary[0] }}
+          />
+          <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+            Đang tải...
+          </p>
         </div>
       );
+    }
 
-    if (user.roles?.includes("SELLER")) {
+    if (user.roles?.includes("SELLER") || user.role === "SELLER") {
       return (
-        <Alert
-          message="Bạn đã là Người bán"
-          description="Tài khoản của bạn đã có đầy đủ quyền đăng bán sản phẩm."
-          type="success"
-          showIcon
-          icon={<CheckCircleOutlined />}
-        />
+        <div
+          className="p-6 rounded-2xl"
+          style={{
+            background: "rgba(16, 185, 129, 0.1)",
+            border: "2px solid rgba(16, 185, 129, 0.3)",
+          }}
+        >
+          <div className="flex items-start gap-4">
+            <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+            <div>
+              <h4 className="font-bold text-green-700 mb-1">
+                Bạn đã là Người bán
+              </h4>
+              <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                Tài khoản của bạn đã có đầy đủ quyền đăng bán sản phẩm.
+              </p>
+            </div>
+          </div>
+        </div>
       );
     }
 
     switch (upgradeStatus) {
       case "APPROVED":
         return (
-          <Alert
-            message="Nâng cấp thành công"
-            description="Yêu cầu của bạn đã được duyệt. Vui lòng đăng xuất và đăng nhập lại để cập nhật quyền."
-            type="success"
-            showIcon
-            icon={<CheckCircleOutlined />}
-          />
+          <div
+            className="p-6 rounded-2xl"
+            style={{
+              background: "rgba(16, 185, 129, 0.1)",
+              border: "2px solid rgba(16, 185, 129, 0.3)",
+            }}
+          >
+            <div className="flex items-start gap-4">
+              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+              <div>
+                <h4 className="font-bold text-green-700 mb-1">
+                  Nâng cấp thành công
+                </h4>
+                <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                  Yêu cầu của bạn đã được duyệt. Vui lòng đăng xuất và đăng nhập
+                  lại để cập nhật quyền.
+                </p>
+              </div>
+            </div>
+          </div>
         );
+
       case "PENDING":
         return (
-          <Alert
-            message="Đang chờ duyệt"
-            description="Yêu cầu nâng cấp của bạn đã được gửi và đang chờ quản trị viên xét duyệt."
-            type="info"
-            showIcon
-            icon={<SyncOutlined spin />}
-          />
+          <div
+            className="p-6 rounded-2xl"
+            style={{
+              background: "rgba(251, 191, 36, 0.1)",
+              border: "2px solid rgba(251, 191, 36, 0.3)",
+            }}
+          >
+            <div className="flex items-start gap-4">
+              <Clock className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1 animate-pulse" />
+              <div>
+                <h4 className="font-bold text-yellow-700 mb-1">
+                  Đang chờ duyệt
+                </h4>
+                <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                  Yêu cầu nâng cấp của bạn đã được gửi và đang chờ quản trị viên
+                  xét duyệt.
+                </p>
+              </div>
+            </div>
+          </div>
         );
+
       case "REJECTED":
         return (
-          <Alert
-            message="Yêu cầu bị từ chối"
-            description={
-              <>
-                <p>Lý do: {rejectionReason || "Không có lý do cụ thể."}</p>
-                <Button
-                  type="primary"
-                  onClick={showUpgradeModal}
-                  style={{ marginTop: 10 }}
-                >
-                  Gửi lại yêu cầu
-                </Button>
-              </>
-            }
-            type="error"
-            showIcon
-            icon={<CloseCircleOutlined />}
-          />
+          <div
+            className="p-6 rounded-2xl"
+            style={{
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "2px solid rgba(239, 68, 68, 0.3)",
+            }}
+          >
+            <div className="flex items-start gap-4 mb-4">
+              <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
+              <div>
+                <h4 className="font-bold text-red-700 mb-1">
+                  Yêu cầu bị từ chối
+                </h4>
+                <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                  Lý do: {rejectionReason || "Không có lý do cụ thể."}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={showUpgradeModal}
+              className="px-6 py-3 rounded-xl font-bold text-white transition-all duration-300 hover:scale-105"
+              style={{
+                background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                boxShadow: isDark
+                  ? "0 10px 30px rgba(239, 68, 68, 0.3)"
+                  : "0 10px 30px rgba(59, 130, 246, 0.3)",
+              }}
+            >
+              Gửi lại yêu cầu
+            </button>
+          </div>
         );
+
       default:
         return (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-            <SolutionOutlined style={{ fontSize: "24px", color: "#1890ff" }} />
-            <p className="mt-2 text-gray-700">
+          <div
+            className="p-8 rounded-2xl text-center"
+            style={{
+              background: isDark
+                ? "rgba(255, 255, 255, 0.05)"
+                : "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(20px)",
+              border: `2px solid ${colors.border}`,
+            }}
+          >
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{
+                background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+              }}
+            >
+              <Crown className="w-8 h-8 text-white" />
+            </div>
+            <h3
+              className={`text-xl font-bold mb-2 ${
+                isDark ? "text-white" : "text-gray-900"
+              }`}
+            >
+              Trở thành Người Bán
+            </h3>
+            <p className={`mb-6 ${isDark ? "text-gray-200" : "text-gray-600"}`}>
               Bạn muốn trở thành Người bán để đăng bán sản phẩm?
             </p>
-            <Button type="primary" onClick={showUpgradeModal} className="mt-2">
+            <button
+              onClick={showUpgradeModal}
+              className="px-8 py-4 rounded-xl font-bold text-white transition-all duration-300 hover:scale-105"
+              style={{
+                background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                boxShadow: isDark
+                  ? "0 10px 40px rgba(239, 68, 68, 0.3)"
+                  : "0 10px 40px rgba(59, 130, 246, 0.3)",
+              }}
+            >
               Nâng cấp ngay
-            </Button>
+            </button>
           </div>
         );
     }
@@ -216,7 +460,11 @@ export default function ProfilePage() {
           <ProfileInfo />
           <hr className="my-10" />
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+            <h2
+              className={`text-2xl font-semibold mb-6 ${
+                isDark ? "text-white" : "text-gray-800"
+              }`}
+            >
               Trở thành Người bán
             </h2>
             {renderUpgradeSection()}
@@ -226,13 +474,16 @@ export default function ProfilePage() {
     }
 
     if (activeMenu === MENU.ORDERS) {
-  return (
-    <Routes>
-      <Route path="/" element={<OrderHistoryContent />} />
-      <Route path="orders/:orderId/transactions" element={<TransactionContent />} />
-    </Routes>
-  );
-}
+      return (
+        <Routes>
+          <Route path="/" element={<OrderHistoryContent />} />
+          <Route
+            path="orders/:orderId/transactions"
+            element={<TransactionContent />}
+          />
+        </Routes>
+      );
+    }
     if (activeMenu === MENU.DISPUTES) {
       return <DisputesContent />;
     }
@@ -242,189 +493,465 @@ export default function ProfilePage() {
     if (activeMenu === MENU.MY_ORDERS) {
       return <ViewMyProductContent />;
     }
-    if (activeMenu === MENU.MY_PRODUCTS){
-      return <MySellingContent/>
+    if (activeMenu === MENU.MY_PRODUCTS) {
+      return <MySellingContent />;
     }
-    if (activeMenu === MENU.REVENUE){
-      return <RevenueContent/>
+    if (activeMenu === MENU.REVENUE) {
+      return <RevenueContent />;
     }
-  
+
     return (
-      <div className="text-center py-16 text-gray-500">
-        <i className="fa-regular fa-face-meh text-6xl mb-4"></i>
-        <p>Chức năng này đang được phát triển...</p>
+      <div
+        className="text-center py-16 rounded-2xl"
+        style={{
+          background: isDark
+            ? "rgba(255, 255, 255, 0.03)"
+            : "rgba(0, 0, 0, 0.03)",
+        }}
+      >
+        <Package
+          className="w-16 h-16 mx-auto mb-4"
+          style={{ color: colors.text.secondary }}
+        />
+        <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+          Chức năng này đang được phát triển...
+        </p>
       </div>
     );
   };
 
   return (
-    <div className="pt-14 min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-sm border-r p-6 hidden md:block">
-        <div className="flex items-center space-x-3 mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-            <i className="fa-regular fa-user text-white text-xl"></i>
-          </div>
-          <div>
-            <p className="font-semibold text-gray-800">{user.username}</p>
-            <button className="text-sm text-blue-500 hover:underline">
-              Sửa Hồ Sơ
-            </button>
+    <div
+      className="pt-14 min-h-screen flex relative overflow-hidden"
+      style={{
+        background: isDark
+          ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
+          : "linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #f8fafc 100%)",
+      }}
+    >
+      {/* Floating Orbs */}
+      <div
+        className="absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse"
+        style={{
+          background: `radial-gradient(circle, ${colors.primary[0]}, transparent)`,
+          animationDuration: "4s",
+        }}
+      />
+      <div
+        className="absolute bottom-20 right-20 w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse"
+        style={{
+          background: `radial-gradient(circle, ${colors.primary[1]}, transparent)`,
+          animationDelay: "2s",
+          animationDuration: "4s",
+        }}
+      />
+
+      {/* Sidebar - Bento Grid */}
+      <aside
+        className="w-80 p-6 border-r hidden md:block relative z-10"
+        style={{
+          background: isDark
+            ? "rgba(255, 255, 255, 0.03)"
+            : "rgba(255, 255, 255, 0.7)",
+          backdropFilter: "blur(20px)",
+          borderColor: colors.border,
+        }}
+      >
+        {/* User Hero Card */}
+        <div
+          className="p-6 rounded-2xl mb-6 relative overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+            boxShadow: isDark
+              ? "0 10px 40px rgba(239, 68, 68, 0.3)"
+              : "0 10px 40px rgba(59, 130, 246, 0.3)",
+          }}
+        >
+          <div className="relative z-10">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-white/20 backdrop-blur">
+              <User className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-1">
+              {user.username}
+            </h3>
+            <p className="text-white/80 text-sm mb-3">
+              {user.email || "email@example.com"}
+            </p>
+            <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold text-white bg-white/20">
+              {user.roles?.includes("SELLER") || user.role === "SELLER"
+                ? "Người Bán"
+                : "Người Mua"}
+            </div>
           </div>
         </div>
 
-        <nav className="space-y-3 text-gray-700 text-sm">
-          <p className="font-semibold text-gray-400 text-xs uppercase mb-2">
+        {/* Menu Bento Cards */}
+        <nav className="space-y-3">
+          <p
+            className="text-xs font-bold uppercase mb-4"
+            style={{ color: colors.text.secondary }}
+          >
             Tài Khoản Của Tôi
           </p>
-          <ul className="space-y-2">
-            <MenuItem
-              icon="fa-regular fa-user"
-              label="Hồ Sơ"
-              active={activeMenu === MENU.PROFILE}
-              onClick={() => setActiveMenu(MENU.PROFILE)}
-            />
-            <MenuItem
-              icon="fa-regular fa-credit-card"
-              label="Khiếu nại"
-              active={activeMenu === MENU.DISPUTES}
-              onClick={() => setActiveMenu(MENU.DISPUTES)}
-            />
-            <MenuItem
-              icon="fa-solid fa-location-dot"
-              label="Gói Dịch Vụ"
-              active={activeMenu === MENU.PACKAGE}
-              onClick={() => setActiveMenu(MENU.PACKAGE)}
-            />
-            <MenuItem
-              icon="fa-solid fa-lock"
-              label="Sản phẩm được mua"
-              active={activeMenu === MENU.MY_ORDERS}
-              onClick={() => setActiveMenu(MENU.MY_ORDERS)}
-            />
-            <MenuItem
-              icon="fa-regular fa-bell"
-              label="Sản phẩm đang bán"
-              active={activeMenu === MENU.MY_PRODUCTS}
-              onClick={() => setActiveMenu(MENU.MY_PRODUCTS)}
-            />
-          
-            <MenuItem
-              
-             icon="fa-regular fa-bell"
-              label="Thống kê doanh thu"
-              active={activeMenu === MENU.REVENUE}
-              onClick={() => setActiveMenu(MENU.REVENUE)}
-               />
-               
-          </ul>
 
-          <hr className="my-4" />
+          <MenuCard
+            icon={<User className="w-5 h-5" />}
+            label="Hồ Sơ"
+            active={activeMenu === MENU.PROFILE}
+            onClick={() => setActiveMenu(MENU.PROFILE)}
+            isDark={isDark}
+            colors={colors}
+          />
 
-          <ul className="space-y-2">
-            <MenuItem
-              icon="fa-solid fa-box"
-              label="Lịch sử mua hàng"
-              active={activeMenu === MENU.ORDERS}
-              onClick={() => setActiveMenu(MENU.ORDERS)}
-            />
-         
-          </ul>
+          <MenuCard
+            icon={<AlertTriangle className="w-5 h-5" />}
+            label="Khiếu nại"
+            active={activeMenu === MENU.DISPUTES}
+            onClick={() => setActiveMenu(MENU.DISPUTES)}
+            isDark={isDark}
+            colors={colors}
+          />
+
+          <MenuCard
+            icon={<Package className="w-5 h-5" />}
+            label="Gói Dịch Vụ"
+            active={activeMenu === MENU.PACKAGE}
+            onClick={() => setActiveMenu(MENU.PACKAGE)}
+            isDark={isDark}
+            colors={colors}
+          />
+
+          <MenuCard
+            icon={<ShoppingBag className="w-5 h-5" />}
+            label="Sản phẩm được mua"
+            active={activeMenu === MENU.MY_ORDERS}
+            onClick={() => setActiveMenu(MENU.MY_ORDERS)}
+            isDark={isDark}
+            colors={colors}
+          />
+
+          {(user.roles?.includes("SELLER") || user.role === "SELLER") && (
+            <>
+              <MenuCard
+                icon={<FileText className="w-5 h-5" />}
+                label="Sản phẩm đang bán"
+                active={activeMenu === MENU.MY_PRODUCTS}
+                onClick={() => setActiveMenu(MENU.MY_PRODUCTS)}
+                isDark={isDark}
+                colors={colors}
+              />
+
+              <MenuCard
+                icon={<TrendingUp className="w-5 h-5" />}
+                label="Thống kê doanh thu"
+                active={activeMenu === MENU.REVENUE}
+                onClick={() => setActiveMenu(MENU.REVENUE)}
+                isDark={isDark}
+                colors={colors}
+              />
+            </>
+          )}
+
+          <div className="h-px my-4" style={{ background: colors.border }} />
+
+          <MenuCard
+            icon={<Clock className="w-5 h-5" />}
+            label="Lịch sử mua hàng"
+            active={activeMenu === MENU.ORDERS}
+            onClick={() => setActiveMenu(MENU.ORDERS)}
+            isDark={isDark}
+            colors={colors}
+          />
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 bg-white shadow-sm mx-auto max-w-4xl">
-        {renderContent()}
+      <main
+        className="flex-1 p-8 mx-auto max-w-6xl relative z-10"
+        style={{
+          background: isDark
+            ? "rgba(255, 255, 255, 0.02)"
+            : "rgba(255, 255, 255, 0.7)",
+          backdropFilter: "blur(20px)",
+        }}
+      >
+        <div
+          className="rounded-3xl p-8 shadow-2xl"
+          style={{
+            background: isDark
+              ? "rgba(17, 24, 39, 0.8)"
+              : "rgba(255, 255, 255, 0.9)",
+            border: `2px solid ${colors.border}`,
+          }}
+        >
+          {renderContent()}
+        </div>
       </main>
 
-      {/* Modal nâng cấp */}
-      <Modal
-        title={
-          upgradeStatus === "REJECTED"
-            ? "Gửi lại yêu cầu nâng cấp"
-            : "Nâng cấp tài khoản Seller"
-        }
-        open={isModalOpen}
-        onCancel={handleModalCancel}
-        footer={[
-          <Button key="back" onClick={handleModalCancel} disabled={submitting}>
-            Hủy
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={submitting}
-            onClick={() => form.submit()}
-          >
-            Gửi yêu cầu
-          </Button>,
-        ]}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleFormSubmit}
-          disabled={submitting}
-        >
-          <Alert
-            message="Yêu cầu thông tin"
-            description="Vui lòng tải lên ảnh chụp 2 mặt Căn cước công dân (CCCD) của bạn để xác thực. (File < 5MB)"
-            type="info"
-            showIcon
-            style={{ marginBottom: 20 }}
+      {/* Modal nâng cấp - Glassmorphism */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0"
+            style={{
+              background: "rgba(0, 0, 0, 0.7)",
+              backdropFilter: "blur(10px)",
+            }}
+            onClick={submitting ? undefined : handleModalCancel}
           />
-          <Form.Item
-            name="cccdFront"
-            label="CCCD mặt trước"
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-            rules={[
-              { required: true, message: "Vui lòng tải lên mặt trước CCCD" },
-            ]}
+
+          {/* Modal Content */}
+          <div
+            className="relative z-10 w-full max-w-2xl rounded-3xl p-8 shadow-2xl"
+            style={{
+              background: isDark
+                ? "rgba(17, 24, 39, 0.95)"
+                : "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(20px)",
+              border: `2px solid ${colors.border}`,
+            }}
           >
-            <Upload
-              name="cccdFront"
-              listType="picture"
-              maxCount={1}
-              beforeUpload={() => false}
+            {/* Close Button */}
+            <button
+              onClick={handleModalCancel}
+              disabled={submitting}
+              className="absolute top-4 right-4 p-2 rounded-xl transition-all duration-300 hover:scale-110"
+              style={{
+                background: isDark
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(0, 0, 0, 0.05)",
+              }}
             >
-              <Button icon={<UploadOutlined />}>Chọn file</Button>
-            </Upload>
-          </Form.Item>
-          <Form.Item
-            name="cccdBack"
-            label="CCCD mặt sau"
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-            rules={[
-              { required: true, message: "Vui lòng tải lên mặt sau CCCD" },
-            ]}
-          >
-            <Upload
-              name="cccdBack"
-              listType="picture"
-              maxCount={1}
-              beforeUpload={() => false}
+              <X
+                className={`w-5 h-5 ${
+                  isDark ? "text-gray-200" : "text-gray-600"
+                }`}
+              />
+            </button>
+
+            {/* Title */}
+            <div className="mb-6">
+              <AuroraText
+                text={
+                  upgradeStatus === "REJECTED"
+                    ? "Gửi lại yêu cầu nâng cấp"
+                    : "Nâng cấp tài khoản Seller"
+                }
+                className="text-2xl font-bold"
+              />
+            </div>
+
+            {/* Info Alert */}
+            <div
+              className="p-4 rounded-xl mb-6"
+              style={{
+                background: "rgba(59, 130, 246, 0.1)",
+                border: "2px solid rgba(59, 130, 246, 0.3)",
+              }}
             >
-              <Button icon={<UploadOutlined />}>Chọn file</Button>
-            </Upload>
-          </Form.Item>
-        </Form>
-      </Modal>
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-blue-700 mb-1">
+                    Yêu cầu thông tin
+                  </h4>
+                  <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                    Vui lòng tải lên ảnh chụp 2 mặt Căn cước công dân (CCCD) của
+                    bạn để xác thực. (File {"<"} 5MB)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CCCD Front */}
+            <div className="mb-6">
+              <label
+                className={`block font-bold mb-3 ${
+                  isDark ? "text-white" : "text-gray-900"
+                }`}
+              >
+                CCCD mặt trước *
+              </label>
+              <div
+                className="p-6 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer hover:border-opacity-100"
+                style={{
+                  borderColor: cccdFront ? colors.primary[0] : colors.border,
+                  background: isDark
+                    ? "rgba(255, 255, 255, 0.02)"
+                    : "rgba(0, 0, 0, 0.02)",
+                }}
+              >
+                <input
+                  type="file"
+                  id="cccdFront"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 5 * 1024 * 1024) {
+                        toast.error("File phải nhỏ hơn 5MB");
+                        e.target.value = "";
+                        return;
+                      }
+                      setCccdFront(file);
+                    }
+                  }}
+                  className="hidden"
+                  disabled={submitting}
+                />
+                <label htmlFor="cccdFront" className="cursor-pointer">
+                  {cccdFront ? (
+                    <div className="text-center">
+                      <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                      <p
+                        className={`font-medium ${
+                          isDark ? "text-white" : "text-gray-900"
+                        }`}
+                      >
+                        {cccdFront.name}
+                      </p>
+                      <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                        {(cccdFront.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <UploadIcon
+                        className="w-8 h-8 mx-auto mb-2"
+                        style={{ color: colors.primary[0] }}
+                      />
+                      <p
+                        className={`font-medium ${
+                          isDark ? "text-white" : "text-gray-900"
+                        }`}
+                      >
+                        Nhấn để chọn file
+                      </p>
+                      <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                        Hỗ trợ: JPG, PNG (Max 5MB)
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            {/* CCCD Back */}
+            <div className="mb-8">
+              <label
+                className={`block font-bold mb-3 ${
+                  isDark ? "text-white" : "text-gray-900"
+                }`}
+              >
+                CCCD mặt sau *
+              </label>
+              <div
+                className="p-6 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer hover:border-opacity-100"
+                style={{
+                  borderColor: cccdBack ? colors.primary[0] : colors.border,
+                  background: isDark
+                    ? "rgba(255, 255, 255, 0.02)"
+                    : "rgba(0, 0, 0, 0.02)",
+                }}
+              >
+                <input
+                  type="file"
+                  id="cccdBack"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 5 * 1024 * 1024) {
+                        toast.error("File phải nhỏ hơn 5MB");
+                        e.target.value = "";
+                        return;
+                      }
+                      setCccdBack(file);
+                    }
+                  }}
+                  className="hidden"
+                  disabled={submitting}
+                />
+                <label htmlFor="cccdBack" className="cursor-pointer">
+                  {cccdBack ? (
+                    <div className="text-center">
+                      <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                      <p
+                        className={`font-medium ${
+                          isDark ? "text-white" : "text-gray-900"
+                        }`}
+                      >
+                        {cccdBack.name}
+                      </p>
+                      <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                        {(cccdBack.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <UploadIcon
+                        className="w-8 h-8 mx-auto mb-2"
+                        style={{ color: colors.primary[0] }}
+                      />
+                      <p
+                        className={`font-medium ${
+                          isDark ? "text-white" : "text-gray-900"
+                        }`}
+                      >
+                        Nhấn để chọn file
+                      </p>
+                      <p className={isDark ? "text-gray-200" : "text-gray-600"}>
+                        Hỗ trợ: JPG, PNG (Max 5MB)
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex gap-4">
+              <button
+                onClick={handleModalCancel}
+                disabled={submitting}
+                className="flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                style={{
+                  background: isDark
+                    ? "rgba(255, 255, 255, 0.05)"
+                    : "rgba(0, 0, 0, 0.05)",
+                  color: isDark ? "#fff" : "#000",
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleFormSubmit}
+                disabled={submitting || !cccdFront || !cccdBack}
+                className="flex-1 px-6 py-4 rounded-xl font-bold text-white transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                style={{
+                  background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+                  boxShadow: isDark
+                    ? "0 10px 40px rgba(239, 68, 68, 0.3)"
+                    : "0 10px 40px rgba(59, 130, 246, 0.3)",
+                }}
+              >
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader className="w-5 h-5 animate-spin" />
+                    Đang gửi...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Send className="w-5 h-5" />
+                    Gửi yêu cầu
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-// Component con để tái sử dụng menu
-const MenuItem = ({ icon, label, active, onClick }) => (
-  <li
-    className={`flex items-center space-x-2 cursor-pointer transition ${
-      active ? "text-blue-500 font-medium" : "hover:text-blue-500"
-    }`}
-    onClick={onClick}
-  >
-    <i className={icon}></i>
-    <span>{label}</span>
-  </li>
-);

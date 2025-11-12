@@ -1,7 +1,7 @@
-// src/components/layout/Header.jsx
-import { Button, Badge, Dropdown } from "antd";
+import { Button, Badge } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../contexts/UserContext.jsx";
+import { useTheme } from "../../contexts/ThemeContext.jsx";
 import {
   NotificationOutlined,
   ShoppingCartOutlined,
@@ -9,20 +9,38 @@ import {
   MessageOutlined,
   BoxPlotOutlined,
 } from "@ant-design/icons";
+import { Sun, Moon } from "lucide-react";
+import AuroraText from "./AuroraText";
 import React, { useState, useEffect, useRef } from "react";
 import { useNotifications } from "../../contexts/NotificationContext.jsx";
 import Notification from "./Notification";
 
 /* ----------------------- ICONS ----------------------- */
 const User = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
 const Settings = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
     <circle cx="12" cy="12" r="3" />
     <path d="M12 1v6m0 6v6" />
     <path d="M1 12h6m6 0h6" />
@@ -30,30 +48,55 @@ const Settings = (props) => (
 );
 
 const CreditCard = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
     <rect width="20" height="14" x="2" y="5" rx="2" />
     <line x1="2" x2="22" y1="10" y2="10" />
   </svg>
 );
 
 const Package = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
     <rect x="3" y="4" width="18" height="16" rx="2" />
     <path d="M3 8h18M8 4v16" />
   </svg>
 );
 
 const LogOut = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" x2="9" y1="12" y2="12" />
   </svg>
 );
 
-/* ----------------------- DROPDOWN CƠ BẢN ----------------------- */
+/* ----------------------- DROPDOWN CƠ BẢN (SERA UI) ----------------------- */
 const DropdownMenu = ({ children, trigger }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isDark } = useTheme();
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -78,7 +121,17 @@ const DropdownMenu = ({ children, trigger }) => {
       </div>
       {isOpen && (
         <div
-          className="origin-top-right absolute right-0 mt-2 w-72 rounded-xl shadow-xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in-0 zoom-in-95 p-2"
+          className="origin-top-right absolute right-0 mt-3 w-80 rounded-3xl shadow-2xl ring-1 ring-opacity-5 focus:outline-none z-50 p-1 transition-all duration-300"
+          style={{
+            background: isDark
+              ? "rgba(17, 24, 39, 0.98)"
+              : "rgba(255, 255, 255, 0.98)",
+            backdropFilter: "blur(30px)",
+            border: isDark
+              ? "1px solid rgba(239, 68, 68, 0.3)"
+              : "1px solid rgba(251, 146, 60, 0.3)",
+            animation: "slideDown 0.2s ease-out",
+          }}
           role="menu"
         >
           {children}
@@ -88,25 +141,64 @@ const DropdownMenu = ({ children, trigger }) => {
   );
 };
 
-const DropdownMenuItem = ({ children, onClick }) => (
-  <a
-    href="#"
+const DropdownMenuItem = ({ children, onClick, isDark, icon: Icon }) => (
+  <button
     onClick={(e) => {
       e.preventDefault();
       if (onClick) onClick();
     }}
-    className="text-zinc-700 group flex items-center px-3 py-2.5 text-sm rounded-lg hover:bg-zinc-100 transition-colors duration-150"
+    className={`w-full group flex items-center gap-3 px-4 py-3 text-sm rounded-2xl transition-all duration-200 ${
+      isDark
+        ? "text-gray-200 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-orange-500/10"
+        : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-500/5 hover:to-purple-500/5"
+    }`}
+    style={{
+      border: "1px solid transparent",
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.border = isDark
+        ? "1px solid rgba(239, 68, 68, 0.2)"
+        : "1px solid rgba(59, 130, 246, 0.2)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.border = "1px solid transparent";
+    }}
     role="menuitem"
   >
-    {children}
-  </a>
+    {Icon && (
+      <div
+        className="p-2 rounded-xl transition-all duration-200 group-hover:scale-110"
+        style={{
+          background: isDark
+            ? "linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(249, 115, 22, 0.1))"
+            : "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))",
+        }}
+      >
+        <Icon
+          className="w-4 h-4"
+          style={{ color: isDark ? "#ef4444" : "#3b82f6" }}
+        />
+      </div>
+    )}
+    <span className="font-medium">{children}</span>
+  </button>
 );
 
-const DropdownMenuSeparator = () => <div className="my-2 h-px bg-zinc-200" />;
+const DropdownMenuSeparator = ({ isDark }) => (
+  <div
+    className="my-2 h-px mx-2"
+    style={{
+      background: isDark
+        ? "linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.3), transparent)"
+        : "linear-gradient(90deg, transparent, rgba(251, 146, 60, 0.3), transparent)",
+    }}
+  />
+);
 
-/* ----------------------- HỒ SƠ NGƯỜI DÙNG (CẬP NHẬT) ----------------------- */
+/* ----------------------- HỒ SƠ NGƯỜI DÙNG (SERA UI) ----------------------- */
 function UserProfileDropdown() {
   const { user, logout } = useUser();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -119,49 +211,142 @@ function UserProfileDropdown() {
   return (
     <DropdownMenu
       trigger={
-        <button className="flex items-center space-x-3 px-3 py-2 rounded-lg shadow-sm hover:bg-white/20 transition-all">
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold text-sm">
-            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}
+        <button
+          className="flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-300 hover:scale-105 group"
+          style={{
+            background: isDark
+              ? "rgba(255, 255, 255, 0.08)"
+              : "rgba(0, 0, 0, 0.04)",
+            border: isDark
+              ? "1px solid rgba(239, 68, 68, 0.3)"
+              : "1px solid rgba(251, 146, 60, 0.3)",
+          }}
+        >
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg"
+            style={{
+              background: isDark
+                ? "linear-gradient(135deg, #ef4444, #f97316)"
+                : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            }}
+          >
+            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || "U"}
           </div>
-          <div className="text-left">
-            <div className="text-sm font-bold text-white">{user.username || "User"}</div>
+          <div
+            className={`text-left hidden md:block ${
+              isDark ? "text-white" : "text-gray-900"
+            }`}
+          >
+            <div
+              className="text-sm font-bold group-hover:text-transparent group-hover:bg-clip-text transition-all duration-300"
+              style={{
+                backgroundImage: isDark
+                  ? "linear-gradient(135deg, #ef4444, #f97316)"
+                  : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+              }}
+            >
+              {user.username || "User"}
+            </div>
           </div>
+          <svg
+            className={`w-4 h-4 transition-transform duration-300 ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
         </button>
       }
     >
-      {/* Header Info */}
-      <div className="px-3 py-3 border-b border-zinc-200">
+      {/* Header Info with Enhanced Glassmorphism */}
+      <div
+        className="p-4 rounded-2xl mb-2"
+        style={{
+          background: isDark
+            ? "linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(249, 115, 22, 0.15))"
+            : "linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(139, 92, 246, 0.08))",
+          border: isDark
+            ? "1px solid rgba(239, 68, 68, 0.2)"
+            : "1px solid rgba(59, 130, 246, 0.15)",
+        }}
+      >
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || ""}
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-xl"
+            style={{
+              background: isDark
+                ? "linear-gradient(135deg, #ef4444, #f97316)"
+                : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            }}
+          >
+            {user.username?.toUpperCase().split(" ").slice(-1)[0][0] || "U"}
           </div>
-          <div>
-            <div className="text-sm font-semibold text-zinc-900">{user.username}</div>
-            <div className="text-xs text-zinc-500">{user.email || "No email"}</div>
-            <div className="text-xs text-blue-600 font-medium">Gói Pro</div>
+          <div className="flex-1">
+            <div
+              className={`text-base font-bold ${
+                isDark ? "text-white" : "text-gray-900"
+              }`}
+            >
+              {user.username}
+            </div>
+            <div
+              className={`text-xs ${
+                isDark ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              {user.email || "user@example.com"}
+            </div>
+            <div
+              className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-lg text-xs font-bold"
+              style={{
+                background: isDark
+                  ? "linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2))"
+                  : "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))",
+                color: isDark ? "#fbbf24" : "#3b82f6",
+                border: isDark
+                  ? "1px solid rgba(251, 191, 36, 0.3)"
+                  : "1px solid rgba(59, 130, 246, 0.3)",
+              }}
+            >
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              VIP Pro
+            </div>
           </div>
         </div>
       </div>
 
       {/* Menu Items */}
-      <div className="py-1">
-        <DropdownMenuItem onClick={() => navigate("/profile")}>
-          <User className="mr-3 h-4 w-4 text-zinc-500" />
+      <div className="py-1 px-2">
+        <DropdownMenuItem
+          onClick={() => navigate("/profile")}
+          isDark={isDark}
+          icon={User}
+        >
           Trang cá nhân
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/seller/packages")}>
-          <Package className="mr-3 h-4 w-4 text-zinc-500" />
+        <DropdownMenuItem
+          onClick={() => navigate("/seller/packages")}
+          isDark={isDark}
+          icon={Package}
+        >
           Gói dịch vụ
         </DropdownMenuItem>
-        
-      
       </div>
 
-      <DropdownMenuSeparator />
+      <DropdownMenuSeparator isDark={isDark} />
 
-      <div className="py-1">
-        <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-3 h-4 w-4 text-zinc-500" />
+      <div className="py-1 px-2">
+        <DropdownMenuItem onClick={handleLogout} isDark={isDark} icon={LogOut}>
           Đăng xuất
         </DropdownMenuItem>
       </div>
@@ -169,9 +354,10 @@ function UserProfileDropdown() {
   );
 }
 
-/* ----------------------- HEADER CHÍNH (ĐÃ DỌN DẸP) ----------------------- */
+/* ----------------------- HEADER CHÍNH (SERA UI) ----------------------- */
 export default function Header() {
   const { user } = useUser();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const { totalUnreadMessages } = useNotifications();
@@ -184,65 +370,200 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-500 to-green-400 shadow-md fixed z-50 w-full top-0 h-16 flex items-center justify-between">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-white">
-            TradeEV
+    <header
+      className="fixed z-50 w-full top-0 h-16 shadow-2xl transition-all duration-300"
+      style={{
+        background: isDark
+          ? "rgba(17, 24, 39, 0.8)"
+          : "rgba(255, 255, 255, 0.8)",
+        backdropFilter: "blur(20px)",
+        borderBottom: isDark
+          ? "1px solid rgba(239, 68, 68, 0.2)"
+          : "1px solid rgba(251, 146, 60, 0.2)",
+      }}
+    >
+      <div className="container mx-auto px-4 h-full">
+        <div className="flex items-center justify-between h-full">
+          {/* Logo with Aurora Effect */}
+          <Link to="/" className="flex items-center">
+            <AuroraText
+              key={`header-logo-${isDark}`}
+              text="TradeEV"
+              colors={
+                isDark
+                  ? ["#ef4444", "#f97316", "#fb923c", "#fbbf24", "#ef4444"]
+                  : ["#3b82f6", "#8b5cf6", "#06b6d4", "#3b82f6"]
+              }
+              speed={3}
+              className="text-2xl md:text-3xl font-black"
+            />
           </Link>
 
-          {/* Thanh tìm kiếm */}
-          <form onSubmit={handleSearch} className="flex-1 bg-white rounded-lg mx-10">
-            <div className="relative">
+          {/* Search Bar with Glassmorphism */}
+          <form
+            onSubmit={handleSearch}
+            className="flex-1 mx-4 md:mx-10 max-w-2xl"
+          >
+            <div
+              className="relative rounded-2xl overflow-hidden transition-all duration-300"
+              style={{
+                background: isDark
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "rgba(0, 0, 0, 0.03)",
+                border: isDark
+                  ? "1px solid rgba(239, 68, 68, 0.2)"
+                  : "1px solid rgba(251, 146, 60, 0.2)",
+              }}
+            >
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder="Tìm kiếm xe điện, pin..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+                className={`w-full px-4 py-2 bg-transparent focus:outline-none transition-colors ${
+                  isDark
+                    ? "text-white placeholder-gray-400"
+                    : "text-gray-900 placeholder-gray-500"
+                }`}
               />
-              <button type="submit" className="absolute right-3 top-2.5 text-gray-500 hover:text-blue-600">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all duration-300 hover:scale-110"
+                style={{
+                  background: isDark
+                    ? "linear-gradient(135deg, #ef4444, #f97316)"
+                    : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                }}
+              >
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </button>
             </div>
           </form>
 
-          {/* MENU PHẢI - ĐÃ DỌN SẠCH */}
-          <div className="flex items-center space-x-4">
+          {/* Right Menu */}
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Theme Toggle Button with Sera UI */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl transition-all duration-300 hover:scale-110"
+              style={{
+                background: isDark
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(0, 0, 0, 0.05)",
+                border: isDark
+                  ? "1px solid rgba(239, 68, 68, 0.3)"
+                  : "1px solid rgba(251, 146, 60, 0.3)",
+              }}
+              aria-label="Toggle theme"
+            >
+              {isDark ? (
+                <Sun className="w-5 h-5" style={{ color: "#fbbf24" }} />
+              ) : (
+                <Moon className="w-5 h-5" style={{ color: "#6366f1" }} />
+              )}
+            </button>
+
             <Notification />
 
             {user && (
               <>
                 <Link to="/messages">
-                  <Badge count={totalUnreadMessages} size="small" offset={[0, 5]}>
-                    <Button type="text" shape="circle" icon={<MessageOutlined style={{ fontSize: "20px", color: "white" }} />} />
+                  <Badge
+                    count={totalUnreadMessages}
+                    size="small"
+                    offset={[0, 5]}
+                  >
+                    <button
+                      className="p-2 rounded-xl transition-all duration-200 hover:scale-110"
+                      style={{
+                        background: isDark
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "rgba(0, 0, 0, 0.05)",
+                        border: isDark
+                          ? "1px solid rgba(239, 68, 68, 0.3)"
+                          : "1px solid rgba(251, 146, 60, 0.3)",
+                      }}
+                    >
+                      <MessageOutlined
+                        style={{
+                          fontSize: "20px",
+                          color: isDark ? "#e5e7eb" : "#1f2937",
+                        }}
+                      />
+                    </button>
                   </Badge>
                 </Link>
                 <Link to="/favorites">
                   <Badge count={0} size="small" offset={[0, 5]}>
-                    <Button type="text" shape="circle" icon={<HeartOutlined style={{ fontSize: "20px", color: "white" }} />} />
+                    <button
+                      className="p-2 rounded-xl transition-all duration-200 hover:scale-110"
+                      style={{
+                        background: isDark
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "rgba(0, 0, 0, 0.05)",
+                        border: isDark
+                          ? "1px solid rgba(239, 68, 68, 0.3)"
+                          : "1px solid rgba(251, 146, 60, 0.3)",
+                      }}
+                    >
+                      <HeartOutlined
+                        style={{
+                          fontSize: "20px",
+                          color: isDark ? "#ef4444" : "#ef4444",
+                        }}
+                      />
+                    </button>
                   </Badge>
                 </Link>
                 <Link to="/cart">
                   <Badge count={0} size="small" offset={[0, 5]}>
-                    <Button type="text" shape="circle" icon={<ShoppingCartOutlined style={{ fontSize: "20px", color: "white" }} />} />
+                    <button
+                      className="p-2 rounded-xl transition-all duration-200 hover:scale-110"
+                      style={{
+                        background: isDark
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "rgba(0, 0, 0, 0.05)",
+                        border: isDark
+                          ? "1px solid rgba(239, 68, 68, 0.3)"
+                          : "1px solid rgba(251, 146, 60, 0.3)",
+                      }}
+                    >
+                      <ShoppingCartOutlined
+                        style={{
+                          fontSize: "20px",
+                          color: isDark ? "#e5e7eb" : "#1f2937",
+                        }}
+                      />
+                    </button>
                   </Badge>
                 </Link>
               </>
             )}
 
             {user ? (
-              <nav className="ml-6 flex items-center">
-                <UserProfileDropdown />
-              </nav>
+              <UserProfileDropdown />
             ) : (
               <Link to="/login">
-                <Button className="ml-5 font-bold text-white bg-white/20 hover:bg-white/30">
-                  Đăng nhập / Đăng ký
-                </Button>
+                <button
+                  className="px-4 py-2 rounded-xl font-bold text-white transition-all duration-300 hover:scale-105 shadow-lg"
+                  style={{
+                    background: "linear-gradient(135deg, #ef4444, #f97316)",
+                  }}
+                >
+                  Đăng nhập
+                </button>
               </Link>
             )}
           </div>

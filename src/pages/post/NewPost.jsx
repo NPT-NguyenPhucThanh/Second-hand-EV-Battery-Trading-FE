@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPost } from "../../utils/services/postService";
+import { useTheme } from "../../contexts/ThemeContext";
 import {
   Car,
   Battery,
@@ -15,7 +16,8 @@ import {
   Settings,
   Hash,
   CheckCircle,
-
+  ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 
 /* ======================= */
@@ -31,11 +33,18 @@ const InputField = React.memo(
     required = true,
     formData,
     handleInputChange,
+    isDark,
     ...props
   }) => (
     <div className="group">
-      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-        <Icon className="w-4 h-4 text-blue-500" />
+      <label
+        className={`block text-sm font-semibold mb-2 flex items-center gap-2 ${
+          isDark ? "text-gray-300" : "text-gray-700"
+        }`}
+      >
+        <Icon
+          className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-500"}`}
+        />
         {label}
         {required && <span className="text-red-500">*</span>}
       </label>
@@ -46,7 +55,11 @@ const InputField = React.memo(
         value={formData[name] || ""}
         onChange={handleInputChange}
         required={required}
-        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none group-hover:border-blue-300"
+        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 transition-all duration-300 outline-none ${
+          isDark
+            ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+            : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-100"
+        }`}
         {...props}
       />
     </div>
@@ -64,11 +77,18 @@ const TextareaField = React.memo(
     required = true,
     formData,
     handleInputChange,
+    isDark,
     ...props
   }) => (
     <div className="group">
-      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-        <FileText className="w-4 h-4 text-blue-500" />
+      <label
+        className={`block text-sm font-semibold mb-2 flex items-center gap-2 ${
+          isDark ? "text-gray-300" : "text-gray-700"
+        }`}
+      >
+        <FileText
+          className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-500"}`}
+        />
         {label}
         {required && <span className="text-red-500">*</span>}
       </label>
@@ -79,7 +99,11 @@ const TextareaField = React.memo(
         onChange={handleInputChange}
         required={required}
         rows="5"
-        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 outline-none resize-none group-hover:border-blue-300"
+        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 transition-all duration-300 outline-none resize-none ${
+          isDark
+            ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+            : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-100"
+        }`}
         {...props}
       />
     </div>
@@ -91,6 +115,7 @@ const TextareaField = React.memo(
 /* ===================== */
 const NewPost = () => {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [type, setType] = useState("car");
   const [formData, setFormData] = useState({
     productname: "",
@@ -292,25 +317,61 @@ const NewPost = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-12 px-4">
+    <div
+      className="min-h-screen py-12 px-4 transition-colors duration-300"
+      style={{
+        background: isDark
+          ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
+          : "linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #eff6ff 100%)",
+      }}
+    >
       <div className="container mx-auto max-w-4xl">
-        {/* Header */}
+        {/* Header với Sparkles effect */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-4xl pt-10 pb-1 font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent mb-3">
-            Đăng tin mới
-          </h1>
-          <p className="text-gray-600">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Sparkles
+              className={`w-8 h-8 ${
+                isDark ? "text-blue-400" : "text-blue-500"
+              }`}
+            />
+            <h1
+              className="text-5xl pt-10 pb-1 font-bold bg-gradient-to-r bg-clip-text text-transparent"
+              style={{
+                backgroundImage: isDark
+                  ? "linear-gradient(to right, #60a5fa, #34d399)"
+                  : "linear-gradient(to right, #2563eb, #10b981)",
+              }}
+            >
+              Đăng Tin Mới
+            </h1>
+            <Sparkles
+              className={`w-8 h-8 ${
+                isDark ? "text-green-400" : "text-green-500"
+              }`}
+            />
+          </div>
+          <p
+            className={`text-lg ${isDark ? "text-gray-400" : "text-gray-600"}`}
+          >
             Điền thông tin sản phẩm của bạn để bắt đầu bán hàng
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 space-y-8 transform hover:shadow-3xl transition-all duration-300"
+          className={`rounded-3xl shadow-2xl p-8 md:p-12 space-y-8 transform hover:shadow-3xl transition-all duration-300 ${
+            isDark
+              ? "bg-gray-900/50 backdrop-blur-xl border border-gray-800"
+              : "bg-white"
+          }`}
         >
           {/* Type Selector */}
           <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <label
+              className={`block text-sm font-semibold mb-3 ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               Loại sản phẩm <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-2 gap-4">
@@ -319,13 +380,19 @@ const NewPost = () => {
                 onClick={() => setType("car")}
                 className={`p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 ${
                   type === "car"
-                    ? "bg-gradient-to-r from-blue-500 to-blue-600 border-blue-600 text-white shadow-lg"
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/50"
+                    : isDark
+                    ? "bg-gray-800 border-gray-700 text-gray-300 hover:border-blue-500"
                     : "bg-white border-gray-200 text-gray-700 hover:border-blue-300"
                 }`}
               >
                 <Car
                   className={`w-8 h-8 mx-auto mb-2 ${
-                    type === "car" ? "text-white" : "text-blue-500"
+                    type === "car"
+                      ? "text-white"
+                      : isDark
+                      ? "text-blue-400"
+                      : "text-blue-500"
                   }`}
                 />
                 <span className="font-semibold">Xe điện</span>
@@ -335,13 +402,19 @@ const NewPost = () => {
                 onClick={() => setType("battery")}
                 className={`p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 ${
                   type === "battery"
-                    ? "bg-gradient-to-r from-green-500 to-green-600 border-green-600 text-white shadow-lg"
+                    ? "bg-gradient-to-r from-green-500 to-green-600 border-green-600 text-white shadow-lg shadow-green-500/50"
+                    : isDark
+                    ? "bg-gray-800 border-gray-700 text-gray-300 hover:border-green-500"
                     : "bg-white border-gray-200 text-gray-700 hover:border-green-300"
                 }`}
               >
                 <Battery
                   className={`w-8 h-8 mx-auto mb-2 ${
-                    type === "battery" ? "text-white" : "text-green-500"
+                    type === "battery"
+                      ? "text-white"
+                      : isDark
+                      ? "text-green-400"
+                      : "text-green-500"
                   }`}
                 />
                 <span className="font-semibold">Pin xe điện</span>
@@ -358,6 +431,7 @@ const NewPost = () => {
               placeholder="Nhập tên sản phẩm đầy đủ"
               formData={formData}
               handleInputChange={handleInputChange}
+              isDark={isDark}
             />
             <TextareaField
               label="Mô tả chi tiết"
@@ -365,6 +439,7 @@ const NewPost = () => {
               placeholder="Mô tả chi tiết về sản phẩm, tình trạng, ưu điểm..."
               formData={formData}
               handleInputChange={handleInputChange}
+              isDark={isDark}
             />
             <InputField
               icon={DollarSign}
@@ -374,6 +449,7 @@ const NewPost = () => {
               placeholder="VD: 500000000"
               formData={formData}
               handleInputChange={handleInputChange}
+              isDark={isDark}
             />
           </div>
 
@@ -382,8 +458,16 @@ const NewPost = () => {
 
           {/* Image Upload */}
           <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-blue-500" />
+            <label
+              className={`block text-sm font-semibold mb-3 flex items-center gap-2 ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
+              <ImageIcon
+                className={`w-4 h-4 ${
+                  isDark ? "text-blue-400" : "text-blue-500"
+                }`}
+              />
               Hình ảnh sản phẩm
               <span className="text-red-500">*</span>
             </label>
@@ -394,7 +478,10 @@ const NewPost = () => {
               onDrop={handleDrop}
               className={`relative border-3 border-dashed rounded-2xl p-8 transition-all duration-300 ${
                 isDragging
-                  ? "border-blue-500 bg-blue-50 scale-105"
+                  ? "border-blue-500 scale-105" +
+                    (isDark ? " bg-blue-900/20" : " bg-blue-50")
+                  : isDark
+                  ? "border-gray-700 hover:border-blue-500 hover:bg-gray-800/50"
                   : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/50"
               }`}
             >
@@ -411,13 +498,23 @@ const NewPost = () => {
                   className={`w-12 h-12 mx-auto mb-4 ${
                     isDragging
                       ? "text-blue-500 animate-bounce"
+                      : isDark
+                      ? "text-gray-500"
                       : "text-gray-400"
                   }`}
                 />
-                <p className="text-gray-600 font-medium mb-2">
+                <p
+                  className={`font-medium mb-2 ${
+                    isDark ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
                   Kéo thả ảnh vào đây hoặc click để chọn
                 </p>
-                <p className="text-gray-400 text-sm">
+                <p
+                  className={`text-sm ${
+                    isDark ? "text-gray-500" : "text-gray-400"
+                  }`}
+                >
                   Hỗ trợ: JPG, PNG, GIF (Tối đa 10 ảnh)
                 </p>
               </div>
@@ -431,7 +528,11 @@ const NewPost = () => {
                     <img
                       src={preview}
                       alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-xl border-2 border-gray-200 group-hover:border-blue-400 transition-all duration-300"
+                      className={`w-full h-32 object-cover rounded-xl border-2 transition-all duration-300 ${
+                        isDark
+                          ? "border-gray-700 group-hover:border-blue-500"
+                          : "border-gray-200 group-hover:border-blue-400"
+                      }`}
                     />
                     <button
                       type="button"
@@ -449,9 +550,25 @@ const NewPost = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-center gap-3 animate-shake">
-              <X className="w-5 h-5 text-red-500" />
-              <p className="text-red-700 font-medium">{error}</p>
+            <div
+              className={`border-2 rounded-xl p-4 flex items-center gap-3 animate-shake ${
+                isDark
+                  ? "bg-red-900/20 border-red-800"
+                  : "bg-red-50 border-red-200"
+              }`}
+            >
+              <X
+                className={`w-5 h-5 ${
+                  isDark ? "text-red-400" : "text-red-500"
+                }`}
+              />
+              <p
+                className={`font-medium ${
+                  isDark ? "text-red-400" : "text-red-700"
+                }`}
+              >
+                {error}
+              </p>
             </div>
           )}
 
@@ -478,7 +595,11 @@ const NewPost = () => {
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="w-full py-3 rounded-xl font-semibold text-gray-600 border-2 border-gray-300 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300"
+            className={`w-full py-3 rounded-xl font-semibold border-2 transition-all duration-300 ${
+              isDark
+                ? "text-gray-400 border-gray-700 hover:border-blue-500 hover:text-blue-400 hover:bg-gray-800"
+                : "text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
+            }`}
           >
             Quay lại trang chủ
           </button>

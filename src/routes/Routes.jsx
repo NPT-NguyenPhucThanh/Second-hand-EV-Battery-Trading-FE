@@ -1,4 +1,3 @@
-// src/routes/Routes.jsx
 import { createBrowserRouter } from "react-router-dom";
 
 // === LAYOUTS ===
@@ -9,6 +8,7 @@ import MemberLayout from "../layouts/MemberLayout";
 
 // === PAGES ===
 import Home from "../pages/home/pages/Home";
+import Listings from "../pages/home/pages/Listings";
 import Login from "../pages/auth/Login";
 import ProfilePage from "../pages/profile/ProfilePage";
 import NewPost from "../pages/post/NewPost";
@@ -118,6 +118,7 @@ export const routes = [
     element: <MemberLayout />,
     children: [
       { index: true, element: <Home /> },
+      { path: "listings", element: <Listings /> },
       { path: "listings/:id", element: <ListingDetail /> },
       { path: "seller/:sellerId", element: <SellerProfile /> },
       { path: "search", element: <SearchResult /> },

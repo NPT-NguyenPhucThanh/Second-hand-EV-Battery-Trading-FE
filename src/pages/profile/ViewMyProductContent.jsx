@@ -1,7 +1,7 @@
-// src/components/profile/ViewMyProductContent.jsx
 import React, { useState, useEffect } from "react";
 import { Spin, Empty, Tabs, Tag, Button, Table, Tooltip, Select } from "antd";
 import { get } from "../../utils/api";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -52,6 +52,7 @@ export default function ViewMyProductContent() {
   const [carOrders, setCarOrders] = useState([]);
   const [batteryOrders, setBatteryOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { isDark } = useTheme();
 
   // Bộ lọc trạng thái
   const [carFilter, setCarFilter] = useState("ALL");
@@ -71,24 +72,26 @@ export default function ViewMyProductContent() {
 
         const processOrders = (res) => {
           if (res.status === "success" && Array.isArray(res.orders)) {
-            return res.orders
-              .filter(order => !EXCLUDED_STATUSES.includes(order.status))
-              .map(order => ({
-                key: order.orderid,
-                orderid: order.orderid,
-                totalfinal: order.totalfinal,
-                shippingaddress: order.shippingaddress,
-                paymentmethod: order.paymentmethod,
-                createdat: order.createdat,
-                status: order.status,
-                buyer: {
-                  name: order.users?.username || "Khách vãng lai",
-                  phone: order.users?.phone || "—",
-                  email: order.users?.email || "—",
-                },
-              }))
-              // SẮP XẾP: MỚI NHẤT LÊN ĐẦU
-              .sort((a, b) => new Date(b.createdat) - new Date(a.createdat));
+            return (
+              res.orders
+                .filter((order) => !EXCLUDED_STATUSES.includes(order.status))
+                .map((order) => ({
+                  key: order.orderid,
+                  orderid: order.orderid,
+                  totalfinal: order.totalfinal,
+                  shippingaddress: order.shippingaddress,
+                  paymentmethod: order.paymentmethod,
+                  createdat: order.createdat,
+                  status: order.status,
+                  buyer: {
+                    name: order.users?.username || "Khách vãng lai",
+                    phone: order.users?.phone || "—",
+                    email: order.users?.email || "—",
+                  },
+                }))
+                // SẮP XẾP: MỚI NHẤT LÊN ĐẦU
+                .sort((a, b) => new Date(b.createdat) - new Date(a.createdat))
+            );
           }
           return [];
         };
@@ -110,7 +113,7 @@ export default function ViewMyProductContent() {
   // Lọc theo trạng thái
   const filterOrders = (orders, filter) => {
     if (filter === "ALL") return orders;
-    return orders.filter(order => order.status === filter);
+    return orders.filter((order) => order.status === filter);
   };
 
   const filteredCarOrders = filterOrders(carOrders, carFilter);
@@ -134,7 +137,9 @@ export default function ViewMyProductContent() {
       key: "index",
       width: 70,
       render: (_, __, index) => {
-        return <span className="font-semibold text-blue-600">#{1 + index}</span>;
+        return (
+          <span className="font-semibold text-blue-600">#{1 + index}</span>
+        );
       },
     },
     {
@@ -144,7 +149,13 @@ export default function ViewMyProductContent() {
         const b = record.buyer;
         return (
           <div className="text-sm leading-tight">
-            <p className="font-semibold text-gray-800">{b.name}</p>
+            <p
+              className={`font-semibold ${
+                isDark ? "text-white" : "text-gray-800"
+              }`}
+            >
+              {b.name}
+            </p>
             <p className="text-gray-600">
               <i className="fa-solid fa-phone text-xs mr-1"></i>
               {b.phone}
@@ -174,7 +185,9 @@ export default function ViewMyProductContent() {
       dataIndex: "totalfinal",
       key: "total",
       render: (value) => (
-        <span className="font-semibold text-green-600">{formatCurrency(value)}</span>
+        <span className="font-semibold text-green-600">
+          {formatCurrency(value)}
+        </span>
       ),
       width: 130,
     },
@@ -215,7 +228,11 @@ export default function ViewMyProductContent() {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+      <h2
+        className={`text-2xl font-semibold mb-6 ${
+          isDark ? "text-white" : "text-gray-800"
+        }`}
+      >
         Đơn Hàng Của Tôi
       </h2>
 
@@ -237,7 +254,7 @@ export default function ViewMyProductContent() {
               style={{ width: 220 }}
               placeholder="Lọc theo trạng thái"
             >
-              {statusOptions.map(opt => (
+              {statusOptions.map((opt) => (
                 <Option key={opt.value} value={opt.value}>
                   {opt.label}
                 </Option>
@@ -277,7 +294,7 @@ export default function ViewMyProductContent() {
               style={{ width: 220 }}
               placeholder="Lọc theo trạng thái"
             >
-              {statusOptions.map(opt => (
+              {statusOptions.map((opt) => (
                 <Option key={opt.value} value={opt.value}>
                   {opt.label}
                 </Option>

@@ -1,7 +1,7 @@
-// src/components/profile/CurrentPackageContent.jsx
 import React, { useState, useEffect } from "react";
 import { Spin, Empty, Alert, Tag, Button } from "antd";
 import { getCurrentPackages } from "../../services/sellerPackageService";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -11,7 +11,16 @@ const formatDate = (dateString) => {
   });
 };
 
-const PackageCard = ({ title, type, icon, remaining, purchaseDate, expiryDate, isExpired }) => {
+const PackageCard = ({
+  title,
+  type,
+  icon,
+  remaining,
+  purchaseDate,
+  expiryDate,
+  isExpired,
+  isDark,
+}) => {
   const status = isExpired
     ? { text: "Hết hạn", color: "error" }
     : remaining > 0
@@ -19,11 +28,25 @@ const PackageCard = ({ title, type, icon, remaining, purchaseDate, expiryDate, i
     : { text: "Hết lượt", color: "warning" };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all">
+    <div
+      className={`border rounded-xl p-6 shadow-sm hover:shadow-md transition-all ${
+        isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+      }`}
+    >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-          <p className="text-sm text-gray-500">Gói {type}</p>
+          <h3
+            className={`text-xl font-bold ${
+              isDark ? "text-white" : "text-gray-800"
+            }`}
+          >
+            {title}
+          </h3>
+          <p
+            className={`text-sm ${isDark ? "text-gray-200" : "text-gray-500"}`}
+          >
+            Gói {type}
+          </p>
         </div>
         <div className="text-3xl text-blue-600">
           <i className={icon}></i>
@@ -32,18 +55,36 @@ const PackageCard = ({ title, type, icon, remaining, purchaseDate, expiryDate, i
 
       <div className="space-y-3 text-sm">
         <div className="flex justify-between items-center">
-          <span className="text-gray-600">Số lượng còn lại</span>
+          <span className={isDark ? "text-gray-200" : "text-gray-600"}>
+            Số lượng còn lại
+          </span>
           <span className="text-2xl font-bold text-blue-600">{remaining}</span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-gray-600">Ngày mua</span>
-          <span className="font-medium">{formatDate(purchaseDate)}</span>
+          <span className={isDark ? "text-gray-200" : "text-gray-600"}>
+            Ngày mua
+          </span>
+          <span
+            className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}
+          >
+            {formatDate(purchaseDate)}
+          </span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-gray-600">Hết hạn</span>
-          <span className={`font-medium ${isExpired ? "text-red-600" : ""}`}>
+          <span className={isDark ? "text-gray-200" : "text-gray-600"}>
+            Hết hạn
+          </span>
+          <span
+            className={`font-medium ${
+              isExpired
+                ? "text-red-600"
+                : isDark
+                ? "text-white"
+                : "text-gray-900"
+            }`}
+          >
             {formatDate(expiryDate)}
           </span>
         </div>
@@ -68,6 +109,7 @@ const PackageCard = ({ title, type, icon, remaining, purchaseDate, expiryDate, i
 export default function CurrentPackageContent() {
   const [packages, setPackages] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -97,7 +139,9 @@ export default function CurrentPackageContent() {
     return (
       <div className="text-center py-12">
         <Spin size="large" />
-        <p className="mt-3 text-gray-500">Đang tải thông tin gói dịch vụ...</p>
+        <p className={`mt-3 ${isDark ? "text-gray-200" : "text-gray-500"}`}>
+          Đang tải thông tin gói dịch vụ...
+        </p>
       </div>
     );
   }
@@ -119,8 +163,12 @@ export default function CurrentPackageContent() {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-             Dịch Vụ Hiện Tại
+      <h2
+        className={`text-2xl font-semibold mb-6 ${
+          isDark ? "text-white" : "text-gray-800"
+        }`}
+      >
+        Dịch Vụ Hiện Tại
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -134,6 +182,7 @@ export default function CurrentPackageContent() {
             purchaseDate={packages.battery.purchaseDate}
             expiryDate={packages.battery.expiryDate}
             isExpired={packages.battery.isExpired}
+            isDark={isDark}
           />
         )}
 
@@ -147,6 +196,7 @@ export default function CurrentPackageContent() {
             purchaseDate={packages.car.purchaseDate}
             expiryDate={packages.car.expiryDate}
             isExpired={packages.car.isExpired}
+            isDark={isDark}
           />
         )}
       </div>
