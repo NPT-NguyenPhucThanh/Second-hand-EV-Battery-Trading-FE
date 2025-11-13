@@ -17,6 +17,7 @@ import {
   X,
   Send,
   ChevronRight,
+  MapPin,
 } from "lucide-react";
 import {
   getSelfUpgradeStatus,
@@ -35,6 +36,7 @@ import ViewMyProductContent from "../ViewMyProductContent";
 import MySellingContent from "../MySellingContent";
 import RevenueContent from "../RevenueContent";
 import TransactionContent from "../TransactionContent";
+import AddressContent from "../AddressContent"; 
 
 const THEME_COLORS = {
   dark: {
@@ -66,6 +68,7 @@ const MENU = {
   TRANSACTION: "transaction",
   REVENUE: "revenue",
   VOUCHERS: "vouchers",
+  ADDRESS: "address",
 };
 
 // 🎯 Menu Item Component - Bento Card Style
@@ -499,6 +502,9 @@ export default function ProfilePage() {
     if (activeMenu === MENU.REVENUE) {
       return <RevenueContent />;
     }
+    if (activeMenu === MENU.ADDRESS) { 
+      return <AddressContent />;
+    }
 
     return (
       <div
@@ -599,6 +605,15 @@ export default function ProfilePage() {
             label="Hồ Sơ"
             active={activeMenu === MENU.PROFILE}
             onClick={() => setActiveMenu(MENU.PROFILE)}
+            isDark={isDark}
+            colors={colors}
+          />
+
+          <MenuCard
+            icon={<MapPin className="w-5 h-5" />} 
+            label="Sổ Địa Chỉ"
+            active={activeMenu === MENU.ADDRESS}
+            onClick={() => setActiveMenu(MENU.ADDRESS)}
             isDark={isDark}
             colors={colors}
           />
