@@ -12,11 +12,14 @@ export default function DepositCar() {
   const { isDark } = useTheme();
   const [loading, setLoading] = useState(false);
 
+  // Địa điểm cố định
+  const FIXED_LOCATION = "Lô E2a-7, Đường D1 Khu Công nghệ cao, P.Long Thạnh Mỹ, TP Thủ Đức, TP.HCM";
+
   const [formData, setFormData] = useState({
-    transactionLocation: "",
+    transactionLocation: FIXED_LOCATION,
     appointmentDate: "",
-    transferOwnership: false,
-    changePlate: true,
+    transferOwnership: true,   // mặc định có
+    changePlate: true,         // mặc định có
   });
 
   //Convert datetime-local to backend format
@@ -63,7 +66,7 @@ export default function DepositCar() {
         changePlate: formData.changePlate,
       };
 
-      // ✅ SỬA LỖI: 'depositData' phải là tham số thứ 2 (body)
+      // SỬA LỖI: 'depositData' phải là tham số thứ 2 (body)
       await api.post(
         `api/buyer/orders/${orderId}/deposit`,
         null, // data (body) là null
@@ -75,7 +78,7 @@ export default function DepositCar() {
       // --- BƯỚC 2: TẠO VÀ CHUYỂN HƯỚNG THANH TOÁN (Logic từ ConfirmPin.jsx) ---
       const params = new URLSearchParams({
         orderId: Number(orderId),
-        // ✅ THAY ĐỔI: Sử dụng loại giao dịch cho đặt cọc
+        // THAY ĐỔI: Sử dụng loại giao dịch cho đặt cọc
         transactionType: "DEPOSIT",
       });
       const pathWithParams = `api/payment/create-payment-url?${params.toString()}`;
@@ -138,7 +141,7 @@ export default function DepositCar() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Địa điểm giao dịch */}
+            {/* Địa điểm giao dịch - CỐ ĐỊNH, KHÔNG CHO SỬA */}
             <div>
               <label
                 className={`flex items-center gap-2 font-medium mb-2 ${
@@ -148,23 +151,15 @@ export default function DepositCar() {
                 <MapPin className="w-5 h-5" />
                 Địa điểm giao dịch
               </label>
-              <input
-                type="text"
-                value={formData.transactionLocation}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    transactionLocation: e.target.value,
-                  })
-                }
-                placeholder="Nhập địa chỉ giao dịch"
-                className={`w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${
+              <div
+                className={`w-full px-4 py-3 rounded-xl border ${
                   isDark
-                    ? "bg-gray-900/50 border-gray-700 text-white placeholder-gray-500"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                } border`}
-                required
-              />
+                    ? "bg-gray-900/50 border-gray-700 text-gray-300"
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
+              >
+                {FIXED_LOCATION}
+              </div>
             </div>
 
             {/* Ngày hẹn */}
@@ -193,7 +188,7 @@ export default function DepositCar() {
               />
             </div>
 
-            {/* Chuyển quyền sở hữu */}
+            {/* Chuyển quyền sở hữu - MẶC ĐỊNH CÓ, KHÔNG CHO THAY ĐỔI */}
             <div
               className={`flex items-center gap-3 p-4 rounded-xl ${
                 isDark ? "bg-gray-900/30" : "bg-gray-50"
@@ -201,19 +196,12 @@ export default function DepositCar() {
             >
               <input
                 type="checkbox"
-                id="transferOwnership"
-                checked={formData.transferOwnership}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    transferOwnership: e.target.checked,
-                  })
-                }
-                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                checked={true}
+                disabled
+                className="w-5 h-5 text-blue-600 rounded"
               />
               <label
-                htmlFor="transferOwnership"
-                className={`cursor-pointer ${
+                className={`cursor-not-allowed ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}
               >
@@ -221,7 +209,7 @@ export default function DepositCar() {
               </label>
             </div>
 
-            {/* Đổi biển số */}
+            {/* Đổi biển số - MẶC ĐỊNH CÓ, KHÔNG CHO THAY ĐỔI */}
             <div
               className={`flex items-center gap-3 p-4 rounded-xl ${
                 isDark ? "bg-gray-900/30" : "bg-gray-50"
@@ -229,16 +217,12 @@ export default function DepositCar() {
             >
               <input
                 type="checkbox"
-                id="changePlate"
-                checked={formData.changePlate}
-                onChange={(e) =>
-                  setFormData({ ...formData, changePlate: e.target.checked })
-                }
-                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                checked={true}
+                disabled
+                className="w-5 h-5 text-blue-600 rounded"
               />
               <label
-                htmlFor="changePlate"
-                className={`cursor-pointer ${
+                className={`cursor-not-allowed ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}
               >
