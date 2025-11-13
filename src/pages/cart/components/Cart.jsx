@@ -5,8 +5,8 @@ import { useTheme } from "../../../contexts/ThemeContext";
 
 const Cart = ({ cartItems, onRemoveItem, onCheckout, total }) => {
   const { isDark } = useTheme();
-
   return (
+  <>
     <div
       className="rounded-3xl shadow-2xl p-8"
       style={{
@@ -21,11 +21,14 @@ const Cart = ({ cartItems, onRemoveItem, onCheckout, total }) => {
     >
       <ul className="space-y-6 mb-8">
         {cartItems.map((item) => (
+          <>
           <CartItem key={item.id} item={item} onRemoveItem={onRemoveItem} />
+          </>
         ))}
       </ul>
       <CartSummary total={total} onCheckout={onCheckout} />
     </div>
+  </>
   );
 };
 

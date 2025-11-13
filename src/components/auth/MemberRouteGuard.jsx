@@ -21,6 +21,14 @@ const MemberRouteGuard = () => {
     return <Navigate to="/manager" replace />;
   }
 
+  if (user.roles && user.roles.includes("STAFF")) {
+    return <Navigate to="/staff" replace />;
+  }
+
+  if (user.roles && user.roles.includes("MANAGER")) {
+    return <Navigate to="/manager" replace />;
+  }
+
   return <MemberLayout />;
 };
 

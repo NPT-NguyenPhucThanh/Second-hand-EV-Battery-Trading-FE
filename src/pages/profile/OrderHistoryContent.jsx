@@ -15,6 +15,8 @@ import {
   Eye,
   Sparkles,
   PackageCheck,
+  MapPin, 
+  Package, 
 } from "lucide-react";
 import AuroraText from "../../components/common/AuroraText";
 
@@ -106,6 +108,15 @@ const OrderStatusTag = ({ status, isDark }) => {
       gradient: isDark
         ? "linear-gradient(135deg, #f97316, #ea580c)"
         : "linear-gradient(135deg, #fb923c, #f97316)",
+      textColor: "#ffffff",
+    },
+    
+    CHO_THANH_TOAN: {
+      text: "Chờ thanh toán",
+      icon: Clock,
+      gradient: isDark
+        ? "linear-gradient(135deg, #f59e0b, #d97706)"
+        : "linear-gradient(135deg, #fbbf24, #f59e0b)",
       textColor: "#ffffff",
     },
   };
@@ -338,10 +349,18 @@ export default function OrderHistoryContent() {
         <div className="space-y-4 relative z-10">
           {orders.map((order, index) => {
             const orderNumber = orders.length - index;
+            
+            // Lấy sản phẩm đầu tiên (hoặc gói dịch vụ)
+            const firstDetail = order.details?.[0];
+            let productName = "Đơn hàng gói dịch vụ"; // Mặc định cho gói
+            if (firstDetail && firstDetail.products) {
+              productName = firstDetail.products.productname;
+            }
+            
             return (
               <div
                 key={order.orderid}
-                className="rounded-3xl p-6 transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
+                className="rounded-3xl p-6 transition-all duration-300 hover:scale-[1.01] cursor-pointer group"
                 style={{
                   background: isDark
                     ? "rgba(17, 24, 39, 0.8)"
@@ -369,6 +388,37 @@ export default function OrderHistoryContent() {
                         speed={2}
                         className="text-xl font-bold"
                       />
+                    </div>
+                    
+                    {/* === SỬA LỖI: HIỂN THỊ TÊN SẢN PHẨM === */}
+                    <div className="flex items-center gap-2">
+                      <Package
+                        className="w-4 h-4"
+                        style={{ color: isDark ? "#9ca3af" : "#6b7280" }}
+                      />
+                      <p
+                        className={`text-sm font-semibold ${
+                          isDark ? "text-gray-100" : "text-gray-800"
+                        }`}
+                      >
+                        {productName}
+                        {order.details && order.details.length > 1 && ` (và ${order.details.length - 1} sản phẩm khác)`}
+                      </p>
+                    </div>
+                    
+                    {/* === SỬA LỖI: HIỂN THỊ ĐỊA CHỈ GIAO HÀNG === */}
+                    <div className="flex items-center gap-2">
+                      <MapPin
+                        className="w-4 h-4"
+                        style={{ color: isDark ? "#9ca3af" : "#6b7280" }}
+                      />
+                      <p
+                        className={`text-sm ${
+                          isDark ? "text-gray-300" : "text-gray-600"
+                        }`}
+                      >
+                        {order.shippingaddress}
+                      </p>
                     </div>
 
                     {/* Date */}
@@ -423,6 +473,25 @@ export default function OrderHistoryContent() {
                         >
                           <CreditCard className="w-4 h-4" />
                           Thanh toán 90%
+                        </button>
+                      )}
+                      
+                      {/* THÊM: Nút thanh toán 100% (cho pin) */}
+                      {order.status === "CHO_THANH_TOAN" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFinalPayment(order.orderid); // Dùng chung hàm, vì PayPage sẽ tự xử lý
+                          }}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 shadow-md"
+                          style={{
+                            background: isDark
+                              ? "linear-gradient(135deg, #10b981, #059669)"
+                              : "linear-gradient(135deg, #34d399, #10b981)",
+                          }}
+                        >
+                          <CreditCard className="w-4 h-4" />
+                          Thanh toán ngay
                         </button>
                       )}
 

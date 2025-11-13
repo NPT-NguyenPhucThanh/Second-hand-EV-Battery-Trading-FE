@@ -13,10 +13,15 @@ import {
 } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import AuroraText from "../../components/common/AuroraText";
+import { getSavedAddresses } from "../../services/addressService";
+import { Button } from "antd";
+
 
 function currency(value) {
   return value?.toLocaleString("vi-VN") + " ₫";
 }
+const CAR_ADDRESS =
+  "Lô E2a-7, Đường D1 Khu Công nghệ cao, P.Long Thạnh Mỹ, TP Thủ Đức, TP.HCM";
 
 export default function Checkout() {
   const { productId } = useParams();
@@ -26,6 +31,8 @@ export default function Checkout() {
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState("");
+  const [savedAddresses, setSavedAddresses] = useState([]); 
+  const [selectedAddress, setSelectedAddress] = useState("NEW"); 
   const [paymentMethod, setPaymentMethod] = useState("VNPAY");
   const [submitting, setSubmitting] = useState(false);
 
@@ -40,54 +47,62 @@ export default function Checkout() {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
+
       try {
         const pid = parseInt(productId, 10);
         const isFromCart = !productId || pid === 0 || isNaN(pid);
 
         let items = [];
         let total = 0;
-        let productType = null; // 'car' hoặc 'battery'
+        let productType = null;
 
         if (!isFromCart) {
-          const product = await getProductById(pid);
-          items = [{ ...product.product, quantity: 1 }];
-          total = product.product.cost;
-          // Xác định loại sản phẩm từ categoryid hoặc thuộc tính khác
-          productType = product.product.categoryid === 1 ? "car" : "battery";
+          const response = await getProductById(pid);
+          const product = response.product;
+          const seller = response.seller;
+
+          items = [
+            {
+              ...product,
+              users: seller,
+              quantity: 1,
+            },
+          ];
+
+          total = product.cost;
+
+          productType = product.type === "Car EV" ? "car" : "battery";
         } else {
           const cartResponse = await api.get("api/buyer/cart");
-          console.log("Checkout cart response:", cartResponse); // Debug
-
-          // Backend trả về: { status, cart: { cart_items: [...] }, totalAmount, itemCount }
           const cartItems = cartResponse?.cart?.cart_items || [];
 
           items = cartItems.map((item) => ({
-            product: {
-              ...item.products,
-
-              images: item.products.images || [],
-            },
+            ...item.products, // Lấy hết data (đã có 'users', 'cost', 'productname', 'type')
             quantity: item.quantity,
-            itemsid: item.itemsid,
+            itemsid: item.itemsid, // Đồng nhất 'images': 'imgs' (List<product_img>) -> 'images' (List<String>)
+            images: item.products.imgs
+              ? item.products.imgs.map((img) => img.url)
+              : [],
           }));
 
-          console.log("Mapped items:", items); // Debug log
-
-          total = items.reduce(
-            (sum, i) => sum + i.product.cost * i.quantity,
-            0
-          );
-          // Kiểm tra nếu có ít nhất 1 pin thì tính phí ship
-          const hasBattery = items.some(
-            (item) => item.product.categoryid !== 1
-          );
+          total = items.reduce((sum, i) => sum + i.cost * i.quantity, 0);
+          const hasBattery = items.some((item) => item.type === "Battery");
           productType = hasBattery ? "battery" : "car";
         }
 
         setOrderData({ items, total, productType });
+        if (productType === "car") {
+          setAddress(CAR_ADDRESS); 
+          setSelectedAddress("FIXED"); 
+        } else {
+          const saved = await getSavedAddresses();
+          setSavedAddresses(saved);
+          setSelectedAddress("NEW"); 
+          setAddress(""); 
+        }
       } catch (error) {
-        console.error("Checkout init error:", error); // Debug log
-        toast.error("Không tải được giỏ hàng. Vẫn đặt được hàng!");
+        console.error("Checkout init error:", error);
+        toast.error("Không tải được thông tin sản phẩm.");
         setOrderData({ items: [], total: 0, productType: null });
       } finally {
         setLoading(false);
@@ -96,6 +111,22 @@ export default function Checkout() {
 
     init();
   }, [productId]);
+
+  useEffect(() => {
+    if (selectedAddress === "NEW") {
+      setAddress(""); 
+    } else if (selectedAddress === "FIXED") {
+      setAddress(CAR_ADDRESS); 
+    } else {
+      const chosen = savedAddresses.find(
+        (a) => a.addressid.toString() === selectedAddress
+      );
+      if (chosen) {
+        const fullAddress = `${chosen.street}, ${chosen.ward}, ${chosen.district}, ${chosen.province}`;
+        setAddress(fullAddress);
+      }
+    }
+  }, [selectedAddress, savedAddresses]);
 
   const handleSubmit = async () => {
     if (!address.trim()) {
@@ -300,6 +331,111 @@ export default function Checkout() {
     );
   }
 
+  const renderAddressSection = () => {
+    if (orderData.productType === "car") {
+      return (
+        <div className="mb-5">
+          <label
+            className={`flex items-center gap-2 font-semibold mb-2 ${
+              isDark ? "text-gray-200" : "text-gray-700"
+            }`}
+          >
+            <MapPin
+              className="w-5 h-5"
+              style={{
+                color: isDark ? "#ef4444" : "#3b82f6",
+              }}
+            />
+            Địa điểm giao dịch
+          </label>
+          <div
+            className={`w-full px-4 py-3 rounded-xl ${
+              isDark
+                ? "bg-gray-800 border-gray-700 text-gray-300"
+                : "bg-gray-100 border-gray-300 text-gray-700"
+            }`}
+            style={{
+              border: isDark
+                ? "1px solid rgba(239, 68, 68, 0.3)"
+                : "1px solid rgba(251, 146, 60, 0.3)",
+            }}
+          >
+            {CAR_ADDRESS}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-5 space-y-3">
+        <div>
+          <label
+            className={`flex items-center gap-2 font-semibold mb-2 ${
+              isDark ? "text-gray-200" : "text-gray-700"
+            }`}
+          >
+            <MapPin
+              className="w-5 h-5"
+              style={{
+                color: isDark ? "#ef4444" : "#3b82f6",
+              }}
+            />
+            Chọn địa chỉ giao hàng
+          </label>
+          <select
+            value={selectedAddress}
+            onChange={(e) => setSelectedAddress(e.target.value)}
+            className={`w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-300 ${
+              isDark
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+            style={{
+              border: isDark
+                ? "1px solid rgba(239, 68, 68, 0.3)"
+                : "1px solid rgba(251, 146, 60, 0.3)",
+              colorScheme: isDark ? "dark" : "light",
+            }}
+          >
+            <option value="NEW">-- Nhập địa chỉ mới --</option>
+            {savedAddresses.map((addr) => (
+              <option key={addr.addressid} value={addr.addressid}>
+                {`${addr.street}, ${addr.ward}, ${addr.district}...`}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedAddress === "NEW" && (
+          <div>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Số nhà, đường, phường/xã..."
+              className={`w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-300 ${
+                isDark
+                  ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+              }`}
+              style={{
+                border: isDark
+                  ? "1px solid rgba(239, 68, 68, 0.3)"
+                  : "1px solid rgba(251, 146, 60, 0.3)",
+              }}
+            />
+             <Button
+                type="link"
+                onClick={() => navigate("/profile?tab=address")}
+                className="p-0 mt-2"
+              >
+                Quản lý sổ địa chỉ
+              </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // ================== MAIN UI ==================
   return (
     <div
@@ -409,7 +545,8 @@ export default function Checkout() {
                   const quantity = item.quantity || 1;
                   const productName =
                     product.productname || product.name || "Sản phẩm";
-
+                  const sellerName =
+                    item.users?.displayname || item.users?.username || "N/A";
                   // Backend returns empty images array - use placeholder
                   const productImage =
                     product.images && product.images.length > 0
@@ -447,6 +584,13 @@ export default function Checkout() {
                           }`}
                         >
                           {productName}
+                        </p>
+                        <p
+                          className={`text-sm ${
+                            isDark ? "text-gray-300" : "text-gray-600"
+                          }`}
+                        >
+                          Người bán: {sellerName}
                         </p>
                         <p
                           className={`text-sm ${
@@ -502,39 +646,7 @@ export default function Checkout() {
                 />
                 Tóm tắt đơn hàng
               </h2>
-
-              {/* Địa chỉ */}
-              <div className="mb-5">
-                <label
-                  className={`flex items-center gap-2 font-semibold mb-2 ${
-                    isDark ? "text-gray-200" : "text-gray-700"
-                  }`}
-                >
-                  <MapPin
-                    className="w-5 h-5"
-                    style={{
-                      color: isDark ? "#ef4444" : "#3b82f6",
-                    }}
-                  />
-                  Địa chỉ giao hàng
-                </label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Số nhà, đường, phường/xã..."
-                  className={`w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-300 ${
-                    isDark
-                      ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
-                  style={{
-                    border: isDark
-                      ? "1px solid rgba(239, 68, 68, 0.3)"
-                      : "1px solid rgba(251, 146, 60, 0.3)",
-                  }}
-                />
-              </div>
+              {renderAddressSection()}
 
               {/* Phương thức TT */}
               <div className="mb-6">

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useTheme } from "../../../contexts/ThemeContext.jsx";
 import { useUser } from "../../../contexts/UserContext.jsx";
 import AuroraText from "../../../components/common/AuroraText";
-import { ROLES } from "../../../constants/role.js";
 import {
   Zap,
   Battery,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { getProducts } from "../../../utils/services/productService.js";
 import { toast } from "sonner";
+import { Spin } from "antd";
 
 const THEME_COLORS = {
   dark: {
@@ -198,7 +198,7 @@ const ProductCard = ({ product, isDark }) => {
 
 function Home() {
   const { isDark } = useTheme();
-  const { user: currentUser } = useUser();
+  const { user: currentUser, isAuthenticated, loading: authLoading } = useUser();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
   const [products, setProducts] = useState([]);
@@ -207,25 +207,67 @@ function Home() {
   // Get theme colors dynamically
   const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
 
-  // Fetch featured products
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getProducts(0, 8, ""); // Get first 8 products
-        setProducts(data.products || []);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const isStaffOrManager = isAuthenticated && currentUser?.roles &&
+      (currentUser.roles.includes("STAFF") || currentUser.roles.includes("MANAGER"));
 
-    fetchProducts();
-    setMounted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+    if (!authLoading && !isStaffOrManager) {
+      const fetchProducts = async () => {
+        try {
+          const data = await getProducts(0, 8, ""); // Get first 8 products
+          setProducts(data.products || []);
+        } catch (error) {
+          console.error("Error fetching products:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-  if (!mounted) return null;
+      fetchProducts();
+      setMounted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      setLoading(false);
+      setMounted(true); 
+    }
+  }, [authLoading, isAuthenticated, currentUser]); 
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen"
+           style={{
+             background: isDark
+               ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+               : "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+           }}
+      >
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated && currentUser?.roles) {
+    if (currentUser.roles.includes("STAFF")) {
+      return <Navigate to="/staff" replace />;
+    }
+    if (currentUser.roles.includes("MANAGER")) {
+      return <Navigate to="/manager" replace />;
+    }
+  }
+
+  if (loading || !mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen"
+           style={{
+             background: isDark
+               ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+               : "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+           }}
+      >
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -395,7 +437,7 @@ function Home() {
                 >
                   Đăng ký miễn phí
                 </Link>
-              ) : currentUser.roles && currentUser.roles.includes("SELLER") ? (
+              ) : currentUser.roles && currentUser.roles.includes("SELLER") ? ( 
                 <Link
                   to="/listings/new"
                   className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 shadow-xl ${

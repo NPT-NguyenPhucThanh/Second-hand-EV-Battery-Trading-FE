@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import ThemeToggle from "../components/common/ThemeToggle";
-import Notify from "../components/admin/Notify";
+import Notification from "../components/common/Notification";
 import AuroraText from "../components/common/AuroraText";
 import {
   LayoutDashboard,
@@ -145,7 +145,7 @@ export default function ManagerLayout() {
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <Notify />
+            <Notification />
           </div>
         </div>
       </header>

@@ -37,6 +37,7 @@ import MySellingContent from "../MySellingContent";
 import RevenueContent from "../RevenueContent";
 import TransactionContent from "../TransactionContent";
 import AddressContent from "../AddressContent"; 
+import ContractsContent from "../ContractsContent";
 
 const THEME_COLORS = {
   dark: {
@@ -69,6 +70,7 @@ const MENU = {
   REVENUE: "revenue",
   VOUCHERS: "vouchers",
   ADDRESS: "address",
+  CONTRACTS: "contracts",
 };
 
 // 🎯 Menu Item Component - Bento Card Style
@@ -504,7 +506,10 @@ export default function ProfilePage() {
     }
     if (activeMenu === MENU.ADDRESS) { 
       return <AddressContent />;
+    if (activeMenu === MENU.CONTRACTS) {
+      return <ContractsContent />;
     }
+  }
 
     return (
       <div
@@ -611,7 +616,7 @@ export default function ProfilePage() {
 
           <MenuCard
             icon={<MapPin className="w-5 h-5" />} 
-            label="Sổ Địa Chỉ"
+            label="Địa Chỉ"
             active={activeMenu === MENU.ADDRESS}
             onClick={() => setActiveMenu(MENU.ADDRESS)}
             isDark={isDark}
@@ -661,6 +666,14 @@ export default function ProfilePage() {
                 label="Thống kê doanh thu"
                 active={activeMenu === MENU.REVENUE}
                 onClick={() => setActiveMenu(MENU.REVENUE)}
+                isDark={isDark}
+                colors={colors}
+              />
+              <MenuCard
+                icon={<Clock className="w-5 h-5" />}
+                label="Hợp đồng của tôi"
+                active={activeMenu === MENU.CONTRACTS}
+                onClick={() => setActiveMenu(MENU.CONTRACTS)}
                 isDark={isDark}
                 colors={colors}
               />
@@ -970,3 +983,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

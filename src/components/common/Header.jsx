@@ -238,12 +238,15 @@ function UserProfileDropdown() {
             }`}
           >
             <div
-              className="text-sm font-bold group-hover:text-transparent group-hover:bg-clip-text transition-all duration-300"
-              style={{
-                backgroundImage: isDark
-                  ? "linear-gradient(135deg, #ef4444, #f97316)"
-                  : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              }}
+              className={`
+              text-sm font-bold transition-all duration-300
+              group-hover:bg-clip-text group-hover:text-transparent
+              ${
+                isDark
+                ? "group-hover:bg-gradient-to-r from-red-500 to-orange-500"
+                : "group-hover:bg-gradient-to-r from-blue-500 to-purple-500"
+              }
+            `}
             >
               {user.username || "User"}
             </div>

@@ -5,7 +5,7 @@ import { useTheme } from "../../../contexts/ThemeContext";
 
 const CartItem = ({ item, onRemoveItem }) => {
   const { isDark } = useTheme();
-
+   console.log(item);
   // Backend đã tính sẵn giá bao gồm hoa hồng, không cần +5% nữa
   const itemTotal = formatVND(item.price * item.quantity);
 
@@ -58,6 +58,7 @@ const CartItem = ({ item, onRemoveItem }) => {
             >
               {formatVND(item.price)}
             </span>
+            <span className="block mt-1">{item.seller.displayname}</span>
             <span className="block mt-1">Số lượng: {item.quantity}</span>
           </div>
         </div>

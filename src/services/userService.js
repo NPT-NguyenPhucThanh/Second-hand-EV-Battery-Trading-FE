@@ -1,4 +1,23 @@
-import { get, post } from "../utils/api"; 
+import { get, post, put } from "../utils/api"; 
+
+export const getProfile = async () => {
+  const data = await get("api/client/profile");
+  return data; 
+};
+
+export const updateProfile = async (profileData) => {
+  const response = await put("api/client/profile", profileData);
+  return response; 
+};
+
+export const changePassword = async (oldPassword, newPassword) => {
+  const params = new URLSearchParams();
+  params.append("oldPassword", oldPassword);
+  params.append("newPassword", newPassword);
+  
+  const response = await post(`api/client/change-password?${params.toString()}`);
+  return response; 
+};
 
 // Lấy tất cả user cho Manager
 export const getAllUser = async () => {

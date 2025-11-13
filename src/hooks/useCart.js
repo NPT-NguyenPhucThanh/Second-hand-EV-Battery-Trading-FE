@@ -34,6 +34,7 @@ export const useCart = () => {
         name: item.products.productname,
         price: item.products.cost,
         quantity: item.quantity,
+        seller: item.products.users,
         image:
           item.products.images?.[0] ||
           "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%231f2937' width='80' height='80'/%3E%3Ctext fill='%23fb923c' font-family='sans-serif' font-size='14' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EProduct%3C/text%3E%3C/svg%3E",
