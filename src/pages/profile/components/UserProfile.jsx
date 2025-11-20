@@ -36,8 +36,9 @@ import ViewMyProductContent from "../ViewMyProductContent";
 import MySellingContent from "../MySellingContent";
 import RevenueContent from "../RevenueContent";
 import TransactionContent from "../TransactionContent";
-import AddressContent from "../AddressContent"; 
+import AddressContent from "../AddressContent";
 import ContractsContent from "../ContractsContent";
+import RefundContent from "../RefundContent";
 
 const THEME_COLORS = {
   dark: {
@@ -71,6 +72,7 @@ const MENU = {
   VOUCHERS: "vouchers",
   ADDRESS: "address",
   CONTRACTS: "contracts",
+  REFUND: "refund",
 };
 
 // 🎯 Menu Item Component - Bento Card Style
@@ -504,12 +506,15 @@ export default function ProfilePage() {
     if (activeMenu === MENU.REVENUE) {
       return <RevenueContent />;
     }
-    if (activeMenu === MENU.ADDRESS) { 
+    if (activeMenu === MENU.ADDRESS) {
       return <AddressContent />;
+    }
     if (activeMenu === MENU.CONTRACTS) {
       return <ContractsContent />;
     }
-  }
+    if (activeMenu === MENU.REFUND) {
+      return <RefundContent />;
+    }
 
     return (
       <div
@@ -615,7 +620,7 @@ export default function ProfilePage() {
           />
 
           <MenuCard
-            icon={<MapPin className="w-5 h-5" />} 
+            icon={<MapPin className="w-5 h-5" />}
             label="Địa Chỉ"
             active={activeMenu === MENU.ADDRESS}
             onClick={() => setActiveMenu(MENU.ADDRESS)}
@@ -669,17 +674,24 @@ export default function ProfilePage() {
                 isDark={isDark}
                 colors={colors}
               />
-              <MenuCard
-                icon={<Clock className="w-5 h-5" />}
-                label="Hợp đồng của tôi"
-                active={activeMenu === MENU.CONTRACTS}
-                onClick={() => setActiveMenu(MENU.CONTRACTS)}
-                isDark={isDark}
-                colors={colors}
-              />
             </>
           )}
-
+          <MenuCard
+            icon={<Clock className="w-5 h-5" />}
+            label="Hợp đồng của tôi"
+            active={activeMenu === MENU.CONTRACTS}
+            onClick={() => setActiveMenu(MENU.CONTRACTS)}
+            isDark={isDark}
+            colors={colors}
+          />
+          <MenuCard
+            icon={<Send className="w-5 h-5" />}
+            label="Yêu cầu hoàn tiền"
+            active={activeMenu === MENU.REFUND}
+            onClick={() => setActiveMenu(MENU.REFUND)}
+            isDark={isDark}
+            colors={colors}
+          />
           <div className="h-px my-4" style={{ background: colors.border }} />
 
           <MenuCard
@@ -983,4 +995,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
