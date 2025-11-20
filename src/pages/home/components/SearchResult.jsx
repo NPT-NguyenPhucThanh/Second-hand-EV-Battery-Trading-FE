@@ -193,7 +193,10 @@ export default function SearchResult() {
       maxPrice: null,
     };
     setFilters(resetFilters);
-    setResults([]);
+    // Show all products after reset instead of empty
+    const filtered = applyFilters(allProducts, resetFilters);
+    setResults(filtered);
+    setCurrentPage(1);
   };
 
   const formatPrice = (price) => {

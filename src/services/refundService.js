@@ -21,6 +21,6 @@ export const getRefundOrder = async (orderId) => {
 };
 
 export const processRefund = async (refundId, payload) => {
-    const response = await post(`api/staff/refunds/${refundId}/process`, payload);
-    return response;
+  const response = await post(`api/staff/refunds/${refundId}/process`, payload);
+  return response;
 };

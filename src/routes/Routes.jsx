@@ -93,7 +93,7 @@ export const routes = [
     element: (
       <AdminRouteGuard
         LayoutComponent={ManagerLayout}
-        allowedRoles={[ROLES.MANAGER]}
+        allowedRoles={[ROLES.STAFF, ROLES.MANAGER]}
       />
     ),
     children: [

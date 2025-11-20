@@ -253,8 +253,8 @@ export default function ProductManagementAll() {
           const StatusIcon = statusBadge.icon;
           const TypeIcon = product.type === "Car EV" ? Car : Battery;
           const productImage =
-            product.imgs && product.imgs.length > 0
-              ? product.imgs[0].url
+            product.images && product.images.length > 0
+              ? product.images[0]
               : "/placeholder.jpg";
 
           return (

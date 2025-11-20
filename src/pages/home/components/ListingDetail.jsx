@@ -112,6 +112,9 @@ export default function ListingDetail() {
 
   const isOwner = currentUser && item?.seller?.sellerId === currentUser.userId;
 
+  // Check if post is approved and has seller info (not draft)
+  const isApprovedPost = item?.post?.status === "APPROVED" && item?.seller;
+
   // === GỌI AI GỢI Ý GIÁ ===
   const handleAiPriceSuggestion = async () => {
     if (!requireAuth("sử dụng AI gợi ý giá")) return;
@@ -839,7 +842,7 @@ export default function ListingDetail() {
                     </button>
                   )}
 
-                  {!isOwner && (
+                  {!isOwner && isApprovedPost && (
                     <button
                       onClick={() => handleAction("chat")}
                       className="w-full text-white px-6 py-4 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
@@ -853,7 +856,7 @@ export default function ListingDetail() {
                   )}
 
                   {/* AI Price Suggestion Button - GỌI TRỰC TIẾP */}
-                  {!isOwner && (
+                  {!isOwner && isApprovedPost && (
                     <button
                       onClick={handleAiPriceSuggestion}
                       disabled={loadingAiPrice}

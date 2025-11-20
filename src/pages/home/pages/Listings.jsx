@@ -47,7 +47,7 @@ export default function Listings() {
     try {
       const data = await getProducts(page, pageSize, type);
       setProducts(data.products || []);
-      setTotalProducts(data.totalElements || 0);
+      setTotalProducts(data.totalProducts || 0);
     } catch (error) {
       console.error("Error fetching products:", error);
       toast.error("Lỗi khi tải sản phẩm");
