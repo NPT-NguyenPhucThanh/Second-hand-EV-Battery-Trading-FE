@@ -1,4 +1,4 @@
-import { get, post } from "../utils/api"; 
+import { get, post } from "../utils/api";
 
 export const getProductPendingInsspection = async () => {
   const data = await get("api/staff/products/pending-inspection");
@@ -26,20 +26,23 @@ export const checkAuth = async (action) => {
   // Gọi API để kiểm tra với action và token (nếu có)
   try {
     const headers = {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     };
-    const response = await get(`api/public/check-auth?action=${action}`, { headers });
+    const response = await get(`api/public/check-auth?action=${action}`, {
+      headers,
+    });
 
     // Giả định response là object { requiresAuth: bool, message?, loginUrl? }
     // Nếu response.requiresAuth === false, nghĩa là đã auth ok cho action
-    return response; 
+    return response;
   } catch (error) {
     console.error("Error verifying auth:", error);
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem("token"); // Xóa token nếu invalid
       return {
         requiresAuth: true,
-        message: "Phiên đăng nhập hết hạn hoặc lỗi xác thực. Vui lòng đăng nhập lại.",
+        message:
+          "Phiên đăng nhập hết hạn hoặc lỗi xác thực. Vui lòng đăng nhập lại.",
         loginUrl: "/login",
       };
     }
@@ -55,9 +58,12 @@ export const checkAuth = async (action) => {
 // Sửa hàm inputInspection: Thêm try-catch để xử lý lỗi, tránh crash nếu API fail
 export const inputInspection = async (productId, isApprovedAndNote) => {
   try {
-    const response = await post(`api/staff/products/${productId}/input-inspection`, isApprovedAndNote);
+    const response = await post(
+      `api/staff/products/${productId}/input-inspection`,
+      isApprovedAndNote
+    );
     // Giả định backend trả về chuỗi "Processed", nhưng nếu là object { message: "Processed" }, thay bằng response.message === "Processed"
-    return response === "Processed"; 
+    return response === "Processed";
   } catch (error) {
     console.error("Error in inputInspection:", error);
     // Optional: toast.error("Lỗi khi nhập kiểm tra sản phẩm."); // Nếu dùng sonner, import và dùng
@@ -68,7 +74,10 @@ export const inputInspection = async (productId, isApprovedAndNote) => {
 // Sửa hàm approveProduct: Thêm try-catch để xử lý lỗi, tránh crash nếu API fail
 export const approveProduct = async (productId, isApprovedAndNote) => {
   try {
-    const response = await post(`api/staff/products/${productId}/approve-preliminary`, isApprovedAndNote);
+    const response = await post(
+      `api/staff/products/${productId}/approve-preliminary`,
+      isApprovedAndNote
+    );
     // Giả định backend trả về chuỗi "Processed", nhưng nếu là object { message: "Processed" }, thay bằng response.message === "Processed"
     return response === "Processed";
   } catch (error) {
@@ -81,7 +90,7 @@ export const approveProduct = async (productId, isApprovedAndNote) => {
 /// Thêm hàm getProductById (dựa trên import ở ListingDetail.jsx)
 export const getProductById = async (id) => {
   try {
-    const data = await get(`api/products/${id}`); // Giả định endpoint, thay nếu khác
+    const data = await get(`api/public/products/${id}`);
     return data;
   } catch (error) {
     console.error("Error fetching product by ID:", error);

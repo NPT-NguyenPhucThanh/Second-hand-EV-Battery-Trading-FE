@@ -243,8 +243,8 @@ function UserProfileDropdown() {
               group-hover:bg-clip-text group-hover:text-transparent
               ${
                 isDark
-                ? "group-hover:bg-gradient-to-r from-red-500 to-orange-500"
-                : "group-hover:bg-gradient-to-r from-blue-500 to-purple-500"
+                  ? "group-hover:bg-gradient-to-r from-red-500 to-orange-500"
+                  : "group-hover:bg-gradient-to-r from-blue-500 to-purple-500"
               }
             `}
             >
@@ -508,28 +508,7 @@ export default function Header() {
                     </button>
                   </Badge>
                 </Link>
-                <Link to="/favorites">
-                  <Badge count={0} size="small" offset={[0, 5]}>
-                    <button
-                      className="p-2 rounded-xl transition-all duration-200 hover:scale-110"
-                      style={{
-                        background: isDark
-                          ? "rgba(255, 255, 255, 0.1)"
-                          : "rgba(0, 0, 0, 0.05)",
-                        border: isDark
-                          ? "1px solid rgba(239, 68, 68, 0.3)"
-                          : "1px solid rgba(251, 146, 60, 0.3)",
-                      }}
-                    >
-                      <HeartOutlined
-                        style={{
-                          fontSize: "20px",
-                          color: isDark ? "#ef4444" : "#ef4444",
-                        }}
-                      />
-                    </button>
-                  </Badge>
-                </Link>
+
                 <Link to="/cart">
                   <Badge count={0} size="small" offset={[0, 5]}>
                     <button

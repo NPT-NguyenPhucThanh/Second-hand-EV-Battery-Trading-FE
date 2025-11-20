@@ -283,23 +283,6 @@ export default function Listings() {
                         Trong kho
                       </div>
                     )}
-
-                    {/* Like Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toast.success("Đã thêm vào yêu thích!");
-                      }}
-                      className="absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
-                      style={{
-                        background: isDark
-                          ? "rgba(255, 255, 255, 0.2)"
-                          : "rgba(255, 255, 255, 0.9)",
-                        backdropFilter: "blur(12px)",
-                      }}
-                    >
-                      <Heart className="w-5 h-5" style={{ color: "#ef4444" }} />
-                    </button>
                   </div>
 
                   {/* Content */}

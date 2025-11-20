@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Descriptions, Tag, Badge } from "antd";
+import { Modal, Descriptions, Tag, Badge, Image, Space } from "antd";
 
 export default function WarehouseDetailModal({ open, onClose, product }) {
   if (!product) return null;
@@ -71,16 +71,16 @@ export default function WarehouseDetailModal({ open, onClose, product }) {
         </Descriptions.Item> */}
       </Descriptions>
       {product.imgs && product.imgs.length > 0 && (
-            <Descriptions.Item label="Hình ảnh sản phẩm" span={2}>
-                <Image.PreviewGroup>
-                    <Space size="large" wrap>
-                        {product.imgs.map((img) => (
-                            <Image key={img.imgid} width={150} src={img.url} />
-                        ))}
-                    </Space>
-                </Image.PreviewGroup>
-            </Descriptions.Item>
-        )}
+        <Descriptions.Item label="Hình ảnh sản phẩm" span={2}>
+          <Image.PreviewGroup>
+            <Space size="large" wrap>
+              {product.imgs.map((img) => (
+                <Image key={img.imgid} width={150} src={img.url} />
+              ))}
+            </Space>
+          </Image.PreviewGroup>
+        </Descriptions.Item>
+      )}
     </Modal>
   );
 }

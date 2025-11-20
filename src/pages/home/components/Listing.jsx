@@ -104,12 +104,6 @@ export default function FeaturedListings() {
                   Trong kho
                 </span>
               )}
-              <button
-                aria-label="Yêu thích"
-                className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 hover:bg-white transition-colors"
-              >
-                <Heart className="w-4 h-4 text-gray-800" />
-              </button>
             </div>
 
             <div className="p-3">

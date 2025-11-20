@@ -44,6 +44,7 @@ import TransactionManagement from "../pages/admin/TransactionManagement";
 import DisputeManagement from "../pages/admin/DisputeManagement";
 import UserPackageManagement from "../pages/admin/UserPackageManagement";
 import ProductManagementAll from "../pages/admin/ProductManagementAll";
+import ProductDetailManager from "../pages/admin/ProductManagementAll/ProductDetailManager";
 
 // === GUARDS & ROLES ===
 import MemberRouteGuard from "../components/auth/MemberRouteGuard";
@@ -108,6 +109,7 @@ export const routes = [
       { path: "orders", element: <TransactionManagement /> },
       { path: "refund", element: <RefundManagement /> },
       { path: "products-all", element: <ProductManagementAll /> },
+      { path: "products/:id", element: <ProductDetailManager /> },
     ],
   },
 

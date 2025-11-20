@@ -239,6 +239,66 @@ export default function ProfilePage() {
     );
   }
 
+  // Check if user is MANAGER or STAFF - redirect to appropriate panel
+  const userRole = user.roles?.[0]?.rolename?.toUpperCase();
+  if (userRole === "MANAGER" || userRole === "STAFF") {
+    return (
+      <div className="min-h-screen pt-20 pb-20 px-6 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div
+            className="absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse"
+            style={{
+              background: `radial-gradient(circle, ${colors.primary[0]}, transparent)`,
+            }}
+          />
+        </div>
+
+        <div
+          className="relative z-10 rounded-3xl p-12 text-center max-w-md"
+          style={{
+            background: isDark
+              ? "rgba(255, 255, 255, 0.05)"
+              : "rgba(255, 255, 255, 0.9)",
+            backdropFilter: "blur(20px)",
+            border: `2px solid ${colors.border}`,
+          }}
+        >
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
+            style={{
+              background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+            }}
+          >
+            <Crown className="w-10 h-10 text-white" />
+          </div>
+          <h2
+            className={`text-2xl font-bold mb-4 ${
+              isDark ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Tài khoản {userRole}
+          </h2>
+          <p className={`mb-6 ${isDark ? "text-gray-200" : "text-gray-600"}`}>
+            Trang profile này dành cho người dùng thông thường. Vui lòng truy
+            cập trang quản lý của bạn.
+          </p>
+          <a
+            href={userRole === "MANAGER" ? "/manager" : "/staff"}
+            className="inline-block px-8 py-4 rounded-2xl font-bold text-white transition-all duration-300 hover:scale-105"
+            style={{
+              background: `linear-gradient(135deg, ${colors.primary[0]}, ${colors.primary[1]})`,
+              boxShadow: isDark
+                ? "0 10px 40px rgba(239, 68, 68, 0.3)"
+                : "0 10px 40px rgba(59, 130, 246, 0.3)",
+            }}
+          >
+            Đi tới trang {userRole}
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   const showUpgradeModal = () => setIsModalOpen(true);
   const handleModalCancel = () => {
     setIsModalOpen(false);

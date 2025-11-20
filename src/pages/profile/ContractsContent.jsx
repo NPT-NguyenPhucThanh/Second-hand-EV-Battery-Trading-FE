@@ -2,16 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Spin, Empty, Alert, Tag, Button, Select } from "antd";
 import api from "../../utils/api";
 import { useTheme } from "../../contexts/ThemeContext";
-import { 
-  FileText, 
-  Clock, 
-  CheckCircle, 
-  Car, 
-  User, 
-  ShoppingCart, 
-  Store, 
+import {
+  FileText,
+  Clock,
+  CheckCircle,
+  Car,
+  User,
+  ShoppingCart,
+  Store,
   Calendar,
-  ExternalLink
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,9 +30,17 @@ const formatDate = (dateString) => {
 
 const getStatusConfig = (status) => {
   if (status === false) {
-    return { text: "Chưa ký", color: "warning", icon: <Clock className="w-4 h-4" /> };
+    return {
+      text: "Chưa ký",
+      color: "warning",
+      icon: <Clock className="w-4 h-4" />,
+    };
   }
-  return { text: "Đã ký", color: "success", icon: <CheckCircle className="w-4 h-4" /> };
+  return {
+    text: "Đã ký",
+    color: "success",
+    icon: <CheckCircle className="w-4 h-4" />,
+  };
 };
 
 const getContractTitle = (contract) => {
@@ -67,15 +75,25 @@ const ContractCard = ({ contract, isDark, onOpenDocuSeal, isOpening }) => {
     >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-800"}`}>
+          <h3
+            className={`text-xl font-bold ${
+              isDark ? "text-white" : "text-gray-800"
+            }`}
+          >
             {getContractTitle(contract)}
           </h3>
-          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          <p
+            className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+          >
             {getContractSubtitle(contract)}
           </p>
         </div>
         <div className="text-3xl text-blue-600">
-          {contract.contractType === "SALE_TRANSACTION" ? <ShoppingCart /> : <Store />}
+          {contract.contractType === "SALE_TRANSACTION" ? (
+            <ShoppingCart />
+          ) : (
+            <Store />
+          )}
         </div>
       </div>
 
@@ -85,13 +103,17 @@ const ContractCard = ({ contract, isDark, onOpenDocuSeal, isOpening }) => {
             <div className="flex items-center gap-2">
               <Car className="w-4 h-4 text-gray-500" />
               <span className={isDark ? "text-gray-300" : "text-gray-600"}>
-                Địa điểm: <strong>{contract.orders.transactionLocation || "Chưa xác định"}</strong>
+                Địa điểm:{" "}
+                <strong>
+                  {contract.orders.transactionLocation || "Chưa xác định"}
+                </strong>
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-gray-500" />
               <span className={isDark ? "text-gray-300" : "text-gray-600"}>
-                Hẹn giao: <strong>{formatDate(contract.orders.appointmentDate)}</strong>
+                Hẹn giao:{" "}
+                <strong>{formatDate(contract.orders.appointmentDate)}</strong>
               </span>
             </div>
           </>
@@ -102,13 +124,19 @@ const ContractCard = ({ contract, isDark, onOpenDocuSeal, isOpening }) => {
             <div className="flex items-center gap-2">
               <Car className="w-4 h-4 text-gray-500" />
               <span className={isDark ? "text-gray-300" : "text-gray-600"}>
-                Biển số: <strong>{contract.products.brandcars?.licensePlate || "Chưa có"}</strong>
+                Biển số:{" "}
+                <strong>
+                  {contract.products.brandcars?.licensePlate || "Chưa có"}
+                </strong>
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Tag color="blue">Đăng bán</Tag>
               <span className={isDark ? "text-gray-300" : "text-gray-600"}>
-                Giá: <strong>{contract.products.cost?.toLocaleString("vi-VN")} ₫</strong>
+                Giá:{" "}
+                <strong>
+                  {contract.products.cost?.toLocaleString("vi-VN")} ₫
+                </strong>
               </span>
             </div>
           </>
@@ -124,15 +152,21 @@ const ContractCard = ({ contract, isDark, onOpenDocuSeal, isOpening }) => {
         )}
 
         <div className="flex justify-between">
-          <span className={isDark ? "text-gray-400" : "text-gray-600"}>Ngày tạo</span>
-          <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+          <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+            Ngày tạo
+          </span>
+          <span
+            className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}
+          >
             {formatDate(contract.startDate)}
           </span>
         </div>
 
         {contract.status === true && contract.signedat && (
           <div className="flex justify-between">
-            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Ngày ký</span>
+            <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+              Ngày ký
+            </span>
             <span className="font-medium text-green-600">
               {formatDate(contract.signedat)}
             </span>
@@ -148,14 +182,18 @@ const ContractCard = ({ contract, isDark, onOpenDocuSeal, isOpening }) => {
       </div>
 
       <div className="mt-4 flex gap-2 flex-wrap">
-        <Button type="primary" size="small">Xem chi tiết</Button>
+        <Button type="primary" size="small">
+          Xem chi tiết
+        </Button>
 
         {isPending && (
           <Button
             size="small"
             type="default"
             icon={<ExternalLink className="w-4 h-4" />}
-            onClick={() => onOpenDocuSeal(contract.contractid, contract.docusealSubmissionId)}
+            onClick={() =>
+              onOpenDocuSeal(contract.contractid, contract.docusealSubmissionId)
+            }
             loading={isOpening}
           >
             {isOpening ? "Đang mở..." : "Ký trên DocuSeal"}
@@ -163,7 +201,11 @@ const ContractCard = ({ contract, isDark, onOpenDocuSeal, isOpening }) => {
         )}
 
         {contract.docusealSubmissionId && contract.status === true && (
-          <Button size="small" ghost icon={<ExternalLink className="w-4 h-4" />}>
+          <Button
+            size="small"
+            ghost
+            icon={<ExternalLink className="w-4 h-4" />}
+          >
             Xem hợp đồng đã ký
           </Button>
         )}
@@ -185,7 +227,7 @@ export default function ContractsContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get("api/seller/contracts");
+      const res = await api.get("api/buyer/contracts");
       const data = res.contracts || [];
       setContracts(data);
       setFilteredContracts(data);
@@ -206,22 +248,28 @@ export default function ContractsContent() {
     setOpeningId(contractId);
     try {
       // Gọi API để lấy signing URL từ DocuSeal
-      const response = await api.post(`api/seller/contracts/${contractId}/sign`);
-      
+      const response = await api.post(`api/buyer/contracts/${contractId}/sign`);
+
       if (response.docusealSubmissionId) {
         // Gọi API lấy URL ký
-        const urlRes = await api.get(`api/docuseal/submissions/${submissionId}/status`);
-        
+        const urlRes = await api.get(
+          `api/docuseal/submissions/${submissionId}/status`
+        );
+
         // Giả sử API trả về URL trong response.data.signing_url hoặc tương tự
         // Nếu không có API riêng, dùng link mặc định DocuSeal
-        const signingUrl = urlRes.signing_url || `https://docuseal.co/s/${submissionId}`;
-        
+        const signingUrl =
+          urlRes.signing_url || `https://docuseal.co/s/${submissionId}`;
+
         toast.success("Đang mở trang ký hợp đồng...");
         window.open(signingUrl, "_blank", "noopener,noreferrer");
       }
     } catch (err) {
       console.error("Lỗi mở DocuSeal:", err);
-      toast.error(err.response?.data?.message || "Không thể mở trang ký. Vui lòng thử lại.");
+      toast.error(
+        err.response?.data?.message ||
+          "Không thể mở trang ký. Vui lòng thử lại."
+      );
     } finally {
       setOpeningId(null);
     }
@@ -232,9 +280,9 @@ export default function ContractsContent() {
     if (value === "all") {
       setFilteredContracts(contracts);
     } else if (value === "pending") {
-      setFilteredContracts(contracts.filter(c => c.status === false));
+      setFilteredContracts(contracts.filter((c) => c.status === false));
     } else if (value === "signed") {
-      setFilteredContracts(contracts.filter(c => c.status === true));
+      setFilteredContracts(contracts.filter((c) => c.status === true));
     }
   };
 
@@ -260,7 +308,12 @@ export default function ContractsContent() {
   if (error) {
     return (
       <div className="py-8">
-        <Alert message="Lỗi tải dữ liệu" description={error} type="error" showIcon />
+        <Alert
+          message="Lỗi tải dữ liệu"
+          description={error}
+          type="error"
+          showIcon
+        />
       </div>
     );
   }
@@ -280,15 +333,29 @@ export default function ContractsContent() {
 
   return (
     <div>
-      <h2 className={`text-2xl font-semibold mb-6 ${isDark ? "text-white" : "text-gray-800"}`}>
+      <h2
+        className={`text-2xl font-semibold mb-6 ${
+          isDark ? "text-white" : "text-gray-800"
+        }`}
+      >
         Quản Lý Hợp Đồng
       </h2>
 
       {/* Filter duy nhất */}
-      <div className={`p-5 rounded-xl mb-8 ${isDark ? "bg-gray-700/50 border border-gray-600" : "bg-gray-50 border border-gray-200"}`}>
+      <div
+        className={`p-5 rounded-xl mb-8 ${
+          isDark
+            ? "bg-gray-700/50 border border-gray-600"
+            : "bg-gray-50 border border-gray-200"
+        }`}
+      >
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+            <span
+              className={`font-medium ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               Trạng thái:
             </span>
             <Select
@@ -302,7 +369,9 @@ export default function ContractsContent() {
               <Option value="signed">Đã ký</Option>
             </Select>
           </div>
-          <div className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          <div
+            className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+          >
             Hiển thị: <strong>{filteredContracts.length}</strong> hợp đồng
           </div>
         </div>
@@ -310,11 +379,13 @@ export default function ContractsContent() {
 
       {/* Danh sách hợp đồng */}
       {filteredContracts.length === 0 ? (
-        <Empty 
+        <Empty
           description={
-            filterStatus === "all" ? "Không có hợp đồng nào" :
-            filterStatus === "pending" ? "Không có hợp đồng chờ ký" :
-            "Không có hợp đồng đã ký"
+            filterStatus === "all"
+              ? "Không có hợp đồng nào"
+              : filterStatus === "pending"
+              ? "Không có hợp đồng chờ ký"
+              : "Không có hợp đồng đã ký"
           }
         />
       ) : (

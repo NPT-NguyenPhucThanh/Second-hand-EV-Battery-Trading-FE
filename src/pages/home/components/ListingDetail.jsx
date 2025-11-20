@@ -72,7 +72,7 @@ export default function ListingDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  // const [isFavorite, setIsFavorite] = useState(false); // DISABLED - giữ lại để dùng sau
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -112,8 +112,8 @@ export default function ListingDetail() {
 
   const isOwner = currentUser && item?.seller?.sellerId === currentUser.userId;
 
-  // Check if post is approved and has seller info (not draft)
-  const isApprovedPost = item?.post?.status === "APPROVED" && item?.seller;
+  // Check if product is approved and available for sale
+  const isApprovedPost = item?.product?.status === "DANG_BAN" && item?.seller;
 
   // === GỌI AI GỢI Ý GIÁ ===
   const handleAiPriceSuggestion = async () => {
@@ -125,8 +125,14 @@ export default function ListingDetail() {
     try {
       const requestData = {
         productType: item.product.type,
-        brand: item.product.brandInfo?.brand || "",
-        model: item.product.brandInfo?.model || item.product.productname,
+        brand:
+          item.product.brandInfo?.brand ||
+          item.product.productname.split(" ")[0] ||
+          "Unknown",
+        model:
+          item.product.brandInfo?.model ||
+          item.product.productname ||
+          "Unknown",
         year: item.product.brandInfo?.year || new Date().getFullYear(),
         condition: "Good", // Default
       };
@@ -228,12 +234,12 @@ export default function ListingDetail() {
         setIsChatModalOpen(true);
       }
 
-      // 4. YÊU THÍCH
-      else if (action === "favorite") {
-        if (!requireAuth("lưu sản phẩm")) return;
-        setIsFavorite(!isFavorite);
-        toast.success(isFavorite ? "Đã bỏ lưu" : "Đã lưu sản phẩm!");
-      }
+      // 4. YÊU THÍCH - DISABLED (giữ lại để dùng sau)
+      // else if (action === "favorite") {
+      //   if (!requireAuth("lưu sản phẩm")) return;
+      //   setIsFavorite(!isFavorite);
+      //   toast.success(isFavorite ? "Đã bỏ lưu" : "Đã lưu sản phẩm!");
+      // }
 
       // 5. XEM ẢNH CHI TIẾT
       else if (action === "viewImage") {
@@ -446,28 +452,6 @@ export default function ListingDetail() {
                     {item.product.type === "Car EV" ? "Xe điện" : "Pin"}
                   </span>
                 </div>
-
-                {/* Yêu thích Button */}
-                <button
-                  onClick={() => handleAction("favorite")}
-                  className="absolute right-6 top-6 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
-                  style={{
-                    background: isDark
-                      ? "rgba(255, 255, 255, 0.2)"
-                      : "rgba(255, 255, 255, 0.9)",
-                    backdropFilter: "blur(12px)",
-                  }}
-                >
-                  <Heart
-                    className={`w-6 h-6 transition ${
-                      isFavorite
-                        ? "fill-red-500 text-red-500"
-                        : isDark
-                        ? "text-white"
-                        : "text-gray-700"
-                    }`}
-                  />
-                </button>
               </div>
 
               {/* Thumbnails */}

@@ -294,7 +294,7 @@ export default function DisputesContent() {
                       isDark ? "text-white" : "text-gray-900"
                     }`}
                   >
-                    Đơn hàng #{dispute.orderId}
+                    Đơn hàng #{dispute.order?.orderid || "N/A"}
                   </h3>
                   <div
                     className={`text-sm ${
