@@ -228,7 +228,7 @@ const NewPost = () => {
           </div>
           <InputField
             icon={Settings}
-            label="Số lượng sẵn có"
+            label="Thông số kĩ thuật"
             name="specs"
             placeholder="Mô tả chi tiết thông số xe"
             formData={formData}
