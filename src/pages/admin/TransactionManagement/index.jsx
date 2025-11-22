@@ -98,6 +98,26 @@ export default function TransactionManagement() {
     fetchOrders(statusFilter);
   }, [statusFilter, fetchOrders]);
 
+  const handleApproveOrder = async (orderId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn DUYỆT đơn hàng này không?")) {
+      return;
+    }
+
+    try {
+      const payload = { approved: true }; 
+      const response = await approveOrder(orderId, payload);
+
+      if (response) {
+        toast.success("Duyệt đơn hàng thành công!");
+        fetchOrders(statusFilter);
+      } else {
+        toast.error(response.message || "Lỗi khi duyệt đơn hàng.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi hệ thống hoặc API.");
+    }
+  };
 
   const getStatusBadge = (status) => {
     const map = {
@@ -133,7 +153,6 @@ export default function TransactionManagement() {
   return (
     <div className={`min-h-screen p-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
 
-      {/* PAGE TITLE */}
       <div className="mb-8">
         <AuroraText className="text-4xl font-bold mb-2">Quản Lý Giao Dịch</AuroraText>
         <p className={isDark ? "text-gray-400" : "text-gray-600"}>Duyệt và theo dõi đơn hàng</p>
@@ -169,7 +188,6 @@ export default function TransactionManagement() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-
         {orders.map((order) => {
           const prod = getOrderProduct(order);
           const image = getOrderImage(order);
@@ -183,7 +201,6 @@ export default function TransactionManagement() {
                 isDark ? "bg-gray-800/50 backdrop-blur-sm" : "bg-white shadow-lg"
               }`}
             >
-              {/* IMAGE + STATUS */}
               <div className="flex gap-4 mb-4">
                 <div className="w-20 h-20 rounded-lg overflow-hidden flex items-center justify-center bg-gray-200">
                   {image ? (
@@ -210,18 +227,15 @@ export default function TransactionManagement() {
                 </div>
               </div>
 
-              {/* PRODUCT TITLE */}
               <h3 className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
                 {Title}
               </h3>
 
-              {/* BUYER */}
               <div className="flex items-center gap-2 mb-2">
                 <User className="w-4 h-4 text-gray-500" />
                 <span>{order.users?.username}</span>
               </div>
 
-              {/* PRICE */}
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-5 h-5 text-green-500" />
                 <span className="text-xl font-bold text-green-500">
@@ -234,6 +248,15 @@ export default function TransactionManagement() {
                 <Clock className="w-4 h-4 text-gray-500" />
                 {formatDateTime(order.createdat)}
               </div>
+
+              {order.status === ORDER_STATUS.DA_DAT_COC && (
+                <button
+                  onClick={() => handleApproveOrder(order.orderid)}
+                  className="w-full py-2 rounded-lg font-bold bg-green-500 text-white hover:bg-green-600 transition-all mb-3"
+                >
+                  ✔ Duyệt đơn hàng
+                </button>
+              )}
 
               <button
                 onClick={() => openDetail(order)}
@@ -267,12 +290,9 @@ export default function TransactionManagement() {
             onClick={closeDetail}
           >
             <div
-              className={`rounded-2xl p-6 max-w-2xl w-full ${
-                isDark ? "bg-gray-800" : "bg-white"
-              }`}
+              className={`rounded-2xl p-6 max-w-2xl w-full ${isDark ? "bg-gray-800" : "bg-white"}`}
               onClick={(e) => e.stopPropagation()}
             >
-
               <div className="flex gap-4 mb-6">
                 <div className="w-28 h-28 rounded-lg overflow-hidden flex items-center justify-center bg-gray-200">
                   {getOrderImage(o) ? (
@@ -312,7 +332,6 @@ export default function TransactionManagement() {
               {product && (
                 <div className="border-t border-gray-400/20 pt-4 pb-4">
 
-                  {/* PIN EV */}
                   {battery && (
                     <>
                       <div className="flex items-center gap-2 mb-2">
@@ -326,7 +345,6 @@ export default function TransactionManagement() {
                     </>
                   )}
 
-                  {/* XE EV */}
                   {car && (
                     <>
                       <div className="flex items-center gap-2 mb-2">
