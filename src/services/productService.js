@@ -90,7 +90,7 @@ export const approveProduct = async (productId, isApprovedAndNote) => {
 /// Thêm hàm getProductById (dựa trên import ở ListingDetail.jsx)
 export const getProductById = async (id) => {
   try {
-    const data = await get(`api/public/products/${id}`);
+    const data = await get(`api/products/${id}`);
     return data;
   } catch (error) {
     console.error("Error fetching product by ID:", error);

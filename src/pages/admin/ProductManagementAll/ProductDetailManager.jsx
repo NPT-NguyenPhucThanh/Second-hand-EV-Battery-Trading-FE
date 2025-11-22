@@ -13,6 +13,13 @@ import {
   Phone,
   ArrowLeft,
   Trash2,
+  PackageSearch,
+  ScanBarcode,
+  CalendarClock,
+  Gauge,
+  Zap,
+  BatteryCharging,
+  MapPin
 } from "lucide-react";
 import { toast } from "sonner";
 import { getProductById } from "../../../services/productService";
@@ -36,9 +43,21 @@ const ProductDetailManager = () => {
       setLoading(true);
       const response = await getProductById(id);
       console.log("API Response:", response);
-      if (response.status === "success") {
-        // API trả về response.product (DTO) và response.seller riêng
-        setProduct({ ...response.product, seller: response.seller });
+
+      if (response?.product) {
+        const p = response.product;
+
+        setProduct({
+          ...p,
+          seller: p.users,
+          brandInfo:
+            p.type === "Battery"
+              ? p.brandbattery
+              : p.type === "Car EV"
+              ? p.brandcars
+              : null,
+          images: p.imgs?.map((img) => img.url) || []
+        });
       } else {
         toast.error("Không thể tải thông tin sản phẩm");
       }
@@ -92,24 +111,21 @@ const ProductDetailManager = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      AVAILABLE: {
+      DANG_BAN: {
         label: "Đang bán",
-        color: "bg-green-500/20 text-green-400 border-green-500/30",
+        color: "bg-green-500/20 text-green-400 border-green-500/30"
       },
-      SOLD: {
+      DA_BAN: {
         label: "Đã bán",
-        color: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+        color: "bg-gray-500/20 text-gray-400 border-gray-500/30"
       },
-      PENDING: {
+      CHO_DUYET: {
         label: "Chờ duyệt",
-        color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-      },
-      UNAVAILABLE: {
-        label: "Không khả dụng",
-        color: "bg-red-500/20 text-red-400 border-red-500/30",
-      },
+        color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+      }
     };
-    const config = statusConfig[status] || statusConfig.PENDING;
+    const config = statusConfig[product.status] || statusConfig.CHO_DUYET;
+
     return (
       <span
         className={`px-3 py-1 rounded-full text-sm font-medium border ${config.color}`}
@@ -121,11 +137,12 @@ const ProductDetailManager = () => {
 
   const getTypeBadge = (type) => {
     const icon =
-      type === "Xe điện" ? (
+      type === "Car EV" ? (
         <Car className="w-4 h-4" />
       ) : (
         <Battery className="w-4 h-4" />
       );
+
     return (
       <div
         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
@@ -133,7 +150,7 @@ const ProductDetailManager = () => {
         }`}
       >
         {icon}
-        <span className="font-medium">{type}</span>
+        <span className="font-medium">{type === "Car EV" ? "Xe điện" : "Pin"}</span>
       </div>
     );
   };
@@ -173,15 +190,16 @@ const ProductDetailManager = () => {
                   alt={product.productname}
                   className="w-full h-full object-cover"
                 />
+
                 <div className="absolute top-4 right-4 flex gap-2">
                   {getTypeBadge(product.type)}
                 </div>
+
                 <div className="absolute top-4 left-4">
                   {getStatusBadge(product.status)}
                 </div>
               </div>
 
-              {/* Thumbnails */}
               {productImages.length > 1 && (
                 <div className="grid grid-cols-4 gap-3">
                   {productImages.map((img, idx) => (
@@ -207,9 +225,9 @@ const ProductDetailManager = () => {
               )}
             </div>
 
-            {/* Right: Details */}
+            {/* RIGHT SIDE */}
             <div className="space-y-6">
-              {/* Title & Price */}
+              {/* --- Title & Price --- */}
               <div>
                 <h1
                   className={`text-3xl font-bold mb-4 ${
@@ -218,185 +236,189 @@ const ProductDetailManager = () => {
                 >
                   {product.productname}
                 </h1>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-orange-500">
-                    {product.cost?.toLocaleString()} đ
-                  </span>
-                </div>
+                <span className="text-4xl font-bold text-orange-500">
+                  {product.cost?.toLocaleString()} đ
+                </span>
               </div>
 
-              {/* Product Stats */}
+              {/* --- Stats --- */}
               <div
                 className={`grid grid-cols-2 gap-4 p-4 rounded-xl ${
                   isDark ? "bg-gray-700/50" : "bg-gray-50"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-lg ${
-                      isDark ? "bg-yellow-500/20" : "bg-yellow-100"
-                    }`}
-                  >
-                    <Activity className="w-5 h-5 text-yellow-500" />
-                  </div>
+                  <Activity className="w-5 h-5 text-yellow-500" />
                   <div>
-                    <p
-                      className={`text-xs ${
-                        isDark ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
-                      Đánh giá
-                    </p>
-                    <p
-                      className={`font-semibold ${
-                        isDark ? "text-white" : "text-gray-900"
-                      }`}
-                    >
-                      {0} ⭐
-                    </p>
+                    <p className="text-xs text-gray-400">Đánh giá</p>
+                    <p className="font-semibold text-white">{0} ⭐</p>
                   </div>
                 </div>
+
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-lg ${
-                      isDark ? "bg-red-500/20" : "bg-red-100"
-                    }`}
-                  >
-                    <Eye className="w-5 h-5 text-red-500" />
-                  </div>
+                  <Eye className="w-5 h-5 text-red-500" />
                   <div>
-                    <p
-                      className={`text-xs ${
-                        isDark ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
-                      Lượt xem
-                    </p>
-                    <p
-                      className={`font-semibold ${
-                        isDark ? "text-white" : "text-gray-900"
-                      }`}
-                    >
+                    <p className="text-xs text-gray-400">Lượt xem</p>
+                    <p className="font-semibold text-white">
                       {product.viewCount || 0}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Product Info */}
-              <div className="space-y-3">
-                <h3
-                  className={`text-lg font-semibold ${
-                    isDark ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  Thông tin sản phẩm
+              {/* --- Description --- */}
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  Mô tả sản phẩm:
                 </h3>
-                <div className="space-y-2">
-                  <InfoRow
-                    icon={<Tag className="w-4 h-4" />}
-                    label="Mã sản phẩm"
-                    value={`#${product.productid}`}
-                    isDark={isDark}
-                  />
-                  <InfoRow
-                    icon={<Calendar className="w-4 h-4" />}
-                    label="Năm sản xuất"
-                    value={product.brandInfo?.year || "N/A"}
-                    isDark={isDark}
-                  />
-                  {product.type === "Car EV" && product.brandInfo && (
+                <p className="text-gray-300">{product.description}</p>
+              </div>
+
+              {/* === CHI TIẾT SẢN PHẨM === */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-white">
+                  Chi tiết sản phẩm:
+                </h3>
+
+                <InfoRow
+                  icon={<Tag className="w-4 h-4" />}
+                  label="Mã sản phẩm:"
+                  value={`#${product.productid}`}
+                  isDark={isDark}
+                />
+
+                {/* === Car EV === */}
+                {product.type === "Car EV" && product.brandInfo && (
+                  <>
                     <InfoRow
                       icon={<Car className="w-4 h-4" />}
-                      label="Hãng xe"
+                      label="Hãng xe:"
                       value={product.brandInfo.brand}
                       isDark={isDark}
                     />
-                  )}
-                  {product.type === "Battery" && product.brandInfo && (
+
+                    <InfoRow
+                      icon={<PackageSearch className="w-4 h-4" />}
+                      label="Model:"
+                      value={product.model}
+                      isDark={isDark}
+                    />
+
+                    <InfoRow
+                      icon={<CalendarClock className="w-4 h-4" />}
+                      label="Năm sản xuất:"
+                      value={product.brandInfo.year}
+                      isDark={isDark}
+                    />
+
+                    <InfoRow
+                      icon={<ScanBarcode className="w-4 h-4" />}
+                      label="Biển số xe:"
+                      value={product.brandInfo.licensePlate}
+                      isDark={isDark}
+                    />
+                  </>
+                )}
+
+                {/* === Battery === */}
+                {product.type === "Battery" && product.brandInfo && (
+                  <>
                     <InfoRow
                       icon={<Battery className="w-4 h-4" />}
-                      label="Hãng pin"
+                      label="Thương hiệu:"
                       value={product.brandInfo.brand}
                       isDark={isDark}
                     />
-                  )}
-                </div>
+
+                    <InfoRow
+                      icon={<BatteryCharging className="w-4 h-4" />}
+                      label="Dung lượng (kWh):"
+                      value={`${product.brandInfo.capacity} kWh`}
+                      isDark={isDark}
+                    />
+
+                    <InfoRow
+                      icon={<Zap className="w-4 h-4" />}
+                      label="Điện áp (V):"
+                      value={`${product.brandInfo.voltage} V`}
+                      isDark={isDark}
+                    />
+
+                    <InfoRow
+                      icon={<Gauge className="w-4 h-4" />}
+                      label="Tình trạng:"
+                      value={product.brandInfo.condition}
+                      isDark={isDark}
+                    />
+
+                    <InfoRow
+                      icon={<MapPin className="w-4 h-4" />}
+                      label="Địa chỉ lấy hàng:"
+                      value={product.brandInfo.pickupAddress}
+                      isDark={isDark}
+                    />
+                  </>
+                )}
               </div>
 
-              {/* Description */}
-              <div className="space-y-3">
-                <h3
-                  className={`text-lg font-semibold ${
-                    isDark ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  Mô tả sản phẩm
-                </h3>
-                <p
-                  className={`text-sm leading-relaxed ${
-                    isDark ? "text-gray-300" : "text-gray-600"
-                  }`}
-                >
-                  {product.description || "Không có mô tả"}
-                </p>
-              </div>
-
-              {/* Seller Info */}
+              {/* === SELLER === */}
               {product.seller && (
                 <div
                   className={`p-4 rounded-xl ${
                     isDark ? "bg-gray-700/50" : "bg-gray-50"
                   }`}
                 >
-                  <h3
-                    className={`text-lg font-semibold mb-3 ${
-                      isDark ? "text-white" : "text-gray-900"
-                    }`}
-                  >
-                    Thông tin người bán
+                  <h3 className="text-lg font-semibold mb-3 text-white">
+                    Thông tin người bán:
                   </h3>
-                  <div className="space-y-2">
-                    <InfoRow
-                      icon={<User className="w-4 h-4" />}
-                      label="Tên"
-                      value={
-                        product.seller.displayName || product.seller.username
-                      }
-                      isDark={isDark}
-                    />
-                    <InfoRow
-                      icon={<Mail className="w-4 h-4" />}
-                      label="Email"
-                      value={product.seller.email}
-                      isDark={isDark}
-                    />
-                    <InfoRow
-                      icon={<Phone className="w-4 h-4" />}
-                      label="Số điện thoại"
-                      value={product.seller.phone}
-                      isDark={isDark}
-                    />
-                  </div>
+
+                  <InfoRow
+                    icon={<User className="w-4 h-4" />}
+                    label="Username:"
+                    value={
+                       product.seller.username
+                    }
+                    isDark={isDark}
+                  />
+                  <InfoRow
+                    icon={<User className="w-4 h-4" />}
+                    label="Tên hiển thị:"
+                    value={
+                      product.seller.displayName 
+                    }
+                    isDark={isDark}
+                  />
+
+                  <InfoRow
+                    icon={<Mail className="w-4 h-4" />}
+                    label="Email:"
+                    value={product.seller.email}
+                    isDark={isDark}
+                  />
+
+                  <InfoRow
+                    icon={<Phone className="w-4 h-4" />}
+                    label="Số điện thoại:"
+                    value={product.seller.phone || ""}
+                    isDark={isDark}
+                  />
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all"
-                >
-                  <Trash2 className="w-5 h-5" />
-                  Xóa sản phẩm
-                </button>
-              </div>
+              {/* Delete */}
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="w-full py-3 bg-red-500 text-white rounded-lg"
+              >
+                <Trash2 className="inline w-5 h-5 mr-2" />
+                Xóa sản phẩm
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div
@@ -412,24 +434,24 @@ const ProductDetailManager = () => {
               Xác nhận xóa sản phẩm
             </h3>
             <p className={`mb-6 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-              Bạn có chắc chắn muốn xóa sản phẩm{" "}
-              <strong>{product.productname}</strong>? Hành động này không thể
-              hoàn tác.
+              Xóa <strong>{product.productname}</strong>? Không thể hoàn tác.
             </p>
+
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`flex-1 px-4 py-2 rounded-lg ${
                   isDark
-                    ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-gray-700 text-gray-300"
+                    : "bg-gray-200 text-gray-700"
                 }`}
               >
                 Hủy
               </button>
+
               <button
                 onClick={handleDelete}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all"
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg"
               >
                 Xóa
               </button>
@@ -454,6 +476,7 @@ const InfoRow = ({ icon, label, value, isDark }) => (
         {label}
       </span>
     </div>
+
     <span
       className={`text-sm font-medium ${
         isDark ? "text-white" : "text-gray-900"

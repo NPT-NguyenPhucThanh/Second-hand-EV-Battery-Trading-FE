@@ -33,7 +33,7 @@ export default function AdminLayout() {
 
   const menuItems = [
     { icon: UserPlus, label: "Duyệt Seller", path: "/staff/user-upgrade" },
-    { icon: Users, label: "Quản lý người dùng", path: "/staff/users" },
+
     {
       icon: CreditCard,
       label: "Quản lý gói User",
