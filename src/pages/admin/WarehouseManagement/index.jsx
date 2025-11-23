@@ -34,7 +34,7 @@ export default function WarehouseManagement() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const inWarehouse = products.filter((p) => p.inWarehouse === true && p.status !== 'DA_BAN');
+  const inWarehouse = products.filter((p) => p.inWarehouse === true);
 
   const fetchApi = async () => {
     setLoading(true);

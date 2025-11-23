@@ -121,18 +121,18 @@ export default function PackageManagement() {
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2">
                 <Clock className={`w-4 h-4 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
-                <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>Thời hạn: {pkg.durationdays} ngày</span>
+                <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>Thời hạn: {pkg.durationMonths} tháng</span>
               </div>
               {currentPkgTypeTab === 'BATTERY' && (
                 <div className="flex items-center gap-2">
                   <Battery className={`w-4 h-4 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>Số pin: {pkg.numberofbatteries || 0}</span>
+                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>Số pin: {pkg.maxBatteries || 0}</span>
                 </div>
               )}
               {currentPkgTypeTab === 'CAR' && (
                 <div className="flex items-center gap-2">
                   <Car className={`w-4 h-4 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>Số xe: {pkg.numberofcars || 0}</span>
+                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>Số xe: {pkg.maxCars || 0}</span>
                 </div>
               )}
             </div>

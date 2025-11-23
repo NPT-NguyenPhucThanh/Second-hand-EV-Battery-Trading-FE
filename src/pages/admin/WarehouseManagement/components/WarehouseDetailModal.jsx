@@ -72,10 +72,10 @@ export default function WarehouseDetailModal({ open, onClose, product }) {
       open={open}
       onCancel={onClose}
       footer={null}
-      width={1000} 
+      width={1000}
       style={{ top: 20 }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-2 space-y-4">
           <Card
             title={
@@ -123,7 +123,7 @@ export default function WarehouseDetailModal({ open, onClose, product }) {
           </Card>
         </div>
 
-        <div className="md:col-span-1 space-y-4">
+        <div className="md:col-span-2 space-y-4">
           <Card className="shadow-md" bodyStyle={{ padding: 16 }}>
             <p className="text-sm text-gray-500 mb-1">Giá yêu cầu:</p>
             <span className="text-3xl font-black text-red-600">
@@ -131,23 +131,48 @@ export default function WarehouseDetailModal({ open, onClose, product }) {
             </span>
           </Card>
 
-          <Card title={<span className="font-bold">Thông số Xe</span>} className="shadow-md">
+          <Card
+            title={<span className="font-bold">Thông số Xe</span>}
+            className="shadow-md"
+          >
             <Descriptions column={1} size="small" colon={false}>
-              <Descriptions.Item label="Hãng xe:">{brandcars?.brand || "N/A"}</Descriptions.Item>
-              <Descriptions.Item label="Năm Sản xuất:">{brandcars?.year || "N/A"}</Descriptions.Item>
-              <Descriptions.Item label="Biển số xe:">{brandcars?.licensePlate || "N/A"}</Descriptions.Item>
-              <Descriptions.Item label="Model:">{product.model || "N/A"}</Descriptions.Item>
+              <Descriptions.Item label="Hãng xe:">
+                {brandcars?.brand || ""}
+              </Descriptions.Item>
+              <Descriptions.Item label="Năm Sản xuất:">
+                {brandcars?.year || ""}
+              </Descriptions.Item>
+              <Descriptions.Item label="Biển số xe:">
+                {brandcars?.licensePlate || ""}
+              </Descriptions.Item>
+              <Descriptions.Item label="Model:">
+                {product.model || ""}
+              </Descriptions.Item>
+              <Descriptions.Item label="Thông số kỹ thuật:">
+                {product.specs || ""}
+              </Descriptions.Item>
             </Descriptions>
           </Card>
 
           {/* Khối Người bán */}
-          <Card title={<span className="font-bold">Thông tin Người bán</span>} className="shadow-md">
+          <Card
+            title={<span className="font-bold">Thông tin Người bán</span>}
+            className="shadow-md"
+          >
             <Descriptions column={1} size="small" colon={false}>
-              <Descriptions.Item label="Tên hiển thị:">{sellerDisplayName}</Descriptions.Item>
-              <Descriptions.Item label="Username:">{users?.username || "N/A"}</Descriptions.Item>
-              <Descriptions.Item label="Email:">{users?.email || "N/A"}</Descriptions.Item>
+              <Descriptions.Item label="Tên hiển thị:">
+                {sellerDisplayName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Username:">
+                {users?.username || ""}
+              </Descriptions.Item>
+              <Descriptions.Item label="Email:">
+                {users?.email || ""}
+              </Descriptions.Item>
               <Descriptions.Item label="SĐT:">{sellerPhone}</Descriptions.Item>
-              <Descriptions.Item label="Ngày đăng:">{formatDate(product.createdat)}</Descriptions.Item>
+              <Descriptions.Item label="Ngày đăng:">
+                {formatDate(product.createdat)}
+              </Descriptions.Item>
             </Descriptions>
           </Card>
         </div>

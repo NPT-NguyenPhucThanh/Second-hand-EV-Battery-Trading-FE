@@ -18,7 +18,6 @@ import {
 import { toast } from "sonner";
 import AuroraText from "../../../components/common/AuroraText";
 
-// Status Tag Component
 const DisputeStatusTag = ({ status, isDark }) => {
   const statusConfig = {
     OPEN: {
@@ -82,7 +81,6 @@ export default function DisputeManagement() {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     resolution: "",
-    amount: 0,
   });
 
   const fetchDisputes = async () => {
@@ -97,12 +95,9 @@ export default function DisputeManagement() {
         setDisputes([]);
       }
     } catch (err) {
-      // Backend trả về 500 Error do lazy loading
-      // Log ngắn gọn thay vì full stack trace
       if (err.message && err.message.includes("failed to lazily initialize")) {
         console.warn(
-          "⚠️ Backend Error: Lazy loading issue in /api/manager/disputes endpoint. " +
-            "Backend needs to add @Transactional or @EntityGraph."
+          "⚠️ Backend Error: Lazy loading issue in /api/manager/disputes endpoint. Backend needs to add @Transactional or @EntityGraph."
         );
         toast.error(
           "⚠️ Lỗi Backend: Không thể tải dữ liệu tranh chấp do lỗi lazy loading. Backend team cần thêm @Transactional vào endpoint này.",
@@ -114,8 +109,6 @@ export default function DisputeManagement() {
           "Không thể tải danh sách tranh chấp. Vui lòng thử lại sau!"
         );
       }
-
-      // Set empty array để trang không bị crash
       setDisputes([]);
     } finally {
       setLoading(false);
@@ -130,7 +123,6 @@ export default function DisputeManagement() {
     setSelectedDispute(record);
     setFormData({
       resolution: record.resolution || "",
-      amount: 0,
     });
     setIsModalOpen(true);
   };
@@ -138,10 +130,10 @@ export default function DisputeManagement() {
   const handleCancel = () => {
     setIsModalOpen(false);
     setSelectedDispute(null);
-    setFormData({ resolution: "", amount: 0 });
+    setFormData({ resolution: "" });
   };
 
-  const handleResolve = async () => {
+  const handleResolve = async (decision) => {
     if (!formData.resolution.trim()) {
       toast.error("Vui lòng nhập hướng xử lý!");
       return;
@@ -150,10 +142,7 @@ export default function DisputeManagement() {
     setSubmitting(true);
     try {
       const managerPayload = {
-        decision:
-          formData.amount && formData.amount > 0
-            ? "APPROVE_REFUND"
-            : "REJECT_DISPUTE",
+        decision,
         managerNote: formData.resolution,
       };
 
@@ -178,7 +167,6 @@ export default function DisputeManagement() {
 
   return (
     <div className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-      {/* Header */}
       <div className="mb-8">
         <AuroraText
           text="Quản lý Tranh chấp"
@@ -189,7 +177,6 @@ export default function DisputeManagement() {
         </p>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-20">
           <Loader2
@@ -200,7 +187,6 @@ export default function DisputeManagement() {
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && disputes.length === 0 && (
         <div
           className={`rounded-2xl p-12 text-center ${
@@ -227,7 +213,6 @@ export default function DisputeManagement() {
         </div>
       )}
 
-      {/* Disputes Grid */}
       {!loading && disputes.length > 0 && (
         <div className="grid gap-6">
           {disputes.map((dispute, index) => (
@@ -345,7 +330,6 @@ export default function DisputeManagement() {
         </div>
       )}
 
-      {/* Modal */}
       {isModalOpen && selectedDispute && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
           <div
@@ -405,7 +389,7 @@ export default function DisputeManagement() {
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  Hướng xử lý của Manager{" "}
+                  Phản hồi của Manager{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -414,45 +398,13 @@ export default function DisputeManagement() {
                     setFormData({ ...formData, resolution: e.target.value })
                   }
                   rows={4}
-                  placeholder="Nhập cách giải quyết... (ví dụ: Đồng ý hoàn tiền 50%, hoặc Từ chối khiếu nại...)"
+                  placeholder="Nhập cách giải quyết..."
                   className={`w-full px-4 py-3 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${
                     isDark
                       ? "bg-gray-900/50 border-gray-700 text-white placeholder-gray-500"
                       : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
                   } border`}
                 />
-              </div>
-
-              <div>
-                <label
-                  className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  Số tiền hoàn trả (VNĐ)
-                </label>
-                <input
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, amount: Number(e.target.value) })
-                  }
-                  min={0}
-                  placeholder="Nhập số tiền..."
-                  className={`w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${
-                    isDark
-                      ? "bg-gray-900/50 border-gray-700 text-white placeholder-gray-500"
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                  } border`}
-                />
-                <p
-                  className={`text-xs mt-1 ${
-                    isDark ? "text-gray-500" : "text-gray-600"
-                  }`}
-                >
-                  Nếu bạn nhập số tiền &gt; 0, quyết định sẽ được hiểu là
-                  'APPROVE_REFUND'.
-                </p>
               </div>
             </div>
 
@@ -469,11 +421,18 @@ export default function DisputeManagement() {
                 Hủy
               </button>
               <button
-                onClick={handleResolve}
+                onClick={() => handleResolve("REJECT_DISPUTE")}
+                disabled={submitting}
+                className="flex-1 px-6 py-3 rounded-xl font-semibold bg-red-500 text-white hover:bg-red-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Đang xử lý..." : "Từ chối khiếu nại"}
+              </button>
+              <button
+                onClick={() => handleResolve("APPROVE_REFUND")}
                 disabled={submitting}
                 className="flex-1 px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {submitting ? "Đang xử lý..." : "Xác nhận giải quyết"}
+                {submitting ? "Đang xử lý..." : "Chấp nhận hoàn tiền"}
               </button>
             </div>
           </div>
