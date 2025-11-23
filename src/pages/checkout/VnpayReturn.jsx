@@ -20,7 +20,7 @@ export default function VNPayReturn() {
         console.log("VNPay Response Code:", vnpResponseCode);
 
         if (vnpResponseCode === "00") {
-          // ✅ Thanh toán thành công
+          // Thanh toán thành công
           setStatus("success");
           toast.success("Thanh toán thành công!");
 

@@ -23,6 +23,7 @@ import {
   Phone,
   Mail,
   Store,
+  Car,
 } from "lucide-react";
 import AuroraText from "../../components/common/AuroraText";
 import { toast } from "sonner";
@@ -59,7 +60,7 @@ const formatAppointmentDate = (dateString) => {
   });
 };
 
-// Tag trạng thái giao dịch
+// Tag trạng thái
 const TransactionStatusTag = ({ status }) => {
   const config = {
     SUCCESS: { text: "Thành công", icon: CheckCircle, color: "#10b981" },
@@ -114,6 +115,7 @@ export default function TransactionContent() {
 
   const [transactionData, setTransactionData] = useState(null);
   const [orderInfo, setOrderInfo] = useState(null);
+  const [productInfo, setProductInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const colors = {
@@ -140,19 +142,29 @@ export default function TransactionContent() {
 
         if (transRes?.status === "success") {
           setTransactionData(transRes);
-        } else {
-          toast.error("Không tải được lịch sử giao dịch");
         }
 
         if (orderRes?.status === "success") {
           const order = orderRes.data || orderRes.order || orderRes;
           setOrderInfo(order);
-        } else {
-          toast.error("Không tải được thông tin đơn hàng");
+
+          // Lấy productId từ order
+          const productId = order?.details?.[0]?.products?.productid;
+          if (productId) {
+            try {
+              const productRes = await get(`api/public/products/${productId}`);
+              if (productRes?.status === "success") {
+                setProductInfo(productRes.product || productRes);
+              }
+            } catch (err) {
+              console.warn("Không tải được thông tin sản phẩm:", err);
+              // Không toast lỗi vì không ảnh hưởng chính
+            }
+          }
         }
       } catch (err) {
         console.error("Lỗi tải dữ liệu:", err);
-        toast.error("Đã có lỗi xảy ra");
+        toast.error("Đã có lỗi xảy ra khi tải thông tin");
       } finally {
         setLoading(false);
       }
@@ -161,7 +173,6 @@ export default function TransactionContent() {
     fetchData();
   }, [orderId]);
 
-  // Loading
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -181,7 +192,6 @@ export default function TransactionContent() {
     );
   }
 
-  // Không có dữ liệu
   if (!transactionData || !orderInfo) {
     return (
       <div className="text-center py-20">
@@ -193,16 +203,14 @@ export default function TransactionContent() {
 
   const { allTransactions = [] } = transactionData;
 
-  // Tính toán chính xác: chỉ tính SUCCESS
   const totalSuccessfulDeposit = allTransactions
-    .filter(t => t.transactionType === "DEPOSIT" && t.status === "SUCCESS")
+    .filter((t) => t.transactionType === "DEPOSIT" && t.status === "SUCCESS")
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
   const totalSuccessfulRefund = allTransactions
-    .filter(t => t.transactionType === "REFUND" && t.status === "SUCCESS")
+    .filter((t) => t.transactionType === "REFUND" && t.status === "SUCCESS")
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
-  // Thông tin đơn hàng
   const appointmentDate = orderInfo.appointmentDate;
   const shippingAddress = orderInfo.shippingaddress || "Chưa có địa chỉ";
 
@@ -217,7 +225,7 @@ export default function TransactionContent() {
 
   return (
     <div className="min-h-screen pb-16">
-      {/* Background hiệu ứng */}
+      {/* Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
         <div
           className="absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl animate-pulse"
@@ -238,8 +246,7 @@ export default function TransactionContent() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-
-        {/* Header */}
+        {/* Header - ĐÃ SỬA LỖI CHÍNH */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
           <AuroraText
             text={`Đơn hàng #${orderId}`}
@@ -261,6 +268,84 @@ export default function TransactionContent() {
           </button>
         </div>
 
+        {/* Thông tin xe - An toàn khi chưa load */}
+        {productInfo ? (
+          <div className="mb-10">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+              <Car className="w-8 h-8 text-blue-500" />
+              Thông tin xe
+            </h3>
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1">
+                  {productInfo.images?.[0] ? (
+                    <img
+                      src={productInfo.images[0]}
+                      alt={productInfo.productname}
+                      className="w-full h-64 object-cover rounded-2xl shadow-lg"
+                    />
+                  ) : (
+                    <div className="bg-gray-200 dark:bg-gray-700 border-2 border-dashed rounded-2xl w-full h-64 flex items-center justify-center">
+                      <Car className="w-16 h-16 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="lg:col-span-2 space-y-5">
+                  <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {productInfo.productname || "Không có tên"}
+                  </h4>
+                  <p className="text-lg text-emerald-600 dark:text-emerald-400 font-semibold">
+                    {formatCurrency(productInfo.cost)}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-600 dark:text-gray-400">Biển số:</span>
+                      <span className="font-semibold">
+                        {productInfo.brandInfo?.licensePlate || "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-600 dark:text-gray-400">Năm:</span>
+                      <span className="font-semibold">
+                        {productInfo.brandInfo?.year || "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-600 dark:text-gray-400">Hãng:</span>
+                      <span className="font-semibold">
+                        {productInfo.brandInfo?.brand || "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-600 dark:text-gray-400">Model:</span>
+                      <span className="font-semibold">{productInfo.model || "—"}</span>
+                    </div>
+                  </div>
+
+                  {productInfo.description && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Mô tả</p>
+                      <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
+                        {productInfo.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-10">
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                Đang tải thông tin xe...
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* 3 ô thông tin */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           {/* Địa chỉ */}
@@ -270,7 +355,9 @@ export default function TransactionContent() {
                 <MapPin className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">Địa chỉ giao hàng</p>
+                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
+                  Địa chỉ giao dịch
+                </p>
                 <p className="text-base font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
                   {shippingAddress}
                 </p>
@@ -285,7 +372,9 @@ export default function TransactionContent() {
                 <Truck className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-2">Ngày hẹn giao hàng</p>
+                <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-2">
+                  Ngày hẹn giao dịch
+                </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {formatAppointmentDate(appointmentDate)}
                 </p>
@@ -300,7 +389,9 @@ export default function TransactionContent() {
                 <Store className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">Thông tin người bán</p>
+                <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
+                  Thông tin người bán
+                </p>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <UserCircle2 className="w-5 h-5 text-gray-500" />
@@ -355,7 +446,6 @@ export default function TransactionContent() {
             <Receipt className="w-8 h-8 text-blue-500" />
             Lịch sử giao dịch ({allTransactions.length})
           </h3>
-
           <div className="space-y-5">
             {allTransactions.length === 0 ? (
               <div className="text-center py-16 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-800">
@@ -375,13 +465,11 @@ export default function TransactionContent() {
                         {t.description || "Không có mô tả"}
                       </p>
                     </div>
-
                     <div className="lg:col-span-2">
                       <p className={`text-2xl font-bold ${t.status === "SUCCESS" ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
                         {formatCurrency(t.amount)}
                       </p>
                     </div>
-
                     <div className="lg:col-span-2">
                       <div className="flex flex-wrap gap-2">
                         {t.method && (
@@ -397,11 +485,9 @@ export default function TransactionContent() {
                         )}
                       </div>
                     </div>
-
                     <div className="lg:col-span-2">
                       <TransactionStatusTag status={t.status} />
                     </div>
-
                     <div className="lg:col-span-2 text-right">
                       <div className="space-y-1">
                         <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-end gap-1">

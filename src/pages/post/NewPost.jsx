@@ -520,30 +520,68 @@ const NewPost = () => {
               </div>
             </div>
 
-            {/* Image Previews */}
+            {/* Image Previews - ĐÃ ĐƯỢC CẢI THIỆN */}
             {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className={`w-full h-32 object-cover rounded-xl border-2 transition-all duration-300 ${
-                        isDark
-                          ? "border-gray-700 group-hover:border-blue-500"
-                          : "border-gray-200 group-hover:border-blue-400"
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transform group-hover:scale-110 transition-all duration-300 hover:bg-red-600"
+              <div className="mt-6">
+                <p
+                  className={`text-sm font-medium mb-4 ${
+                    isDark ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
+                  Đã chọn {imagePreviews.length} ảnh
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div
+                      key={index}
+                      className="relative group overflow-hidden rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
                     >
-                      <X className="w-4 h-4" />
-                    </button>
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-xl transition-all duration-300"></div>
-                  </div>
-                ))}
+                      {/* Ảnh preview */}
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-40 object-cover rounded-2xl"
+                        loading="lazy"
+                      />
+
+                      {/* Overlay khi hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+
+                      {/* Nút xóa ảnh */}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-red-500/50"
+                        aria-label="Xóa ảnh"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+
+                      {/* Thứ tự ảnh */}
+                      <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {index + 1}
+                      </div>
+
+                      {/* Hiệu ứng viền sáng khi hover */}
+                      <div className="absolute inset-0 rounded-2xl ring-4 ring-transparent group-hover:ring-blue-500/30 transition-all duration-300 pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Nút xóa tất cả (tùy chọn) */}
+                {imagePreviews.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+                      setImages([]);
+                      setImagePreviews([]);
+                    }}
+                    className="mt-4 text-sm text-red-500 hover:text-red-600 font-medium underline underline-offset-2 transition-colors"
+                  >
+                    Xóa tất cả ảnh
+                  </button>
+                )}
               </div>
             )}
           </div>

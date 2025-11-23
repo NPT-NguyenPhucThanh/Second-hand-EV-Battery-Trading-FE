@@ -13,13 +13,14 @@ export default function DepositCar() {
   const [loading, setLoading] = useState(false);
 
   // Địa điểm cố định
-  const FIXED_LOCATION = "Lô E2a-7, Đường D1 Khu Công nghệ cao, P.Long Thạnh Mỹ, TP Thủ Đức, TP.HCM";
+  const FIXED_LOCATION =
+    "Lô E2a-7, Đường D1 Khu Công nghệ cao, P.Long Thạnh Mỹ, TP Thủ Đức, TP.HCM";
 
   const [formData, setFormData] = useState({
     transactionLocation: FIXED_LOCATION,
     appointmentDate: "",
-    transferOwnership: true,   // mặc định có
-    changePlate: true,         // mặc định có
+    transferOwnership: true, // mặc định có
+    changePlate: true, // mặc định có
   });
 
   //Convert datetime-local to backend format
@@ -91,7 +92,7 @@ export default function DepositCar() {
       }
       localStorage.setItem("pendingTransaction", transactionCode);
 
-      toast.success("Đang chuyển đến VNPay...");
+      // toast.success("Đang chuyển đến VNPay...");
       window.location.href = paymentUrl;
 
       // Không cần 'navigate' nữa vì đã chuyển trang bằng 'window.location.href'

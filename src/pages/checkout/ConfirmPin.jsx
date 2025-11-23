@@ -32,7 +32,7 @@ const handlePayment = async () => {
       }
       localStorage.setItem("pendingTransaction", transactionCode);
 
-      toast.success("Đang chuyển đến VNPay...");
+      // toast.success("Đang chuyển đến VNPay...");
       window.location.href = paymentUrl;
     } catch (err) {
       console.error("Lỗi thanh toán:", err);

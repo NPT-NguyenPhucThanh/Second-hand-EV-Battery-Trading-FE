@@ -569,9 +569,9 @@ export default function ProfilePage() {
     if (activeMenu === MENU.ADDRESS) {
       return <AddressContent />;
     }
-    if (activeMenu === MENU.CONTRACTS) {
-      return <ContractsContent />;
-    }
+    // if (activeMenu === MENU.CONTRACTS) {
+    //   return <ContractsContent />;
+    // }
     if (activeMenu === MENU.REFUND) {
       return <RefundContent />;
     }
@@ -736,14 +736,14 @@ export default function ProfilePage() {
               />
             </>
           )}
-          <MenuCard
+          {/* <MenuCard
             icon={<Clock className="w-5 h-5" />}
             label="Hợp đồng của tôi"
             active={activeMenu === MENU.CONTRACTS}
             onClick={() => setActiveMenu(MENU.CONTRACTS)}
             isDark={isDark}
             colors={colors}
-          />
+          /> */}
           <MenuCard
             icon={<Send className="w-5 h-5" />}
             label="Yêu cầu hoàn tiền"

@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from "react";
-import {
-  Spin,
-  Empty,
-  Alert,
-  Tag,
-  Button,
-  Input,
-  Modal,
-} from "antd";
+import { Spin, Empty, Alert, Tag, Button, Input, Modal } from "antd";
 import api from "../../utils/api";
 import { useTheme } from "../../contexts/ThemeContext";
 import {
   DollarSign,
-  AlertCircle,
   CheckCircle2,
   Clock,
-  Package,
+  Calendar,
+  MapPin,
+  User,
+  Phone,
+  Truck,
+  Zap,
+  Car,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,8 +24,6 @@ const formatDate = (dateString) => {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 };
 
@@ -36,54 +31,49 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
-  }).format(amount);
+  }).format(amount || 0);
 };
 
-const OrderCard = ({ order, isDark, onRequestRefund }) => {
+const OrderRowCard = ({ order, isDark, onRequestRefund, productInfo }) => {
   const [showModal, setShowModal] = useState(false);
   const [reason, setReason] = useState("");
-  const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const canRefund = ["DA_DAT_COC", "DA_THANH_TOAN", "DANG_GIAO"].includes(order.status);
   const hasRequested = order.refundRequested;
+
+  const product = productInfo?.product || {};
+  const images = product.imgs?.map(img => img.url) || [];
+  const productname = product.productname || "Xe điện";
+  const model = product.model || "";
+  const specs = product.specs || "";
+  const brandInfo = product.brandcars || {};
+  const seller = product.users || {};
 
   const handleSubmit = async () => {
     if (!reason.trim()) {
       toast.error("Vui lòng nhập lý do hoàn tiền");
       return;
     }
-
     setSubmitting(true);
     try {
-      const payload = {
-        orderId: order.orderid,
-        amount: order.totalfinal, // Hoàn toàn bộ
-        reason: reason.trim(),
-        note: note.trim(),
-      };
-
+      const payload = { orderId: order.orderid, amount: order.totalfinal, reason: reason.trim() };
       const response = await api.post("api/buyer/refund/request", payload);
       const { message: successMsg, refund } = response;
 
       onRequestRefund?.(order.orderid, refund);
-
       toast.success(
         <div className="flex flex-col gap-1">
-          <div className="font-medium">{successMsg}</div>
+          <div className="font-medium">{successMsg || "Yêu cầu hoàn tiền thành công!"}</div>
           <div className="text-xs text-gray-500">
-            Mã hoàn tiền: <strong>#{refund.refundid}</strong> • 
-            Toàn bộ: <strong>{formatCurrency(refund.amount)}</strong>
+            Mã hoàn tiền: <strong>#{refund.refundid}</strong> • {formatCurrency(refund.amount)}
           </div>
         </div>
       );
-
       setShowModal(false);
       setReason("");
-      setNote("");
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Gửi yêu cầu thất bại. Vui lòng thử lại.";
-      toast.error(errorMsg);
+      toast.error(err.response?.data?.message || "Gửi yêu cầu thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -91,203 +81,195 @@ const OrderCard = ({ order, isDark, onRequestRefund }) => {
 
   return (
     <>
+      {/* CARD NGANG */}
       <div
-        className={`border rounded-xl p-6 shadow-sm hover:shadow-md transition-all ${
+        className={`flex items-center gap-6 p-5 rounded-xl border shadow-sm hover:shadow-md transition-all ${
           isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
         }`}
       >
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h3 className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-800"}`}>
-              Đơn hàng #{order.orderid}
-            </h3>
-            <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-              {order.products?.[0]?.productname || "Sản phẩm"}
-            </p>
-          </div>
-          <div className="text-3xl text-blue-600">
-            <Package />
-          </div>
-        </div>
-
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Tổng tiền</span>
-            <span className="font-bold text-lg text-green-600">
-              {formatCurrency(order.totalfinal)}
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Ngày đặt</span>
-            <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
-              {formatDate(order.createdat)}
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Trạng thái</span>
-            <Tag
-              color={
-                order.status === "DA_DAT_COC"
-                  ? "orange"
-                  : order.status === "DA_THANH_TOAN"
-                  ? "blue"
-                  : order.status === "DANG_GIAO"
-                  ? "processing"
-                  : order.status === "HOAN_TAT"
-                  ? "success"
-                  : "default"
-              }
-            >
-              {order.status === "DA_DAT_COC"
-                ? "Đã đặt cọc"
-                : order.status === "DA_THANH_TOAN"
-                ? "Đã thanh toán"
-                : order.status === "DANG_GIAO"
-                ? "Đang giao"
-                : order.status === "HOAN_TAT"
-                ? "Hoàn tất"
-                : order.status}
-            </Tag>
-          </div>
-
-          {/* Hiển thị trạng thái hoàn tiền nếu có */}
-          {hasRequested && order.refund && (
-            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-700">
-              <Clock className="w-4 h-4" />
-              <div className="text-xs">
-                <div className="font-medium">Đã gửi yêu cầu hoàn tiền</div>
-                <div>
-                  Mã: <strong>#{order.refund.refundid}</strong> •
-                  {formatCurrency(order.refund.amount)} •
-                  {formatDate(order.refund.createdat)}
-                </div>
-                <div className="mt-1">
-                  <Tag color="warning" size="small">Đang chờ xử lý</Tag>
-                </div>
-              </div>
+        {/* Ảnh xe */}
+        <div className="flex-shrink-0">
+          {images[0] ? (
+            <img
+              src={images[0]}
+              alt={productname}
+              className="w-28 h-28 object-cover rounded-lg"
+            />
+          ) : (
+            <div className="w-28 h-28 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+              <Car className="w-12 h-12 text-gray-400" />
             </div>
           )}
         </div>
 
-        <div className="mt-5">
+        {/* Nội dung chính */}
+        <div className="flex-1 min-w-0 space-y-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                {productname}
+              </h3>
+              {model && <p className="text-sm text-blue-600 font-medium">{model}</p>}
+              {brandInfo.licensePlate && (
+                <p className="text-xs text-gray-500">Biển số: {brandInfo.licensePlate}</p>
+              )}
+              {specs && (
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
+                  <Zap className="w-3 h-3" />
+                  {specs}
+                </p>
+              )}
+            </div>
+
+            <div className="text-right">
+              <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                Đơn hàng #{order.orderid}
+              </p>
+              <p className="text-2xl font-bold text-emerald-600">
+                {formatCurrency(order.totalfinal)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>Đặt: {formatDate(order.createdat)}</span>
+            </div>
+            {/* {order.appointmentDate && (
+              <div className="flex items-center gap-2 text-purple-600">
+                <Truck className="w-4 h-4" />
+                <span>Hẹn giao: {formatDate(order.appointmentDate)}</span>
+              </div>
+            )} */}
+            {order.shippingaddress && (
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                <span className="truncate max-w-xs">{order.shippingaddress}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Người bán + Trạng thái */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {seller.displayname && (
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="w-4 h-4 text-indigo-600" />
+                  <span className="font-medium">{seller.displayname}</span>
+                  {seller.phone && <span className="text-xs text-gray-500">• {seller.phone}</span>}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Tag
+                color={
+                  order.status === "DA_DAT_COC" ? "orange" :
+                  order.status === "DA_THANH_TOAN" ? "blue" :
+                  order.status === "DANG_GIAO" ? "processing" :
+                  order.status === "HOAN_TAT" ? "success" : "default"
+                }
+              >
+                {order.status === "DA_DAT_COC" ? "Đã đặt cọc" :
+                 order.status === "DA_THANH_TOAN" ? "Đã thanh toán" :
+                 order.status === "DANG_GIAO" ? "Đang giao" :
+                 order.status === "HOAN_TAT" ? "Hoàn tất" : order.status}
+              </Tag>
+
+              {/* Trạng thái hoàn tiền */}
+              {hasRequested && order.refund && (
+                <div className="flex items-center gap-1 text-amber-600 text-xs font-medium">
+                  <Clock className="w-4 h-4" />
+                  Đã yêu cầu #{order.refund.refundid}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Nút hành động */}
+        <div className="flex-shrink-0 ml-4">
           {canRefund && !hasRequested ? (
             <Button
               type="primary"
               danger
-              size="small"
+              size="large"
               onClick={() => setShowModal(true)}
-              className="w-full"
+              className="font-semibold whitespace-nowrap"
             >
               Yêu cầu hoàn tiền
             </Button>
           ) : hasRequested ? (
-            <Button
-              disabled
-              size="small"
-              className="w-full flex items-center justify-center gap-1"
-            >
-              <CheckCircle2 className="w-4 h-4" />
+            <Button disabled size="large" className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
               Đã yêu cầu
             </Button>
           ) : (
-            <Button disabled size="small" className="w-full">
-              Không thể hoàn tiền
+            <Button disabled size="large">
+              Không thể hoàn
             </Button>
           )}
         </div>
       </div>
 
-      {/* Modal: CHỈ HIỆN LÝ DO, KHÔNG HIỆN TIỀN */}
+      {/* Modal */}
       <Modal
         title={
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-red-500" />
-            <span className="font-semibold">Yêu cầu hoàn tiền - Đơn hàng #{order.orderid}</span>
+          <div className="flex items-center gap-3">
+            <DollarSign className="w-6 h-6 text-red-500" />
+            <div>
+              <div className="font-bold text-lg">Yêu cầu hoàn tiền</div>
+              <div className="text-sm text-gray-500">Đơn hàng #{order.orderid}</div>
+            </div>
           </div>
         }
         open={showModal}
-        onCancel={() => {
-          setShowModal(false);
-          setReason("");
-          setNote("");
-        }}
+        onCancel={() => { setShowModal(false); setReason(""); }}
         footer={null}
-        width={500}
+        width={600}
         centered
       >
-        <div className="space-y-5 py-2">
+        <div className="space-y-5 py-4">
+          <Alert
+            type="info"
+            showIcon
+            message={
+              <div className="space-y-3">
+                <div className="font-bold text-lg">{productname}</div>
+                {model && <div className="text-blue-600">Model: {model}</div>}
+                {specs && <div className="text-xs text-gray-600">{specs}</div>}
+                <div className="flex justify-between pt-3 border-t">
+                  <span>Số tiền hoàn:</span>
+                  <strong className="text-xl text-red-600">{formatCurrency(order.totalfinal)}</strong>
+                </div>
+              </div>
+            }
+          />
 
-          {/* LÝ DO - TỰ NHẬP */}
           <div>
-            <label className={`block font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-              Lý do hoàn tiền <span className="text-red-500">*</span>
-            </label>
+            <label className="block font-medium mb-2">Lý do hoàn tiền <span className="text-red-500">*</span></label>
             <TextArea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Mô tả chi tiết lý do bạn muốn hoàn tiền (xe lỗi, giao trễ, thay đổi ý định...)"
+              placeholder="Mô tả chi tiết lý do bạn muốn hoàn tiền..."
               rows={5}
-              size="large"
               className="resize-none"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Càng chi tiết, càng dễ được duyệt
-            </p>
           </div>
 
-          {/* GHI CHÚ TÙY CHỌN */}
-          <div>
-            <label className={`block font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-              Ghi chú thêm (tùy chọn)
-            </label>
-            <TextArea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Link ảnh, video, mô tả lỗi..."
-              rows={2}
-              size="large"
-            />
-          </div>
-
-          {/* THÔNG BÁO */}
-          <Alert
-            message={
-              <div className="flex items-start gap-2 text-xs">
-                <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
-                <span>
-                  Hoàn toàn bộ <strong>{formatCurrency(order.totalfinal)}</strong>. 
-                  Quản lý sẽ duyệt trong <strong>24-48 giờ</strong>.
-                </span>
-              </div>
-            }
-            type="warning"
-            showIcon={false}
-            className="py-2"
-          />
-
-          {/* NÚT */}
           <div className="flex gap-3 justify-end pt-4 border-t">
-            <Button
-              onClick={() => {
-                setShowModal(false);
-                setReason("");
-                setNote("");
-              }}
-              disabled={submitting}
-            >
+            <Button onClick={() => { setShowModal(false); setReason(""); }} disabled={submitting}>
               Hủy
             </Button>
             <Button
               type="primary"
               danger
-              onClick={handleSubmit}
               loading={submitting}
               disabled={!reason.trim()}
-              className="font-medium"
+              onClick={handleSubmit}
             >
-              {submitting ? "Đang gửi..." : "Gửi yêu cầu"}
+              Gửi yêu cầu
             </Button>
           </div>
         </div>
@@ -298,110 +280,86 @@ const OrderCard = ({ order, isDark, onRequestRefund }) => {
 
 export default function RefundContent() {
   const [orders, setOrders] = useState([]);
+  const [productsMap, setProductsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { isDark } = useTheme();
 
   const fetchOrders = async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await api.get("api/buyer/orders");
-      const data = res.orders || res.data || [];
+      const data = (res.orders || res.data || []).filter(o =>
+        ["DA_DAT_COC", "DA_THANH_TOAN", "DANG_GIAO"].includes(o.status)
+      );
 
-      const processed = data.map((order) => ({
-        ...order,
-        refundRequested:
-          order.refundStatus === "REQUESTED" || order.refundStatus === "PROCESSING",
-        refund: null,
+      const processed = data.map(o => ({
+        ...o,
+        refundRequested: o.refundStatus === "REQUESTED" || o.refundStatus === "PROCESSING",
       }));
-
       setOrders(processed);
+
+      const productIds = [...new Set(
+        processed.map(o => o.details?.[0]?.products?.productid).filter(Boolean)
+      )];
+
+      const responses = await Promise.all(
+        productIds.map(id => api.get(`api/products/${id}`).catch(() => null))
+      );
+
+      const map = {};
+      productIds.forEach((id, i) => {
+        if (responses[i]?.product) map[id] = responses[i];
+      });
+      setProductsMap(map);
     } catch (err) {
-      console.error("Lỗi khi tải đơn hàng:", err);
-      setError("Không thể tải danh sách đơn hàng. Vui lòng thử lại.");
+      setError("Không thể tải dữ liệu");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchOrders(); }, []);
 
   const handleRefundSuccess = (orderId, refundData) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.orderid === orderId
-          ? { ...order, refundRequested: true, refund: refundData }
-          : order
-      )
-    );
+    setOrders(prev => prev.map(o =>
+      o.orderid === orderId ? { ...o, refundRequested: true, refund: refundData } : o
+    ));
   };
 
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <Spin size="large" />
-        <p className={`mt-3 ${isDark ? "text-gray-200" : "text-gray-500"}`}>
-          Đang tải danh sách đơn hàng...
-        </p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="py-8">
-        <Alert message="Lỗi tải dữ liệu" description={error} type="error" showIcon />
-      </div>
-    );
-  }
-
-  const refundableOrders = orders.filter((o) =>
-    ["DA_DAT_COC", "DA_THANH_TOAN", "DANG_GIAO"].includes(o.status)
+  if (loading) return <div className="text-center py-20"><Spin size="large" /><p className="mt-4 text-gray-500">Đang tải...</p></div>;
+  if (error) return <Alert message="Lỗi" description={error} type="error" className="m-4" />;
+  if (orders.length === 0) return (
+    <div className="text-center py-20">
+      <Empty description="Không có đơn hàng nào có thể hoàn tiền" />
+      <p className="mt-4 text-gray-500">Chỉ hiển thị đơn đã đặt cọc hoặc thanh toán</p>
+    </div>
   );
 
-  if (refundableOrders.length === 0) {
-    return (
-      <div className="py-8">
-        <Alert
-          message="Không có đơn hàng nào để hoàn tiền"
-          description="Bạn chỉ có thể yêu cầu hoàn tiền cho đơn hàng đã đặt cọc hoặc thanh toán."
-          type="info"
-          showIcon
-        />
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <h2 className={`text-2xl font-semibold mb-6 ${isDark ? "text-white" : "text-gray-800"}`}>
-        Yêu Cầu Hoàn Tiền
-      </h2>
-
-      <div
-        className={`p-5 rounded-xl mb-8 ${
-          isDark
-            ? "bg-gray-700/50 border border-gray-600"
-            : "bg-gray-50 border border-gray-200"
-        }`}
-      >
-        <p className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-          Chọn đơn hàng cần hoàn tiền và mô tả lý do. Quản lý sẽ xem xét trong vòng 24-48 giờ.
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold mb-3">Yêu cầu hoàn tiền</h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          Chọn đơn hàng và gửi yêu cầu. Quản lý sẽ xử lý trong <strong>24-48 giờ</strong>.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {refundableOrders.map((order) => (
-          <OrderCard
-            key={order.orderid}
-            order={order}
-            isDark={isDark}
-            onRequestRefund={handleRefundSuccess}
-          />
-        ))}
+      <div className="space-y-4">
+        {orders.map((order) => {
+          const productId = order.details?.[0]?.products?.productid;
+          const productResponse = productsMap[productId];
+
+          return (
+            <OrderRowCard
+              key={order.orderid}
+              order={order}
+              productInfo={productResponse}
+              isDark={isDark}
+              onRequestRefund={handleRefundSuccess}
+            />
+          );
+        })}
       </div>
     </div>
   );
