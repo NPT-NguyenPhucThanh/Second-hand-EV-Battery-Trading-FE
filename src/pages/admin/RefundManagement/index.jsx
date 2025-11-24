@@ -33,6 +33,7 @@ export default function RefundManagement() {
   const [modalVisible, setModalVisible] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
+  const [managerNote, setManagerNote] = useState("");
 
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
@@ -76,8 +77,8 @@ export default function RefundManagement() {
     const statusMap = {
       PENDING: {
         color: isDark
-          ? "bg-blue-500/20 text-blue-300 border border-blue-500/40"
-          : "bg-blue-50 text-blue-600 border border-blue-200",
+          ? "bg-orange-500/20 text-orange-400 border border-orange-500/40"
+          : "bg-orange-50 text-orange-600 border border-orange-200",
         label: "Chờ xử lý",
         icon: Clock,
       },
@@ -110,8 +111,7 @@ export default function RefundManagement() {
   const getMainProduct = (refund) =>
     refund?.orders?.details?.[0]?.products || null;
 
-  const getProductImages = (refund) =>
-    getMainProduct(refund)?.imgs || [];
+  const getProductImages = (refund) => getMainProduct(refund)?.imgs || [];
 
   const getMainImageUrl = (refund) => {
     const imgs = getProductImages(refund);
@@ -123,6 +123,7 @@ export default function RefundManagement() {
       const res = await getRefund(refundId);
       if (res?.status === "success") {
         setSelectedRefund(res.refund);
+        setManagerNote(res.refund.note || "");
         setModalVisible(true);
       } else {
         toast.error(res?.message || "Không tìm thấy chi tiết yêu cầu.");
@@ -136,27 +137,31 @@ export default function RefundManagement() {
   const closeDetail = () => {
     setSelectedRefund(null);
     setModalVisible(false);
+    setManagerNote(""); 
   };
 
   const handleProcess = async (approveAction) => {
     if (!selectedRefund) return;
-    if (
-      !window.confirm(
-        approveAction
-          ? "Xác nhận CHẤP NHẬN yêu cầu hoàn tiền này?"
-          : "Xác nhận TỪ CHỐI yêu cầu hoàn tiền này?"
-      )
-    ) {
+
+    if (!approveAction && !managerNote.trim()) {
+      toast.error("Vui lòng nhập lý do từ chối!");
+      return;
+    }
+
+    const confirmationMessage = approveAction
+      ? "Xác nhận CHẤP NHẬN yêu cầu hoàn tiền này?"
+      : "Xác nhận TỪ CHỐI yêu cầu hoàn tiền này?";
+
+    if (!window.confirm(confirmationMessage)) {
       return;
     }
 
     setProcessing(true);
+
     const payload = {
       approve: approveAction,
-      refundMethod: approveAction ? "VNPay" : null,
-      note: approveAction
-        ? "Chấp nhận hoàn tiền qua VNPay"
-        : "Từ chối yêu cầu hoàn tiền",
+      refundMethod: "VNPAY",
+      note: managerNote.trim(),
     };
 
     try {
@@ -215,8 +220,7 @@ export default function RefundManagement() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isGalleryOpen, galleryImages.length]);
 
-  const currentRefunds =
-    activeTab === "pending" ? pendingRefunds : allRefunds;
+  const currentRefunds = activeTab === "pending" ? pendingRefunds : allRefunds;
 
   if (loading) {
     return (
@@ -244,11 +248,7 @@ export default function RefundManagement() {
         <AuroraText className="text-4xl font-bold mb-2">
           Quản Lý Hoàn Tiền
         </AuroraText>
-        <p
-          className={
-            isDark ? "text-slate-400" : "text-slate-600"
-          }
-        >
+        <p className={isDark ? "text-slate-400" : "text-slate-600"}>
           Xem và xử lý các yêu cầu hoàn tiền từ khách hàng
         </p>
       </div>
@@ -304,7 +304,6 @@ export default function RefundManagement() {
                   : "bg-white border-slate-200"
               }`}
             >
-              
               <div className="p-4 pb-3 flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -368,24 +367,20 @@ export default function RefundManagement() {
                     <p className="flex items-center gap-1 text-xs text-slate-400">
                       <User className="w-3.5 h-3.5" />
                       <span>
-                        {buyer.displayname || buyer.username} •{" "}
-                        {buyer.email}
+                        {buyer.displayname || buyer.username} • {buyer.email}
                       </span>
                     </p>
                   )}
                   <p className="flex items-center gap-1 text-xs text-slate-400">
                     <CreditCard className="w-3.5 h-3.5" />
                     <span>
-                      Đơn #{order?.orderid} •{" "}
-                      {order?.paymentmethod || "N/A"}
+                      Đơn #{order?.orderid} • {order?.paymentmethod || "N/A"}
                     </span>
                   </p>
                   <div className="mt-2 flex items-end justify-between">
                     <div className="max-w-[60%]">
                       <p className="text-xs text-slate-400">Lý do:</p>
-                      <p className="text-xs line-clamp-2">
-                        {refund.reason}
-                      </p>
+                      <p className="text-xs line-clamp-2">{refund.reason}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[11px] text-slate-400">
@@ -393,15 +388,10 @@ export default function RefundManagement() {
                       </p>
                       <p
                         className={`text-lg font-bold ${
-                          isDark
-                            ? "text-blue-300"
-                            : "text-blue-500"
+                          isDark ? "text-blue-300" : "text-blue-500"
                         }`}
                       >
-                        {Number(refund.amount || 0).toLocaleString(
-                          "vi-VN"
-                        )}{" "}
-                        đ
+                        {Number(refund.amount || 0).toLocaleString("vi-VN")} đ
                       </p>
                     </div>
                   </div>
@@ -436,11 +426,7 @@ export default function RefundManagement() {
               isDark ? "text-slate-700" : "text-slate-300"
             }`}
           />
-          <p
-            className={
-              isDark ? "text-slate-400" : "text-slate-600"
-            }
-          >
+          <p className={isDark ? "text-slate-400" : "text-slate-600"}>
             Không có yêu cầu hoàn tiền nào
           </p>
         </div>
@@ -520,9 +506,7 @@ export default function RefundManagement() {
                             {imgs && imgs.length > 0 ? (
                               <img
                                 src={imgs[0].url}
-                                alt={
-                                  product?.productname || "Sản phẩm"
-                                }
+                                alt={product?.productname || "Sản phẩm"}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                               />
                             ) : product ? (
@@ -561,8 +545,7 @@ export default function RefundManagement() {
                           </p>
                           {product && (
                             <p className="text-sm text-slate-400">
-                              Loại: {product.type} • Model:{" "}
-                              {product.model}
+                              Loại: {product.type} • Model: {product.model}
                             </p>
                           )}
                           {car && (
@@ -603,9 +586,9 @@ export default function RefundManagement() {
                               Giá đơn hàng:
                             </span>
                             <span className="font-semibold">
-                              {Number(
-                                order?.totalamount || 0
-                              ).toLocaleString("vi-VN")}{" "}
+                              {Number(order?.totalamount || 0).toLocaleString(
+                                "vi-VN"
+                              )}{" "}
                               đ
                             </span>
                           </p>
@@ -614,9 +597,9 @@ export default function RefundManagement() {
                               Phí vận chuyển:
                             </span>
                             <span className="font-semibold">
-                              {Number(
-                                order?.shippingfee || 0
-                              ).toLocaleString("vi-VN")}{" "}
+                              {Number(order?.shippingfee || 0).toLocaleString(
+                                "vi-VN"
+                              )}{" "}
                               đ
                             </span>
                           </p>
@@ -625,9 +608,9 @@ export default function RefundManagement() {
                               Tổng thanh toán:
                             </span>
                             <span className="font-semibold">
-                              {Number(
-                                order?.totalfinal || 0
-                              ).toLocaleString("vi-VN")}{" "}
+                              {Number(order?.totalfinal || 0).toLocaleString(
+                                "vi-VN"
+                              )}{" "}
                               đ
                             </span>
                           </p>
@@ -637,14 +620,12 @@ export default function RefundManagement() {
                             </span>
                             <span
                               className={`text-lg font-bold ${
-                                isDark
-                                  ? "text-blue-300"
-                                  : "text-blue-500"
+                                isDark ? "text-blue-300" : "text-blue-500"
                               }`}
                             >
-                              {Number(
-                                refund.amount || 0
-                              ).toLocaleString("vi-VN")}{" "}
+                              {Number(refund.amount || 0).toLocaleString(
+                                "vi-VN"
+                              )}{" "}
                               đ
                             </span>
                           </div>
@@ -659,9 +640,7 @@ export default function RefundManagement() {
                             Thanh toán & giao dịch
                           </p>
                           <p className="flex justify-between">
-                            <span className="text-slate-400">
-                              Phương thức:
-                            </span>
+                            <span className="text-slate-400">Phương thức:</span>
                             <span className="font-semibold">
                               {order?.paymentmethod || "N/A"}
                             </span>
@@ -684,8 +663,7 @@ export default function RefundManagement() {
                           </p>
                           {order?.appointmentDate && (
                             <p className="mt-1 text-xs text-slate-400">
-                              Lịch hẹn:{" "}
-                              {formatDateTime(order.appointmentDate)}
+                              Lịch hẹn: {formatDateTime(order.appointmentDate)}
                             </p>
                           )}
                         </div>
@@ -694,9 +672,12 @@ export default function RefundManagement() {
 
                     <div
                       className={`rounded-xl px-4 py-4 grid grid-cols-1 md:grid-cols-2 gap-4 ${
-                        isDark ? "bg-slate-900/80 border border-slate-800" : "bg-slate-50 border border-slate-200"
+                        isDark
+                          ? "bg-slate-900/80 border border-slate-800"
+                          : "bg-slate-50 border border-slate-200"
                       }`}
                     >
+                      {/* Cột 1: Người mua */}
                       <div>
                         <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
                           Người yêu cầu hoàn tiền (Người mua)
@@ -704,23 +685,17 @@ export default function RefundManagement() {
                         {buyer ? (
                           <div className="space-y-1 text-sm">
                             <p>
-                              <span className="text-slate-400">
-                                Tên:
-                              </span>{" "}
+                              <span className="text-slate-400">Tên:</span>{" "}
                               <span className="font-medium">
                                 {buyer.displayname || buyer.username}
                               </span>
                             </p>
                             <p>
-                              <span className="text-slate-400">
-                                Email:
-                              </span>{" "}
+                              <span className="text-slate-400">Email:</span>{" "}
                               {buyer.email}
                             </p>
                             <p>
-                              <span className="text-slate-400">
-                                SĐT:
-                              </span>{" "}
+                              <span className="text-slate-400">SĐT:</span>{" "}
                               {buyer.phone || "Chưa cung cấp"}
                             </p>
                           </div>
@@ -730,30 +705,25 @@ export default function RefundManagement() {
                           </p>
                         )}
                       </div>
+                      {/* Cột 2: Người bán (Đã được hiển thị) */}
                       <div>
                         <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                          Người bán
+                          Thông tin Người bán
                         </p>
                         {seller ? (
                           <div className="space-y-1 text-sm">
                             <p>
-                              <span className="text-slate-400">
-                                Tên:
-                              </span>{" "}
+                              <span className="text-slate-400">Tên:</span>{" "}
                               <span className="font-medium">
                                 {seller.displayname || seller.username}
                               </span>
                             </p>
                             <p>
-                              <span className="text-slate-400">
-                                Email:
-                              </span>{" "}
+                              <span className="text-slate-400">Email:</span>{" "}
                               {seller.email}
                             </p>
                             <p>
-                              <span className="text-slate-400">
-                                SĐT:
-                              </span>{" "}
+                              <span className="text-slate-400">SĐT:</span>{" "}
                               {seller.phone || "Chưa cung cấp"}
                             </p>
                           </div>
@@ -765,23 +735,60 @@ export default function RefundManagement() {
                       </div>
                     </div>
 
+                    {/* Lý do yêu cầu */}
                     <div
                       className={`rounded-xl px-4 py-4 ${
-                        isDark ? "bg-slate-900/80 border border-slate-800" : "bg-slate-50 border border-slate-200"
+                        isDark
+                          ? "bg-slate-900/80 border border-slate-800"
+                          : "bg-slate-50 border border-slate-200"
                       }`}
                     >
                       <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                        Lý do yêu cầu hoàn tiền
+                        Lý do yêu cầu hoàn tiền (từ Người mua)
                       </p>
                       <p className="text-sm whitespace-pre-line">
                         {selectedRefund.reason}
                       </p>
                     </div>
 
+                    {/* Ghi chú Manager */}
+                    <div
+                      className={`rounded-xl px-4 py-4 ${
+                        isDark
+                          ? "bg-slate-900/80 border border-slate-800"
+                          : "bg-slate-50 border border-slate-200"
+                      }`}
+                    >
+                      <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
+                        Ghi chú / Lý do xử lý (Manager's Note)
+                      </p>
+                      <textarea
+                        rows={3}
+                        value={managerNote}
+                        onChange={(e) => setManagerNote(e.target.value)}
+                        placeholder={
+                          selectedRefund.status === "PENDING"
+                            ? "Nhập lý do từ chối chi tiết hoặc ghi chú xác nhận..."
+                            : selectedRefund.note ||
+                              "Không có ghi chú từ người xử lý."
+                        }
+                        disabled={
+                          processing || selectedRefund.status !== "PENDING"
+                        }
+                        className={`w-full p-3 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${
+                          isDark
+                            ? "bg-slate-700 border-slate-600 text-white placeholder-gray-500"
+                            : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                        } border disabled:opacity-70 disabled:bg-slate-700/50 disabled:cursor-not-allowed`}
+                      />
+                    </div>
+
                     {processedBy && (
                       <div
                         className={`rounded-xl px-4 py-4 ${
-                          isDark ? "bg-slate-900/80 border border-slate-800" : "bg-slate-50 border border-slate-200"
+                          isDark
+                            ? "bg-slate-900/80 border border-slate-800"
+                            : "bg-slate-50 border border-slate-200"
                         }`}
                       >
                         <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
@@ -789,24 +796,17 @@ export default function RefundManagement() {
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                           <p>
-                            <span className="text-slate-400">
-                              Người xử lý:
-                            </span>{" "}
+                            <span className="text-slate-400">Người xử lý:</span>{" "}
                             <span className="font-medium">
-                              {processedBy.displayname ||
-                                processedBy.username}
+                              {processedBy.displayname || processedBy.username}
                             </span>
                           </p>
                           <p>
-                            <span className="text-slate-400">
-                              Email:
-                            </span>{" "}
+                            <span className="text-slate-400">Email:</span>{" "}
                             {processedBy.email}
                           </p>
                           <p>
-                            <span className="text-slate-400">
-                              SĐT:
-                            </span>{" "}
+                            <span className="text-slate-400">SĐT:</span>{" "}
                             {processedBy.phone || "Chưa cung cấp"}
                           </p>
                           <p>
@@ -845,6 +845,7 @@ export default function RefundManagement() {
                     ? "bg-slate-800 text-slate-200 hover:bg-slate-700"
                     : "bg-slate-100 text-slate-800 hover:bg-slate-200"
                 }`}
+                disabled={processing}
               >
                 Đóng
               </button>
@@ -852,9 +853,14 @@ export default function RefundManagement() {
                 <>
                   <button
                     onClick={() => handleProcess(false)}
-                    disabled={processing}
+                    disabled={processing || !managerNote.trim()}
                     className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 disabled:opacity-60"
                   >
+                    {processing && !managerNote.trim() ? (
+                      <Loader2 className="w-4 h-4 animate-spin inline-block mr-1" />
+                    ) : (
+                      <XCircle className="w-4 h-4 inline-block mr-1" />
+                    )}
                     Từ chối
                   </button>
                   <button
@@ -862,6 +868,11 @@ export default function RefundManagement() {
                     disabled={processing}
                     className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-60"
                   >
+                    {processing ? (
+                      <Loader2 className="w-4 h-4 animate-spin inline-block mr-1" />
+                    ) : (
+                      <CheckCircle className="w-4 h-4 inline-block mr-1" />
+                    )}
                     Chấp nhận hoàn tiền
                   </button>
                 </>

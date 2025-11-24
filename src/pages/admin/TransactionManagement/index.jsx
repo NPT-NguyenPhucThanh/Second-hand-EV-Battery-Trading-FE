@@ -21,6 +21,7 @@ import {
   Package,
   Car,
   Battery,
+  XCircle as XCircleIcon, 
 } from "lucide-react";
 
 const ORDER_STATUS = {
@@ -43,7 +44,7 @@ const filterOptions = [
   { value: ORDER_STATUS.DA_THANH_TOAN, label: "Đã thanh toán" },
   { value: ORDER_STATUS.TRANH_CHAP, label: "Đang tranh chấp" },
   { value: ORDER_STATUS.DA_HOAN_TAT, label: "Đã hoàn tất" },
-  { value: ORDER_STATUS.BI_TU_CHOI, label: "Bị từ chối" },
+  { value: ORDER_STATUS.BI_TU_CHOI, label: "Đã từ chối" },
   { value: ORDER_STATUS.DA_HUY, label: "Đã hủy" },
 ];
 
@@ -78,8 +79,9 @@ export default function TransactionManagement() {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [managerNote, setManagerNote] = useState("");
+  const [processingStatus, setProcessingStatus] = useState(false);
 
-  // State cho fullscreen gallery
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -112,24 +114,7 @@ export default function TransactionManagement() {
   }, [statusFilter, fetchOrders]);
 
   const handleApproveOrder = async (orderId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn DUYỆT đơn hàng này không?")) {
-      return;
-    }
-
-    try {
-      const payload = { approved: true };
-      const response = await approveOrder(orderId, payload);
-
-      if (response) {
-        toast.success("Duyệt đơn hàng thành công!");
-        fetchOrders(statusFilter);
-      } else {
-        toast.error(response.message || "Lỗi khi duyệt đơn hàng.");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Lỗi hệ thống hoặc API.");
-    }
+    openDetail(orders.find(o => o.orderid === orderId));
   };
 
   const calculateDeposit = (order) => {
@@ -140,44 +125,64 @@ export default function TransactionManagement() {
   const getStatusBadge = (status) => {
     const map = {
       CHO_DUYET: {
-        color: "bg-orange-50 text-orange-600 border border-orange-200",
+        color: isDark ? "bg-orange-500/20 text-orange-400" : "bg-orange-50 text-orange-600 border border-orange-200",
         label: "Chờ duyệt",
         icon: Clock,
       },
       DA_DAT_COC: {
-        color: "bg-blue-50 text-blue-600 border border-blue-200",
+        color: isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-50 text-blue-600 border border-blue-200",
         label: "Đã đặt cọc (10%)",
         icon: DollarSign,
       },
       DA_THANH_TOAN: {
-        color: "bg-cyan-50 text-cyan-600 border border-cyan-200",
+        color: isDark ? "bg-cyan-500/20 text-cyan-400" : "bg-cyan-50 text-cyan-600 border border-cyan-200",
         label: "Đã thanh toán",
         icon: CheckCircle,
       },
       DA_HOAN_TAT: {
-        color: "bg-green-50 text-green-600 border border-green-200",
+        color: isDark ? "bg-green-500/20 text-green-400" : "bg-green-50 text-green-600 border border-green-200",
         label: "Đã hoàn tất",
         icon: CheckCircle,
       },
       BI_TU_CHOI: {
-        color: "bg-red-50 text-red-600 border border-red-200",
-        label: "Bị từ chối",
+        color: isDark ? "bg-red-500/20 text-red-400" : "bg-red-50 text-red-600 border border-red-200",
+        label: "Đã từ chối",
         icon: XCircle,
       },
       TRANH_CHAP: {
-        color: "bg-red-50 text-red-600 border border-red-200",
+        color: isDark ? "bg-red-500/20 text-red-400" : "bg-red-50 text-red-600 border border-red-200",
         label: "Tranh chấp",
         icon: AlertTriangle,
       },
       DA_HUY: {
-        color: "bg-gray-50 text-gray-600 border border-gray-200",
+        color: isDark ? "bg-gray-500/20 text-gray-400" : "bg-gray-50 text-gray-600 border border-gray-200",
         label: "Đã hủy",
         icon: XCircle,
+      },
+      DA_DUYET: {
+        color: isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-50 text-purple-600 border border-purple-200",
+        label: "Đã duyệt",
+        icon: CheckCircle,
+      },
+      CHO_THANH_TOAN: {
+        color: isDark ? "bg-yellow-500/20 text-yellow-400" : "bg-yellow-50 text-yellow-600 border border-yellow-200",
+        label: "Chờ thanh toán",
+        icon: Clock,
+      },
+      RESOLVED_WITH_REFUND: { 
+        color: isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-50 text-emerald-600 border border-emerald-200",
+        label: "Đã giải quyết (Hoàn tiền)",
+        icon: DollarSign,
+      },
+      DISPUTE_RESOLVED: { 
+        color: isDark ? "bg-indigo-500/20 text-indigo-400" : "bg-indigo-50 text-indigo-600 border border-indigo-200",
+        label: "Đã giải quyết TT",
+        icon: AlertTriangle,
       },
     };
     return (
       map[status] || {
-        color: "bg-gray-50 text-gray-600 border border-gray-200",
+        color: isDark ? "bg-gray-500/20 text-gray-400" : "bg-gray-50 text-gray-600 border border-gray-200",
         label: status,
         icon: FileText,
       }
@@ -186,15 +191,47 @@ export default function TransactionManagement() {
 
   const openDetail = (o) => {
     setSelectedOrder(o);
+    setManagerNote(""); 
     setModalVisible(true);
   };
 
   const closeDetail = () => {
     setSelectedOrder(null);
     setModalVisible(false);
+    setManagerNote("");
   };
 
-  // ==== FULLSCREEN GALLERY ====
+  const handleProcess = async (isApproved) => {
+    if (!selectedOrder) return;
+    
+    if (!isApproved && !managerNote.trim()) {
+      toast.error("Vui lòng nhập lý do từ chối!");
+      return;
+    }
+
+    const finalNote = isApproved ? managerNote.trim() || "Duyệt đơn hàng" : managerNote.trim();
+
+    setProcessingStatus(true);
+
+    try {
+      const payload = { approved: isApproved, note: finalNote };
+      
+      const response = await approveOrder(selectedOrder.orderid, payload);
+
+      if (response === "Order processed") {
+        toast.success(`Đã ${isApproved ? 'duyệt' : 'từ chối'} đơn hàng thành công!`);
+        fetchOrders(statusFilter);
+        closeDetail();
+      } else {
+        throw new Error(response || "Lỗi khi xử lý đơn hàng.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Lỗi hệ thống hoặc API.");
+    } finally {
+      setProcessingStatus(false);
+    }
+  };
 
   const openGallery = (imgs, startIndex = 0) => {
     if (!imgs || imgs.length === 0) return;
@@ -223,7 +260,6 @@ export default function TransactionManagement() {
     );
   };
 
-  // Đóng bằng phím ESC
   useEffect(() => {
     if (!isGalleryOpen) return;
 
@@ -416,20 +452,21 @@ export default function TransactionManagement() {
                 </div>
 
                 <div className="mt-4 flex gap-2">
-                  {order.status === ORDER_STATUS.DA_DAT_COC && (
-                    <button
-                      onClick={() => handleApproveOrder(order.orderid)}
-                      className="flex-1 py-2 rounded-lg text-sm font-semibold border border-emerald-500 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all"
-                    >
-                      ✔ Duyệt đơn hàng
-                    </button>
-                  )}
                   <button
                     onClick={() => openDetail(order)}
                     className="flex-1 py-2 rounded-lg text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-all"
                   >
                     Xem chi tiết
                   </button>
+                  {(order.status === ORDER_STATUS.DA_DAT_COC || order.status === ORDER_STATUS.CHO_DUYET) && (
+                    <button
+                      onClick={() => openDetail(order)}
+                      className="flex-1 py-2 rounded-lg text-sm font-semibold border border-emerald-500 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all"
+                    >
+                      Xử lý đơn hàng
+                    </button>
+                  )}
+                  
                 </div>
               </div>
             </div>
@@ -459,6 +496,7 @@ export default function TransactionManagement() {
               : 0;
           const seller = product?.users;
           const productImages = product?.imgs || [];
+          const isPending = o.status === ORDER_STATUS.DA_DAT_COC || o.status === ORDER_STATUS.CHO_DUYET;
 
           return (
             <div
@@ -809,15 +847,57 @@ export default function TransactionManagement() {
 
                     return null;
                   })()}
+
+                  {/* THÊM: Input Lý do Từ chối / Ghi chú */}
+                  {isPending && (
+                    <div>
+                      <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                        Lý do Từ chối / Ghi chú (bắt buộc nếu Từ chối)
+                      </label>
+                      <textarea
+                          value={managerNote}
+                          onChange={(e) => setManagerNote(e.target.value)}
+                          rows={3}
+                          placeholder="Nhập lý do hoặc ghi chú cho quyết định này..."
+                          className={`w-full px-4 py-3 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all ${
+                              isDark
+                                  ? "bg-gray-900/50 border-gray-700 text-white placeholder-gray-500"
+                                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                          } border`}
+                      />
+                    </div>
+                  )}
+
                 </div>
 
-                <div className="px-6 py-4 border-t border-slate-200 flex justify-end">
+                <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
                   <button
                     onClick={closeDetail}
+                    disabled={processingStatus}
                     className="px-5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-medium"
                   >
                     Đóng
                   </button>
+                  {isPending && (
+                    <>
+                      <button
+                        onClick={() => handleProcess(false)}
+                        disabled={processingStatus || !managerNote.trim()}
+                        className="px-5 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+                      >
+                        {processingStatus ? <Loader2 className="w-4 h-4 animate-spin inline-block mr-1" /> : <XCircle className="w-4 h-4 inline-block mr-1" />}
+                        Từ chối
+                      </button>
+                      <button
+                        onClick={() => handleProcess(true)}
+                        disabled={processingStatus}
+                        className="px-5 py-2 rounded-lg text-sm font-semibold bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+                      >
+                         {processingStatus ? <Loader2 className="w-4 h-4 animate-spin inline-block mr-1" /> : <CheckCircle className="w-4 h-4 inline-block mr-1" />}
+                         Duyệt
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
