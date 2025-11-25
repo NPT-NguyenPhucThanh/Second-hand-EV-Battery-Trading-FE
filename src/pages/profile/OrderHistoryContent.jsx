@@ -13,10 +13,11 @@ import {
   AlertTriangle,
   CreditCard,
   Eye,
-  Sparkles,
   PackageCheck,
-  MapPin, 
-  Package, 
+  MapPin,
+  Package,
+  Truck,
+  RefreshCw,
 } from "lucide-react";
 import AuroraText from "../../components/common/AuroraText";
 
@@ -28,117 +29,39 @@ const currency = (value) => {
   }).format(value);
 };
 
+// COMPONENT STATUS ĐẸP - HỖ TRỢ ĐẦY ĐỦ TẤT CẢ TRẠNG THÁI
 const OrderStatusTag = ({ status, isDark }) => {
   const statusConfig = {
-    DA_DUYET: {
-      text: "Đã duyệt",
-      icon: CheckCircle,
-      gradient: isDark
-        ? "linear-gradient(135deg, #10b981, #059669)"
-        : "linear-gradient(135deg, #34d399, #10b981)",
-      textColor: "#ffffff",
-    },
-    DA_HOAN_TAT: {
-      text: "Hoàn tất",
-      icon: CheckCircle,
-      gradient: isDark
-        ? "linear-gradient(135deg, #3b82f6, #2563eb)"
-        : "linear-gradient(135deg, #60a5fa, #3b82f6)",
-      textColor: "#ffffff",
-    },
-    DA_THANH_TOAN: {
-      text: "Đã thanh toán",
-      icon: CheckCircle,
-      gradient: isDark
-        ? "linear-gradient(135deg, #8b5cf6, #7c3aed)"
-        : "linear-gradient(135deg, #a78bfa, #8b5cf6)",
-      textColor: "#ffffff",
-    },
-    DA_GIAO: {
-      text: "Đang giao hàng",
-      icon: Clock,
-      gradient: isDark
-        ? "linear-gradient(135deg, #06b6d4, #0891b2)"
-        : "linear-gradient(135deg, #22d3ee, #06b6d4)",
-      textColor: "#ffffff",
-    },
-    CHO_DUYET: {
-      text: "Chờ duyệt",
-      icon: Clock,
-      gradient: isDark
-        ? "linear-gradient(135deg, #f59e0b, #d97706)"
-        : "linear-gradient(135deg, #fbbf24, #f59e0b)",
-      textColor: "#ffffff",
-    },
-    CHO_DAT_COC: {
-      text: "Chờ đặt cọc",
-      icon: Clock,
-      gradient: isDark
-        ? "linear-gradient(135deg, #f59e0b, #d97706)"
-        : "linear-gradient(135deg, #fbbf24, #f59e0b)",
-      textColor: "#ffffff",
-    },
-    BI_TU_CHOI: {
-      text: "Bị từ chối",
-      icon: XCircle,
-      gradient: isDark
-        ? "linear-gradient(135deg, #ef4444, #dc2626)"
-        : "linear-gradient(135deg, #f87171, #ef4444)",
-      textColor: "#ffffff",
-    },
-    DA_HUY: {
-      text: "Đã hủy",
-      icon: XCircle,
-      gradient: isDark
-        ? "linear-gradient(135deg, #6b7280, #4b5563)"
-        : "linear-gradient(135deg, #9ca3af, #6b7280)",
-      textColor: "#ffffff",
-    },
-    THAT_BAI: {
-      text: "Thất bại",
-      icon: XCircle,
-      gradient: isDark
-        ? "linear-gradient(135deg, #ef4444, #dc2626)"
-        : "linear-gradient(135deg, #f87171, #ef4444)",
-      textColor: "#ffffff",
-    },
-    TRANH_CHAP: {
-      text: "Tranh chấp",
-      icon: AlertTriangle,
-      gradient: isDark
-        ? "linear-gradient(135deg, #f97316, #ea580c)"
-        : "linear-gradient(135deg, #fb923c, #f97316)",
-      textColor: "#ffffff",
-    },
-    
-    CHO_THANH_TOAN: {
-      text: "Chờ thanh toán",
-      icon: Clock,
-      gradient: isDark
-        ? "linear-gradient(135deg, #f59e0b, #d97706)"
-        : "linear-gradient(135deg, #fbbf24, #f59e0b)",
-      textColor: "#ffffff",
-    },
+    CHO_THANH_TOAN:     { text: "Chờ thanh toán",          icon: Clock,        gradient: "linear-gradient(135deg, #f59e0b, #d97706)" },
+    CHO_DAT_COC:        { text: "Chờ đặt cọc 10%",         icon: Clock,        gradient: "linear-gradient(135deg, #f97316, #ea580c)" },
+    CHO_XAC_NHAN:       { text: "Chờ xác nhận",            icon: Clock,        gradient: "linear-gradient(135deg, #8b5cf6, #7c3aed)" },
+    DA_DAT_COC:         { text: "Đã đặt cọc 10%",          icon: CheckCircle,  gradient: "linear-gradient(135deg, #10b981, #059669)" },
+    CHO_DUYET:          { text: "Chờ duyệt",               icon: Clock,        gradient: "linear-gradient(135deg, #f59e0b, #d97706)" },
+    DA_DUYET:           { text: "Đã duyệt",                icon: CheckCircle,  gradient: "linear-gradient(135deg, #3b82f6, #2563eb)" },
+    DA_THANH_TOAN:      { text: "Đã thanh toán đầy đủ",    icon: CheckCircle,  gradient: "linear-gradient(135deg, #10b981, #059669)" },
+    DANG_VAN_CHUYEN:    { text: "Đang vận chuyển",         icon: Truck,        gradient: "linear-gradient(135deg, #06b6d4, #0891b2)" },
+    DA_GIAO:            { text: "Đã giao - Chờ xác nhận",  icon: Package,      gradient: "linear-gradient(135deg, #3b82f6, #2563eb)" },
+    DA_HOAN_TAT:        { text: "Hoàn tất",                icon: CheckCircle,  gradient: "linear-gradient(135deg, #10b981, #059669)" },
+    BI_TU_CHOI:         { text: "Bị từ chối",              icon: XCircle,      gradient: "linear-gradient(135deg, #ef4444, #dc2626)" },
+    TRANH_CHAP:         { text: "Đang tranh chấp",         icon: AlertTriangle,gradient: "linear-gradient(135deg, #f97316, #ea580c)" },
+    DISPUTE_RESOLVED:   { text: "Đã giải quyết tranh chấp",icon: CheckCircle,  gradient: "linear-gradient(135deg, #10b981, #059669)" },
+    RESOLVED_WITH_REFUND:{ text: "Đã hoàn tiền",           icon: RefreshCw,    gradient: "linear-gradient(135deg, #ec4899, #db2777)" },
+    DA_HUY:             { text: "Đã hủy",                  icon: XCircle,      gradient: "linear-gradient(135deg, #6b7280, #4b5563)" },
+    THAT_BAI:           { text: "Thanh toán thất bại",     icon: XCircle,      gradient: "linear-gradient(135deg, #ef4444, #dc2626)" },
   };
 
   const config = statusConfig[status] || {
-    text: status,
+    text: status || "Không xác định",
     icon: Clock,
-    gradient: isDark
-      ? "linear-gradient(135deg, #6b7280, #4b5563)"
-      : "linear-gradient(135deg, #9ca3af, #6b7280)",
-    textColor: "#ffffff",
+    gradient: "linear-gradient(135deg, #6b7280, #4b5563)",
   };
 
   const Icon = config.icon;
 
   return (
     <div
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-semibold text-sm shadow-md"
-      style={{
-        background: config.gradient,
-        color: config.textColor,
-      }}
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm shadow-lg text-white"
+      style={{ background: config.gradient }}
     >
       <Icon className="w-4 h-4" />
       {config.text}
@@ -154,12 +77,10 @@ export default function OrderHistoryContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Theme colors for aurora gradients
   const colors = {
     aurora: isDark
       ? ["#ef4444", "#f97316", "#fb923c", "#fbbf24", "#ef4444"]
       : ["#3b82f6", "#8b5cf6", "#06b6d4", "#3b82f6"],
-    primary: isDark ? ["#ef4444", "#f97316"] : ["#3b82f6", "#8b5cf6"],
   };
 
   useEffect(() => {
@@ -194,39 +115,23 @@ export default function OrderHistoryContent() {
     navigate(`/checkout/deposit/${orderId}`);
   };
 
-  // MỚI: Xem chi tiết giao dịch
   const handleViewTransactions = (orderId) => {
     navigate(`/profile/orders/${orderId}/transactions`);
   };
 
-  // Xác nhận đã nhận hàng
   const handleConfirmDelivery = async (orderId) => {
-    if (
-      !window.confirm(
-        "Xác nhận bạn đã nhận hàng? Hành động này không thể hoàn tác."
-      )
-    ) {
-      return;
-    }
+    if (!window.confirm("Xác nhận bạn đã nhận hàng? Hành động này không thể hoàn tác.")) return;
 
     try {
-      const response = await api.post(
-        `api/buyer/orders/${orderId}/confirm-delivery`
-      );
+      const response = await api.post(`api/buyer/orders/${orderId}/confirm-delivery`);
       if (response.status === "success") {
-        alert(
-          "Đã xác nhận nhận hàng thành công! Escrow sẽ được giải phóng sau 7 ngày nếu không có khiếu nại."
-        );
-        // Refresh orders
-        const ordersResponse = await api.get("api/buyer/orders");
-        if (ordersResponse.status === "success") {
-          const sortedOrders = (ordersResponse.orders || []).sort(
-            (a, b) => new Date(b.createdat) - new Date(a.createdat)
-          );
-          setOrders(sortedOrders);
+        alert("Xác nhận nhận hàng thành công!");
+        const refreshed = await api.get("api/buyer/orders");
+        if (refreshed.status === "success") {
+          setOrders((refreshed.orders || []).sort((a, b) => new Date(b.createdat) - new Date(a.createdat)));
         }
       } else {
-        alert("Lỗi: " + (response.message || "Không thể xác nhận nhận hàng"));
+        alert("Lỗi: " + (response.message || "Không thể xác nhận"));
       }
     } catch (err) {
       alert("Lỗi kết nối: " + err.message);
@@ -234,353 +139,139 @@ export default function OrderHistoryContent() {
   };
 
   return (
-    <div className="relative">
-      {/* Floating Gradient Orbs */}
+    <div className="relative min-h-screen pb-10">
+      {/* Floating Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
-        <div
-          key={`order-orb-1-${isDark}`}
-          className="absolute -top-20 -left-20 w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse"
-          style={{
-            background: isDark
-              ? "radial-gradient(circle, #ef4444 0%, transparent 70%)"
-              : "radial-gradient(circle, #3b82f6 0%, transparent 70%)",
-          }}
-        />
-        <div
-          key={`order-orb-2-${isDark}`}
-          className="absolute top-1/2 -right-20 w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse"
-          style={{
-            background: isDark
-              ? "radial-gradient(circle, #f97316 0%, transparent 70%)"
-              : "radial-gradient(circle, #8b5cf6 0%, transparent 70%)",
-            animationDelay: "1s",
-          }}
-        />
+        <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full blur-3xl animate-pulse"
+          style={{ background: isDark ? "radial-gradient(circle, #ef4444 0%, transparent 70%)" : "radial-gradient(circle, #3b82f6 0%, transparent 70%)" }} />
+        <div className="absolute bottom-20 -right-20 w-96 h-96 rounded-full blur-3xl animate-pulse [animation-delay:1s]"
+          style={{ background: isDark ? "radial-gradient(circle, #f97316 0%, transparent 70%)" : "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }} />
       </div>
 
-      {/* Header */}
-      <div className="mb-8 relative z-10">
-        <AuroraText
-          key={`order-title-${isDark}`}
-          text="Lịch Sử Đơn Hàng"
-          colors={colors.aurora}
-          speed={3}
-          className="text-3xl font-black"
-        />
-      </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <AuroraText text="Lịch Sử Đơn Hàng" colors={colors.aurora} className="text-4xl font-black mb-8" />
 
-      {loading ? (
-        <div
-          className="text-center py-16 rounded-3xl relative z-10"
-          style={{
-            background: isDark
-              ? "rgba(17, 24, 39, 0.8)"
-              : "rgba(255, 255, 255, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: isDark
-              ? "1px solid rgba(239, 68, 68, 0.2)"
-              : "1px solid rgba(251, 146, 60, 0.2)",
-          }}
-        >
-          <div
-            className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-t-transparent mb-4"
-            style={{
-              borderColor: isDark
-                ? "rgba(239, 68, 68, 0.3)"
-                : "rgba(59, 130, 246, 0.3)",
-              borderTopColor: "transparent",
-            }}
-          />
-          <p
-            className={`text-lg font-medium ${
-              isDark ? "text-gray-200" : "text-gray-600"
-            }`}
-          >
-            Đang tải đơn hàng...
-          </p>
-        </div>
-      ) : error ? (
-        <div
-          className="text-center py-16 rounded-3xl relative z-10"
-          style={{
-            background: isDark
-              ? "rgba(17, 24, 39, 0.8)"
-              : "rgba(255, 255, 255, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: isDark
-              ? "1px solid rgba(239, 68, 68, 0.2)"
-              : "1px solid rgba(251, 146, 60, 0.2)",
-          }}
-        >
-          <XCircle
-            className="w-16 h-16 mx-auto mb-4"
-            style={{ color: "#ef4444" }}
-          />
-          <p
-            className={`text-lg ${isDark ? "text-gray-200" : "text-gray-700"}`}
-          >
-            Lỗi: {error}
-          </p>
-        </div>
-      ) : orders.length === 0 ? (
-        <div
-          className="text-center py-16 rounded-3xl relative z-10"
-          style={{
-            background: isDark
-              ? "rgba(17, 24, 39, 0.8)"
-              : "rgba(255, 255, 255, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: isDark
-              ? "1px solid rgba(239, 68, 68, 0.2)"
-              : "1px solid rgba(251, 146, 60, 0.2)",
-          }}
-        >
-          <ShoppingBag
-            className="w-16 h-16 mx-auto mb-4"
-            style={{ color: isDark ? "#9ca3af" : "#6b7280" }}
-          />
-          <p
-            className={`text-lg ${isDark ? "text-gray-200" : "text-gray-700"}`}
-          >
-            Bạn chưa có đơn hàng nào.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4 relative z-10">
-          {orders.map((order, index) => {
-            const orderNumber = orders.length - index;
-            
-            // Lấy sản phẩm đầu tiên (hoặc gói dịch vụ)
-            const firstDetail = order.details?.[0];
-            let productName = "Đơn hàng gói dịch vụ"; // Mặc định cho gói
-            if (firstDetail && firstDetail.products) {
-              productName = firstDetail.products.productname;
-            }
-            
-            return (
-              <div
-                key={order.orderid}
-                className="rounded-3xl p-6 transition-all duration-300 hover:scale-[1.01] cursor-pointer group"
-                style={{
-                  background: isDark
-                    ? "rgba(17, 24, 39, 0.8)"
-                    : "rgba(255, 255, 255, 0.8)",
-                  backdropFilter: "blur(20px)",
-                  border: isDark
-                    ? "1px solid rgba(239, 68, 68, 0.2)"
-                    : "1px solid rgba(251, 146, 60, 0.2)",
-                }}
-                onClick={() => handleViewTransactions(order.orderid)}
-              >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  {/* Left Side - Order Info */}
-                  <div className="flex-1 space-y-3">
-                    {/* Order Number with Icon */}
-                    <div className="flex items-center gap-2">
-                      <ShoppingBag
-                        className="w-5 h-5"
-                        style={{ color: isDark ? "#ef4444" : "#3b82f6" }}
-                      />
-                      <AuroraText
-                        key={`order-${order.orderid}-${isDark}`}
-                        text={`Đơn hàng #${orderNumber}`}
-                        colors={colors.aurora}
-                        speed={2}
-                        className="text-xl font-bold"
-                      />
-                    </div>
-                    
-                    {/* === SỬA LỖI: HIỂN THỊ TÊN SẢN PHẨM === */}
-                    <div className="flex items-center gap-2">
-                      <Package
-                        className="w-4 h-4"
-                        style={{ color: isDark ? "#9ca3af" : "#6b7280" }}
-                      />
-                      <p
-                        className={`text-sm font-semibold ${
-                          isDark ? "text-gray-100" : "text-gray-800"
-                        }`}
-                      >
-                        {productName}
-                        {order.details && order.details.length > 1 && ` (và ${order.details.length - 1} sản phẩm khác)`}
-                      </p>
-                    </div>
-                    
-                    {/* === SỬA LỖI: HIỂN THỊ ĐỊA CHỈ GIAO HÀNG === */}
-                    <div className="flex items-center gap-2">
-                      <MapPin
-                        className="w-4 h-4"
-                        style={{ color: isDark ? "#9ca3af" : "#6b7280" }}
-                      />
-                      <p
-                        className={`text-sm ${
-                          isDark ? "text-gray-300" : "text-gray-600"
-                        }`}
-                      >
-                        {order.shippingaddress}
-                      </p>
-                    </div>
+        {loading ? (
+          <div className="text-center py-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-800">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-orange-500 border-t-transparent" />
+            <p className="mt-4 text-lg">Đang tải đơn hàng...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 bg-red-50 dark:bg-red-900/30 rounded-3xl border border-red-200 dark:border-red-800">
+            <XCircle className="w-16 h-16 mx-auto mb-4 text-red-600" />
+            <p className="text-lg">Lỗi: {error}</p>
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="text-center py-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-800">
+            <ShoppingBag className="w-20 h-20 mx-auto mb-4 text-gray-400" />
+            <p className="text-xl">Bạn chưa có đơn hàng nào.</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {orders.map((order, index) => {
+              const orderNumber = orders.length - index;
+              const firstDetail = order.details?.[0];
+              const productName = firstDetail?.products?.productname || "Đơn hàng gói dịch vụ";
 
-                    {/* Date */}
-                    <div className="flex items-center gap-2">
-                      <Calendar
-                        className="w-4 h-4"
-                        style={{ color: isDark ? "#9ca3af" : "#6b7280" }}
-                      />
-                      <p
-                        className={`text-sm ${
-                          isDark ? "text-gray-300" : "text-gray-600"
-                        }`}
-                      >
-                        {new Date(order.createdat).toLocaleDateString("vi-VN")}
-                      </p>
-                    </div>
+              return (
+                <div
+                  key={order.orderid}
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                  onClick={() => handleViewTransactions(order.orderid)}
+                >
+                  <div className="p-6 md:p-8">
+                    <div className="flex flex-col lg:flex-row justify-between gap-6">
+                      {/* Thông tin đơn hàng */}
+                      <div className="flex-1 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <ShoppingBag className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                          <AuroraText text={`Đơn hàng #${orderNumber}`} colors={colors.aurora} className="text-2xl font-bold" />
+                        </div>
 
-                    {/* Total Amount */}
-                    <div className="flex items-center gap-2">
-                      <DollarSign
-                        className="w-4 h-4"
-                        style={{ color: isDark ? "#10b981" : "#059669" }}
-                      />
-                      <p
-                        className={`text-lg font-bold ${
-                          isDark ? "text-white" : "text-gray-900"
-                        }`}
-                      >
-                        {currency(order.totalfinal)}
-                      </p>
-                    </div>
-                  </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Package className="w-5 h-5 text-gray-500" />
+                            <span className="font-medium">{productName}</span>
+                            {order.details?.length > 1 && <span className="text-gray-500">+ {order.details.length - 1} sản phẩm</span>}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-gray-500" />
+                            <span className="text-gray-600 dark:text-gray-400">{order.shippingaddress || "Chưa có địa chỉ"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-gray-500" />
+                            <span>{new Date(order.createdat).toLocaleDateString("vi-VN")}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="w-5 h-5 text-emerald-600" />
+                            <span className="text-xl font-bold text-emerald-600">{currency(order.totalfinal)}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* Right Side - Status & Actions */}
-                  <div className="flex flex-col items-end gap-3 w-full md:w-auto">
-                    <OrderStatusTag status={order.status} isDark={isDark} />
+                      {/* Trạng thái & Hành động */}
+                      <div className="flex flex-col items-end gap-4">
+                        <OrderStatusTag status={order.status} isDark={isDark} />
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 flex-wrap justify-end w-full">
-                      {order.status === "DA_DUYET" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFinalPayment(order.orderid);
-                          }}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 shadow-md"
-                          style={{
-                            background: isDark
-                              ? "linear-gradient(135deg, #10b981, #059669)"
-                              : "linear-gradient(135deg, #34d399, #10b981)",
-                          }}
-                        >
-                          <CreditCard className="w-4 h-4" />
-                          Thanh toán 90%
-                        </button>
-                      )}
-                      
-                      {/* THÊM: Nút thanh toán 100% (cho pin) */}
-                      {order.status === "CHO_THANH_TOAN" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFinalPayment(order.orderid); // Dùng chung hàm, vì PayPage sẽ tự xử lý
-                          }}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 shadow-md"
-                          style={{
-                            background: isDark
-                              ? "linear-gradient(135deg, #10b981, #059669)"
-                              : "linear-gradient(135deg, #34d399, #10b981)",
-                          }}
-                        >
-                          <CreditCard className="w-4 h-4" />
-                          Thanh toán ngay
-                        </button>
-                      )}
-
-                      {order.status === "THAT_BAI" &&
-                        order.paymentmethod === "VNPAY" && (
-                          <>
+                        <div className="flex flex-wrap gap-3 justify-end">
+                          {/* Thanh toán cuối / Thanh toán pin */}
+                          {(order.status === "DA_DUYET" || order.status === "CHO_THANH_TOAN") && (
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleFinalPayment(order.orderid);
-                              }}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 shadow-md"
-                              style={{
-                                background:
-                                  "linear-gradient(135deg, #ef4444, #dc2626)",
-                              }}
+                              onClick={(e) => { e.stopPropagation(); handleFinalPayment(order.orderid); }}
+                              className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2"
                             >
-                              <CreditCard className="w-4 h-4" />
-                              Thanh toán lại
+                              <CreditCard className="w-5 h-5" />
+                              {order.status === "DA_DUYET" ? "Thanh toán 90%" : "Thanh toán ngay"}
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDepositAgain(order.orderid);
-                              }}
-                              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105`}
-                              style={{
-                                color: "#ef4444",
-                                background: isDark
-                                  ? "rgba(239, 68, 68, 0.1)"
-                                  : "rgba(239, 68, 68, 0.05)",
-                                border: "1px solid rgba(239, 68, 68, 0.3)",
-                              }}
-                            >
-                              Đặt cọc lại
-                            </button>
-                          </>
-                        )}
+                          )}
 
-                      {/* Xác nhận nhận hàng - Hiện khi DA_THANH_TOAN hoặc DA_GIAO */}
-                      {(order.status === "DA_THANH_TOAN" ||
-                        order.status === "DA_GIAO") && (
-                        <>
+                          {/* Thanh toán lại khi thất bại */}
+                          {order.status === "THAT_BAI" && (
+                            <>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleFinalPayment(order.orderid); }}
+                                className="px-5 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-bold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2"
+                              >
+                                <CreditCard className="w-5 h-5" />
+                                Thanh toán lại
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDepositAgain(order.orderid); }}
+                                className="px-5 py-3 rounded-xl border-2 border-red-500 text-red-600 dark:text-red-400 font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                              >
+                                Đặt cọc lại
+                              </button>
+                            </>
+                          )}
+
+                          {/* Xác nhận nhận hàng */}
+                          {(order.status === "DA_GIAO" || order.status === "DA_THANH_TOAN") && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleConfirmDelivery(order.orderid); }}
+                              className="px-5 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2"
+                            >
+                              <PackageCheck className="w-5 h-5" />
+                              Xác nhận nhận hàng
+                            </button>
+                          )}
+
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleConfirmDelivery(order.orderid);
-                            }}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 shadow-md"
-                            style={{
-                              background: isDark
-                                ? "linear-gradient(135deg, #10b981, #059669)"
-                                : "linear-gradient(135deg, #34d399, #10b981)",
-                            }}
+                            onClick={(e) => { e.stopPropagation(); handleViewTransactions(order.orderid); }}
+                            className="px-5 py-3 rounded-xl border-2 border-blue-500 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex items-center gap-2"
                           >
-                            <PackageCheck className="w-4 h-4" />
-                            Xác nhận nhận hàng
+                            <Eye className="w-5 h-5" />
+                            Chi tiết
                           </button>
-                        </>
-                      )}
-
-                      {/* View Details Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewTransactions(order.orderid);
-                        }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105"
-                        style={{
-                          color: isDark ? "#3b82f6" : "#2563eb",
-                          background: isDark
-                            ? "rgba(59, 130, 246, 0.1)"
-                            : "rgba(59, 130, 246, 0.05)",
-                          border: isDark
-                            ? "1px solid rgba(59, 130, 246, 0.3)"
-                            : "1px solid rgba(59, 130, 246, 0.2)",
-                        }}
-                      >
-                        <Eye className="w-4 h-4" />
-                        Xem chi tiết
-                      </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

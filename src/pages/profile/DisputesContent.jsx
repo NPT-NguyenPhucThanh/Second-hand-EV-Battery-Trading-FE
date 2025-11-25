@@ -11,53 +11,55 @@ import {
   Calendar,
   Car,
   Zap,
+  Package,
+  Truck,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import AuroraText from "../../components/common/AuroraText";
 
-// Status tag component - cập nhật theo backend
-const DisputeStatusTag = ({ status, isDark }) => {
+// Component hiển thị trạng thái - HỖ TRỢ ĐẦY ĐỦ TẤT CẢ STATUS
+const OrderStatusTag = ({ status, isDark }) => {
   const statusConfig = {
-    OPEN: {
-      label: "Đang chờ",
-      icon: Clock,
-      color: isDark ? "text-yellow-400" : "text-yellow-700",
-      bg: isDark ? "bg-yellow-500/20" : "bg-yellow-100",
-      border: isDark ? "border-yellow-500/30" : "border-yellow-300",
-    },
-    IN_PROGRESS: {
-      label: "Đang xử lý",
-      icon: AlertTriangle,
-      color: isDark ? "text-blue-400" : "text-blue-700",
-      bg: isDark ? "bg-blue-500/20" : "bg-blue-100",
-      border: isDark ? "border-blue-500/30" : "border-blue-300",
-    },
-    RESOLVED: {
-      label: "Đã giải quyết",
-      icon: CheckCircle,
-      color: isDark ? "text-green-400" : "text-green-700",
-      bg: isDark ? "bg-green-500/20" : "bg-green-100",
-      border: isDark ? "border-green-500/30" : "border-green-300",
-    },
-    REJECTED: {
-      label: "Từ chối",
-      icon: XCircle,
-      color: isDark ? "text-red-400" : "text-red-700",
-      bg: isDark ? "bg-red-500/20" : "bg-red-100",
-      border: isDark ? "border-red-500/30" : "border-red-300",
-    },
+    // Trạng thái khiếu nại
+    OPEN: { label: "Đang chờ", icon: Clock, color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/20 dark:bg-yellow-500/30", border: "border-yellow-500/40" },
+    IN_PROGRESS: { label: "Đang xử lý", icon: AlertTriangle, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/20 dark:bg-blue-500/30", border: "border-blue-500/40" },
+    RESOLVED: { label: "Đã giải quyết", icon: CheckCircle, color: "text-green-600 dark:text-green-400", bg: "bg-green-500/20 dark:bg-green-500/30", border: "border-green-500/40" },
+    REJECTED: { label: "Từ chối", icon: XCircle, color: "text-red-600 dark:text-red-400", bg: "bg-red-500/20 dark:bg-red-500/30", border: "border-red-500/40" },
+
+    // Tất cả trạng thái đơn hàng
+    CHO_THANH_TOAN:      { label: "Chờ thanh toán",          icon: Clock,        color: "text-orange-600 dark:text-orange-400",   bg: "bg-orange-500/20 dark:bg-orange-500/30", border: "border-orange-500/40" },
+    CHO_DAT_COC:         { label: "Chờ đặt cọc 10%",         icon: Clock,        color: "text-amber-600 dark:text-amber-400",     bg: "bg-amber-500/20 dark:bg-amber-500/30",   border: "border-amber-500/40" },
+    CHO_XAC_NHAN:        { label: "Chờ xác nhận",            icon: Clock,        color: "text-purple-600 dark:text-purple-400",   bg: "bg-purple-500/20 dark:bg-purple-500/30", border: "border-purple-500/40" },
+    DA_DAT_COC:          { label: "Đã đặt cọc 10%",          icon: CheckCircle,  color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/20 dark:bg-emerald-500/30", border: "border-emerald-500/40" },
+    CHO_DUYET:           { label: "Chờ duyệt",               icon: Clock,        color: "text-indigo-600 dark:text-indigo-400",   bg: "bg-indigo-500/20 dark:bg-indigo-500/30", border: "border-indigo-500/40" },
+    DA_DUYET:            { label: "Đã duyệt - Chờ TT cuối",  icon: CheckCircle,  color: "text-teal-600 dark:text-teal-400",       bg: "bg-teal-500/20 dark:bg-teal-500/30",     border: "border-teal-500/40" },
+    DA_THANH_TOAN:       { label: "Đã thanh toán đầy đủ",    icon: CheckCircle,  color: "text-green-700 dark:text-green-400",     bg: "bg-green-600/25 dark:bg-green-600/35",  border: "border-green-600/50" },
+    DANG_VAN_CHUYEN:     { label: "Đang vận chuyển",         icon: Truck,        color: "text-cyan-600 dark:text-cyan-400",       bg: "bg-cyan-500/20 dark:bg-cyan-500/30",    border: "border-cyan-500/40" },
+    DA_GIAO:             { label: "Đã giao - Chờ xác nhận",  icon: Package,      color: "text-blue-600 dark:text-blue-400",       bg: "bg-blue-500/20 dark:bg-blue-500/30",    border: "border-blue-500/40" },
+    DA_HOAN_TAT:         { label: "Đã hoàn tất",             icon: CheckCircle,  color: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-600/30 dark:bg-emerald-600/40", border: "border-emerald-600/60" },
+    BI_TU_CHOI:          { label: "Bị từ chối",              icon: XCircle,      color: "text-red-600 dark:text-red-400",         bg: "bg-red-600/20 dark:bg-red-600/30",      border: "border-red-600/40" },
+    TRANH_CHAP:          { label: "Đang tranh chấp",         icon: AlertTriangle,color: "text-orange-700 dark:text-orange-300",   bg: "bg-orange-600/30 dark:bg-orange-600/40", border: "border-orange-600/60" },
+    DISPUTE_RESOLVED:    { label: "Đã giải quyết tranh chấp",icon: CheckCircle,  color: "text-green-600 dark:text-green-400",     bg: "bg-green-600/25 dark:bg-green-600/35",  border: "border-green-600/50" },
+    RESOLVED_WITH_REFUND:{ label: "Đã hoàn tiền",            icon: RefreshCw,    color: "text-pink-600 dark:text-pink-400",       bg: "bg-pink-500/20 dark:bg-pink-500/30",    border: "border-pink-500/40" },
+    DA_HUY:              { label: "Đã hủy",                  icon: XCircle,      color: "text-gray-500 dark:text-gray-400",       bg: "bg-gray-500/20 dark:bg-gray-500/30",    border: "border-gray-500/40" },
+    THAT_BAI:            { label: "Thanh toán thất bại",     icon: XCircle,      color: "text-red-700 dark:text-red-400",         bg: "bg-red-700/25 dark:bg-red-700/35",      border: "border-red-700/50" },
   };
 
-  const config = statusConfig[status] || statusConfig.OPEN;
+  const config = statusConfig[status] || {
+    label: status || "Không xác định",
+    icon: AlertCircle,
+    color: isDark ? "text-gray-400" : "text-gray-600",
+    bg: isDark ? "bg-gray-700/50" : "bg-gray-200",
+    border: "border-gray-400/40",
+  };
+
   const Icon = config.icon;
 
   return (
-    <div
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${config.bg} border ${config.border}`}
-    >
+    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm shadow-sm backdrop-blur-sm border ${config.bg} ${config.border}`}>
       <Icon className={`w-4 h-4 ${config.color}`} />
-      <span className={`text-sm font-semibold ${config.color}`}>
-        {config.label}
-      </span>
+      <span className={config.color}>{config.label}</span>
     </div>
   );
 };
@@ -70,11 +72,7 @@ export default function DisputesContent() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    orderId: "",
-    reasonType: "",
-    description: "",
-  });
+  const [form, setForm] = useState({ orderId: "", reasonType: "", description: "" });
 
   const reasonTypes = [
     { value: "PRODUCT_NOT_AS_DESCRIBED", label: "Sản phẩm không đúng mô tả" },
@@ -115,29 +113,21 @@ export default function DisputesContent() {
 
       if (!ordersRes.ok) throw new Error("Failed to fetch orders");
       const ordersData = await ordersRes.json();
-      const allOrders = Array.isArray(ordersData.orders)
-        ? ordersData.orders
-        : [];
+      const allOrders = Array.isArray(ordersData.orders) ? ordersData.orders : [];
 
       const eligible = allOrders.filter((order) =>
-        ["DA_THANH_TOAN", "DA_GIAO", "DA_HOAN_TAT"].includes(order.status)
+        ["DA_THANH_TOAN", "DA_GIAO", "DA_HOAN_TAT", "TRANH_CHAP", "DISPUTE_RESOLVED", "RESOLVED_WITH_REFUND"].includes(order.status)
       );
       setEligibleOrders(eligible);
 
-      const productIds = [
-        ...new Set(
-          eligible
-            .flatMap(
-              (order) => order.details?.map((d) => d.products?.productid) || []
-            )
-            .filter(Boolean)
-        ),
-      ];
+      const productIds = [...new Set(
+        eligible.flatMap(order => order.details?.map(d => d.products?.productid) || []).filter(Boolean)
+      )];
 
-      const productPromises = productIds.map((id) =>
+      const productPromises = productIds.map(id =>
         fetch(`http://localhost:8080/api/products/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
-        }).then((res) => (res.ok ? res.json() : null))
+        }).then(res => res.ok ? res.json() : null)
       );
 
       const productResponses = await Promise.all(productPromises);
@@ -154,13 +144,8 @@ export default function DisputesContent() {
     }
   };
 
-  const selectedOrder = eligibleOrders.find(
-    (o) => o.orderid === parseInt(form.orderId)
-  );
+  const selectedOrder = eligibleOrders.find(o => o.orderid === parseInt(form.orderId));
   const selectedProduct = selectedOrder?.details?.[0]?.products;
-  const productInMap = selectedProduct?.productid
-    ? productsMap[selectedProduct.productid]
-    : null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -208,53 +193,33 @@ export default function DisputesContent() {
         <div className="absolute bottom-20 -right-20 w-96 h-96 bg-gradient-to-br from-pink-500/30 to-purple-500/30 rounded-full blur-3xl animate-float [animation-delay:2s]" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <AuroraText text="Quản Lý Khiếu Nại" className="text-4xl font-bold" />
           <button
             onClick={() => setShowModal(true)}
             disabled={eligibleOrders.length === 0}
-            className="group relative px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-xl hover:shadow-orange-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 flex items-center gap-2"
+            className="group px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-xl hover:shadow-orange-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            <span>Tạo Khiếu Nại Mới</span>
+            Tạo Khiếu Nại Mới
           </button>
         </div>
 
         {/* Danh sách khiếu nại */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex justify-center py-20">
             <div className="relative">
               <div className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
               <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-red-500 rounded-full animate-spin [animation-delay:150ms]" />
             </div>
           </div>
         ) : disputes.length === 0 ? (
-          <div
-            className={`relative overflow-hidden rounded-2xl p-12 text-center ${
-              isDark
-                ? "bg-gradient-to-br from-gray-800/80 to-gray-900/80"
-                : "bg-gradient-to-br from-white/80 to-gray-50/80"
-            } backdrop-blur-xl border ${
-              isDark ? "border-gray-700/50" : "border-gray-200/50"
-            }`}
-          >
-            <FileText
-              className={`w-20 h-20 mx-auto mb-4 ${
-                isDark ? "text-gray-600" : "text-gray-400"
-              }`}
-            />
-            <h3
-              className={`text-xl font-semibold mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Chưa có khiếu nại
-            </h3>
-            <p className={`${isDark ? "text-gray-500" : "text-gray-600"}`}>
-              {eligibleOrders.length > 0
-                ? "Nhấn nút để tạo khiếu nại đầu tiên"
-                : "Bạn chưa có đơn hàng nào đủ điều kiện"}
+          <div className={`rounded-2xl p-12 text-center backdrop-blur-xl border ${isDark ? "bg-gray-800/80 border-gray-700" : "bg-white/80 border-gray-200"}`}>
+            <FileText className={`w-20 h-20 mx-auto mb-4 ${isDark ? "text-gray-600" : "text-gray-400"}`} />
+            <h3 className={`text-xl font-semibold mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}>Chưa có khiếu nại</h3>
+            <p className={isDark ? "text-gray-500" : "text-gray-600"}>
+              {eligibleOrders.length > 0 ? "Nhấn nút để tạo khiếu nại đầu tiên" : "Bạn chưa có đơn hàng nào đủ điều kiện"}
             </p>
           </div>
         ) : (
@@ -269,182 +234,91 @@ export default function DisputesContent() {
               return (
                 <div
                   key={dispute.disputeid}
-                  className={`relative overflow-hidden rounded-2xl border ${
-                    isDark
-                      ? "bg-gray-800/90 border-gray-700"
-                      : "bg-white border-gray-200"
-                  } shadow-xl hover:shadow-2xl transition-all duration-500 animate-fade-in`}
-                  style={{ animationDelay: `${index * 150}ms` }}
+                  className={`rounded-2xl border ${isDark ? "bg-gray-800/90 border-gray-700" : "bg-white border-gray-200"} shadow-xl hover:shadow-2xl transition-all duration-500`}
+                  style={{ animation: "fadeIn 0.6s ease-out both", animationDelay: `${index * 100}ms` }}
                 >
                   <div className="p-8">
                     <div className="flex flex-col lg:flex-row gap-8">
-                      {/* Ảnh xe + Status tag dán góc */}
+                      {/* Ảnh + Status tag góc */}
                       <div className="relative flex-shrink-0">
                         <div className="relative group/img">
                           {imgs[0]?.url ? (
-                            <img
-                              src={imgs[0].url}
-                              alt={product.productname}
-                              className="w-full lg:w-96 h-80 object-cover rounded-2xl shadow-2xl transition-transform duration-500 group-hover/img:scale-105"
-                            />
+                            <img src={imgs[0].url} alt={product.productname} className="w-full lg:w-96 h-80 object-cover rounded-2xl shadow-2xl transition-transform group-hover/img:scale-105 duration-500" />
                           ) : (
-                            <div className="w-full lg:w-96 h-80 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center shadow-xl">
+                            <div className="w-full lg:w-96 h-80 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center">
                               <Car className="w-32 h-32 text-gray-400" />
                             </div>
                           )}
-
-                          {/* Status tag dán góc trên cùng bên phải */}
+                          {/* Status khiếu nại dán góc */}
                           <div className="absolute top-4 right-4 z-10">
-                            <DisputeStatusTag
-                              status={dispute.status}
-                              isDark={isDark}
-                            />
+                            <OrderStatusTag status={dispute.status} isDark={isDark} />
                           </div>
-
-                          {/* Overlay khi hover */}
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-500" />
                         </div>
                       </div>
 
-                      {/* Nội dung bên phải */}
+                      {/* Nội dung */}
                       <div className="flex-1 space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row justify-between gap-4">
                           <div>
-                            <h3
-                              className={`text-3xl font-bold ${
-                                isDark ? "text-white" : "text-gray-900"
-                              }`}
-                            >
+                            <h3 className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                               {product.productname || "Xe điện cân bằng"}
                             </h3>
-                            {product.model && (
-                              <p className="text-2xl font-bold text-blue-600 mt-1">
-                                {product.model}
-                              </p>
-                            )}
+                            {product.model && <p className="text-2xl font-bold text-blue-600 mt-1">{product.model}</p>}
                             {brandcars.licensePlate && (
                               <p className="text-lg text-gray-500 mt-2 flex items-center gap-2">
                                 <Calendar className="w-5 h-5" />
-                                Biển số:{" "}
-                                <span className="font-semibold text-orange-600">
-                                  {brandcars.licensePlate}
-                                </span>
+                                Biển số: <span className="font-semibold text-orange-600">{brandcars.licensePlate}</span>
                               </p>
                             )}
                           </div>
-
                           <div className="text-right">
                             <p className="text-4xl font-bold text-emerald-600">
-                              {(
-                                order.totalfinal ||
-                                order.totalamount ||
-                                0
-                              ).toLocaleString("vi-VN")}
-                              ₫
+                              {(order.totalfinal || order.totalamount || 0).toLocaleString("vi-VN")}₫
                             </p>
-                            <p
-                              className={`text-sm ${
-                                isDark ? "text-gray-400" : "text-gray-600"
-                              } mt-2`}
-                            >
-                              Đơn hàng #{order.orderid}
-                            </p>
+                            <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"} mt-2`}>Đơn hàng #{order.orderid}</p>
                           </div>
                         </div>
 
-                        {/* Lý do khiếu nại - ĐƯA XUỐNG ĐÂY, thay vị trí cũ của status */}
-
-                        {product.specs && (
-                          <div
-                            className={`inline-flex items-center gap-3 px-5 py-3 rounded-full ${
-                              isDark ? "bg-gray-900/70" : "bg-gray-100"
-                            } border ${
-                              isDark ? "border-gray-700" : "border-gray-300"
-                            }`}
-                          >
-                            <Zap className="w-6 h-6 text-yellow-500" />
-                            <span
-                              className={`font-medium ${
-                                isDark ? "text-gray-200" : "text-gray-800"
-                              }`}
-                            >
-                              {product.specs}
-                            </span>
-                          </div>
-                        )}
+                        {/* Lý do khiếu nại - nổi bật */}
                         <div className="flex items-center gap-3">
                           <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
                           <div>
-                            <p className="text-sm text-gray-500">
-                              Lý do khiếu nại
-                            </p>
-                            <p
-                              className={`font-semibold text-lg ${
-                                isDark ? "text-orange-400" : "text-orange-600"
-                              }`}
-                            >
-                              {reasonTypes.find(
-                                (r) => r.value === dispute.reasonType
-                              )?.label || dispute.reasonType}
+                            <p className="text-sm text-gray-500">Lý do khiếu nại</p>
+                            <p className={`font-semibold text-lg ${isDark ? "text-orange-400" : "text-orange-600"}`}>
+                              {reasonTypes.find(r => r.value === dispute.reasonType)?.label || dispute.reasonType}
                             </p>
                           </div>
                         </div>
 
-                        {/* Ngày tạo khiếu nại */}
+                        {product.specs && (
+                          <div className={`inline-flex items-center gap-3 px-5 py-3 rounded-full ${isDark ? "bg-gray-900/70 border-gray-700" : "bg-gray-100 border-gray-300"} border`}>
+                            <Zap className="w-6 h-6 text-yellow-500" />
+                            <span className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>{product.specs}</span>
+                          </div>
+                        )}
 
-                        {/* Mô tả chi tiết */}
-                        <div
-                          className={`p-6 rounded-xl ${
-                            isDark
-                              ? "bg-gray-900/50 border border-gray-700"
-                              : "bg-gray-50 border border-gray-200"
-                          }`}
-                        >
-                          <p
-                            className={`text-base leading-relaxed ${
-                              isDark ? "text-gray-300" : "text-gray-700"
-                            }`}
-                          >
-                            {dispute.description || "Chưa có mô tả chi tiết."}
-                          </p>
-                        </div>
                         <div className="flex items-center gap-3 text-sm">
                           <Calendar className="w-5 h-5 text-gray-500" />
                           <span className="text-gray-500">Tạo ngày:</span>
-                          <span
-                            className={`font-medium ${
-                              isDark ? "text-gray-300" : "text-gray-700"
-                            }`}
-                          >
-                            {new Date(dispute.createdAt).toLocaleDateString(
-                              "vi-VN"
-                            )}
+                          <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                            {new Date(dispute.createdAt).toLocaleDateString("vi-VN")}
                           </span>
                         </div>
-                        {/* Kết quả giải quyết (nếu có) */}
+
+                        <div className={`p-6 rounded-xl ${isDark ? "bg-gray-900/50 border border-gray-700" : "bg-gray-50 border border-gray-200"}`}>
+                          <p className={`text-base leading-relaxed ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                            {dispute.description || "Chưa có mô tả chi tiết."}
+                          </p>
+                        </div>
+
                         {dispute.resolution && (
-                          <div
-                            className={`p-6 rounded-xl border-l-8 border-green-500 ${
-                              isDark ? "bg-green-900/30" : "bg-green-50"
-                            } shadow-lg`}
-                          >
+                          <div className={`p-6 rounded-xl border-l-8 border-green-500 ${isDark ? "bg-green-900/30" : "bg-green-50"} shadow-lg`}>
                             <div className="flex gap-4">
                               <CheckCircle className="w-8 h-8 text-green-500 flex-shrink-0" />
                               <div>
-                                <p
-                                  className={`text-xl font-bold ${
-                                    isDark ? "text-green-400" : "text-green-700"
-                                  }`}
-                                >
-                                  Đã được giải quyết
-                                </p>
-                                <p
-                                  className={`mt-3 text-base leading-relaxed ${
-                                    isDark ? "text-gray-300" : "text-gray-700"
-                                  }`}
-                                >
-                                  {dispute.resolution}
-                                </p>
+                                <p className={`text-xl font-bold ${isDark ? "text-green-400" : "text-green-700"}`}>Đã được giải quyết</p>
+                                <p className={`mt-3 text-base leading-relaxed ${isDark ? "text-gray-300" : "text-gray-700"}`}>{dispute.resolution}</p>
                               </div>
                             </div>
                           </div>
@@ -458,7 +332,6 @@ export default function DisputesContent() {
           </div>
         )}
       </div>
-
       {/* Modal tạo khiếu nại - giữ nguyên */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
