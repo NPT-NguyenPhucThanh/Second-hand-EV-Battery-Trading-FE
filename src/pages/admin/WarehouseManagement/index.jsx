@@ -34,7 +34,9 @@ export default function WarehouseManagement() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const inWarehouse = products.filter((p) => p.inWarehouse === true);
+  const inWarehouse = products.filter((p) => p.inWarehouse === true).sort(
+    (a, b) => new Date(b.createdat) - new Date(a.createdat)
+  );
 
   const fetchApi = async () => {
     setLoading(true);
