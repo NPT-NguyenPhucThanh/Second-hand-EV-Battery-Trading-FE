@@ -50,14 +50,23 @@ const formatDate = (dateString) => {
 };
 
 // Format ngày hẹn
+// Format ngày hẹn giao dịch - CÓ GIỜ + đẹp tiếng Việt
 const formatAppointmentDate = (dateString) => {
   if (!dateString) return "Chưa xác định";
-  return new Date(dateString).toLocaleDateString("vi-VN", {
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Chưa xác định";
+
+  const formatted = date.toLocaleString("vi-VN", {
     weekday: "long",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
+
+  return formatted.replace(", ", " lúc ");
 };
 
 // Tag trạng thái
@@ -269,148 +278,214 @@ export default function TransactionContent() {
         </div>
 
         {/* Thông tin xe - An toàn khi chưa load */}
-        {productInfo ? (
-          <div className="mb-10">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-              <Car className="w-8 h-8 text-blue-500" />
-              Thông tin xe
-            </h3>
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1">
-                  {productInfo.images?.[0] ? (
-                    <img
-                      src={productInfo.images[0]}
-                      alt={productInfo.productname}
-                      className="w-full h-64 object-cover rounded-2xl shadow-lg"
-                    />
-                  ) : (
-                    <div className="bg-gray-200 dark:bg-gray-700 border-2 border-dashed rounded-2xl w-full h-64 flex items-center justify-center">
-                      <Car className="w-16 h-16 text-gray-400" />
-                    </div>
-                  )}
-                </div>
+        {/* THÔNG TIN SẢN PHẨM - TỰ ĐỘNG PHÁT HIỆN XE HAY PIN */}
+{productInfo ? (
+  <div className="mb-10">
+    {/* Tiêu đề động: Xe điện hay Pin */}
+    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+      {productInfo.type === "Battery" ? (
+        <>
+          <Battery className="w-8 h-8 text-cyan-500" />
+          Thông tin pin
+        </>
+      ) : (
+        <>
+          <Car className="w-8 h-8 text-blue-500" />
+          Thông tin xe
+        </>
+      )}
+    </h3>
 
-                <div className="lg:col-span-2 space-y-5">
-                  <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {productInfo.productname || "Không có tên"}
-                  </h4>
-                  <p className="text-lg text-emerald-600 dark:text-emerald-400 font-semibold">
-                    {formatCurrency(productInfo.cost)}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-600 dark:text-gray-400">Biển số:</span>
-                      <span className="font-semibold">
-                        {productInfo.brandInfo?.licensePlate || "—"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-600 dark:text-gray-400">Năm:</span>
-                      <span className="font-semibold">
-                        {productInfo.brandInfo?.year || "—"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-600 dark:text-gray-400">Hãng:</span>
-                      <span className="font-semibold">
-                        {productInfo.brandInfo?.brand || "—"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-600 dark:text-gray-400">Model:</span>
-                      <span className="font-semibold">{productInfo.model || "—"}</span>
-                    </div>
-                  </div>
-
-                  {productInfo.description && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Mô tả</p>
-                      <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
-                        {productInfo.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Hình ảnh */}
+        <div className="lg:col-span-1">
+          {productInfo.images?.[0] ? (
+            <img
+              src={productInfo.images[0]}
+              alt={productInfo.productname}
+              className="w-full h-64 object-cover rounded-2xl shadow-lg"
+            />
+          ) : (
+            <div className="bg-gray-200 dark:bg-gray-700 border-2 border-dashed rounded-2xl w-full h-64 flex items-center justify-center">
+              {productInfo.type === "Battery" ? (
+                <Battery className="w-16 h-16 text-gray-400" />
+              ) : (
+                <Car className="w-16 h-16 text-gray-400" />
+              )}
             </div>
-          </div>
-        ) : (
-          <div className="mb-10">
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
-              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                Đang tải thông tin xe...
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* 3 ô thông tin */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {/* Địa chỉ */}
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
-                <MapPin className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
-                  Địa chỉ giao dịch
-                </p>
-                <p className="text-base font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
-                  {shippingAddress}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Ngày hẹn */}
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
-                <Truck className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-2">
-                  Ngày hẹn giao dịch
-                </p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">
-                  {formatAppointmentDate(appointmentDate)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Người bán */}
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg">
-                <Store className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
-                  Thông tin người bán
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <UserCircle2 className="w-5 h-5 text-gray-500" />
-                    <span className="font-medium text-gray-800 dark:text-gray-200">{seller.name}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-gray-500" />
-                    <span className="text-gray-700 dark:text-gray-300">{seller.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-gray-500" />
-                    <span className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">{seller.email}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
+        {/* Thông tin chi tiết */}
+        <div className="lg:col-span-2 space-y-5">
+          <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {productInfo.productname || "Không có tên sản phẩm"}
+          </h4>
+          <p className="text-lg text-emerald-600 dark:text-emerald-400 font-semibold">
+            {formatCurrency(productInfo.cost)}
+          </p>
+
+          {/* Thông tin động theo loại sản phẩm */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            {productInfo.type === "Battery" ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Dung lượng:</span>
+                  <span className="font-semibold text-cyan-600 dark:text-cyan-400">
+                    {productInfo.brandInfo?.capacity || "—"} kWh
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Thương hiệu:</span>
+                  <span className="font-semibold">
+                    {productInfo.brandInfo?.brand || "—"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Model:</span>
+                  <span className="font-semibold">{productInfo.model || "—"}</span>
+                </div>
+                {/* <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Bảo hành:</span>
+                  <span className="font-semibold text-purple-600">
+                    {productInfo.warrantyMonths ? `${productInfo.warrantyMonths} tháng` : "—"}
+                  </span>
+                </div> */}
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Biển số:</span>
+                  <span className="font-semibold">
+                    {productInfo.brandInfo?.licensePlate || "—"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Năm sản xuất:</span>
+                  <span className="font-semibold">
+                    {productInfo.brandInfo?.year || "—"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Hãng xe:</span>
+                  <span className="font-semibold">
+                    {productInfo.brandInfo?.brand || "—"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Model:</span>
+                  <span className="font-semibold">{productInfo.model || "—"}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Mô tả */}
+          {productInfo.description && (
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                Mô tả chi tiết
+              </p>
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
+                {productInfo.description}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="mb-10">
+    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
+      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+        Đang tải thông tin sản phẩm...
+      </p>
+    </div>
+  </div>
+)}
+
+      {/* 3 ô thông tin - ĐÚNG Ý BẠN: GIỜ TO + NGÀY BÊN DƯỚI */}
+<div className={`grid grid-cols-1 ${productInfo?.type === "Battery" ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6 mb-10`}>
+
+  {/* Ô 1: Địa chỉ (riêng biệt) - luôn hiện */}
+  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
+    <div className="flex items-start gap-4">
+      <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
+        <MapPin className="w-6 h-6 text-white" />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
+          {productInfo?.type === "Battery" ? "Địa chỉ nhận hàng" : "Địa chỉ giao dịch"}
+        </p>
+        <p className="text-base font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
+          {shippingAddress}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* Ô 2: Ngày hẹn giao dịch - CHỈ HIỆN KHI LÀ ĐƠN XE, ĐỊNH DẠNG ĐẸP */}
+  {productInfo?.type !== "Battery" && appointmentDate && (
+    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
+      <div className="flex items-start gap-4">
+        <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
+          <Truck className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3">
+            Ngày hẹn giao dịch
+          </p>
+          {/* GIỜ TO */}
+          <p className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">
+            {new Date(appointmentDate).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+          {/* NGÀY BÊN DƯỚI */}
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mt-1">
+            {new Date(appointmentDate).toLocaleDateString("vi-VN", {
+              weekday: "long",
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Ô 3: Người bán / Nhà cung cấp */}
+  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
+    <div className="flex items-start gap-4">
+      <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg">
+        <Store className="w-6 h-6 text-white" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
+          {productInfo?.type === "Battery" ? "Nhà cung cấp" : "Thông tin người bán"}
+        </p>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <UserCircle2 className="w-5 h-5 text-gray-500" />
+            <span className="font-medium text-gray-800 dark:text-gray-200">{seller.name}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Phone className="w-5 h-5 text-gray-500" />
+            <span className="text-gray-700 dark:text-gray-300">{seller.phone}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Mail className="w-5 h-5 text-gray-500" />
+            <span className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">{seller.email}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
         {/* Tổng quan tài chính */}
         <div className="mb-10">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">

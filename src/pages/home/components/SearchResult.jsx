@@ -562,7 +562,7 @@ export default function SearchResult() {
                       )}
 
                       {/* Like Button */}
-                      <button
+                      {/* <button
                         onClick={(e) => {
                           e.stopPropagation();
                           toast.success("Đã thêm vào yêu thích!");
@@ -579,7 +579,7 @@ export default function SearchResult() {
                           className="w-5 h-5"
                           style={{ color: "#ef4444" }}
                         />
-                      </button>
+                      </button> */}
                     </div>
 
                     {/* Content */}

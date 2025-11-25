@@ -139,7 +139,7 @@ const ProductCard = ({ product, isDark }) => {
         )}
 
         {/* Like Button */}
-        <button
+        {/* <button
           onClick={(e) => {
             e.stopPropagation();
             toast.success("Đã thêm vào yêu thích!");
@@ -153,7 +153,7 @@ const ProductCard = ({ product, isDark }) => {
           }}
         >
           <Heart className="w-5 h-5" style={{ color: "#ef4444" }} />
-        </button>
+        </button> */}
       </div>
 
       {/* Content */}
