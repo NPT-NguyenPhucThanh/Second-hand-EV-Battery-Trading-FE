@@ -39,14 +39,23 @@ export default function PackageManagement() {
     setEditingPackage(null);
   };
 
-  const handleSavePackage = (pkg) => {
-    if (pkg.packageid) {
-      updatePackage(pkg.packageid, pkg);
-    } else {
-      addPackage({ ...pkg, packageType: currentPkgTypeTab });
+  const handleSavePackage = async (pkg) => {
+    const action = pkg.packageid ? 'cập nhật' : 'tạo';
+    try {
+      if (pkg.packageid) {
+        await updatePackage(pkg.packageid, pkg);
+        toast.success(`Đã cập nhật gói ${pkg.name} thành công!`);
+      } else {
+        await addPackage({ ...pkg, packageType: currentPkgTypeTab });
+        toast.success(`Đã tạo gói ${pkg.name} thành công!`);
+      }
+      await fetchPackages();
+
+      handleCancelModal(); 
+    } catch (error) {
+      console.error(`Lỗi ${action} gói:`, error);
+      toast.error(error.message || `Lỗi khi ${action} gói!`);
     }
-    setIsModalVisible(false);
-    setEditingPackage(null);
   };
 
   const handleDelete = async (packageid, packagename) => {
@@ -111,7 +120,7 @@ export default function PackageManagement() {
               </div>
             </div>
 
-            <h3 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>{pkg.packagename}</h3>
+            <h3 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>{pkg.name}</h3>
             
             <div className="flex items-center gap-2 mb-4">
               <DollarSign className={`w-6 h-6 ${isDark ? "text-green-400" : "text-green-500"}`} />

@@ -2,20 +2,11 @@
 import { useState, useCallback } from 'react';
 import { get, post, put, del } from '../utils/api';
 
-/**
- * Hook quản lý gói dịch vụ
- * - Tách biệt Admin (CRUD) và Public (lấy gói để mua)
- * - Tối ưu useCallback + xử lý lỗi rõ ràng
- */
+
 export const usePackages = () => {
-  // === STATE CHUNG ===
-  const [packages, setPackages] = useState([]); // Dành cho Admin
+  const [packages, setPackages] = useState([]); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // =================================================================
-  // === ADMIN: QUẢN LÝ GÓI (CRUD) ===
-  // =================================================================
 
   const fetchPackages = useCallback(async () => {
     try {
@@ -37,7 +28,7 @@ export const usePackages = () => {
       setLoading(true);
       setError(null);
       const result = await post('api/manager/packages', newPackage);
-      setPackages(prev => [result, ...prev]);
+      // setPackages(prev => [result, ...prev]);
       return result;
     } catch (err) {
       const msg = err.message || "Không thể tạo gói mới";
@@ -53,7 +44,7 @@ export const usePackages = () => {
       setLoading(true);
       setError(null);
       const result = await put(`api/manager/packages/${packageId}`, updatedPackage);
-      setPackages(prev => prev.map(p => p.packageid === packageId ? result : p));
+      // setPackages(prev => prev.map(p => p.packageid === packageId ? result : p));
       return result;
     } catch (err) {
       const msg = err.message || "Không thể cập nhật gói";

@@ -89,7 +89,10 @@ export default function DisputeManagement() {
       const res = await getAllDisputes();
 
       if (res.status === "success") {
-        setDisputes(res.disputes || []);
+        const sortedDisputes = (res.disputes || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setDisputes(sortedDisputes || []);
       } else {
         toast.error(res.message || "Không thể tải danh sách tranh chấp!");
         setDisputes([]);
