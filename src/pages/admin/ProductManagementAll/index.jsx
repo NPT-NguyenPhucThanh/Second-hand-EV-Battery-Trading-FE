@@ -69,7 +69,10 @@ export default function ProductManagementAll() {
         throw new Error(res.message);
       }
     } catch (error) {
-      toast.error(`Xóa thất bại: ${error.message}`);
+      // Lấy message từ error response body
+      const errorMessage =
+        error.response?.data?.message || error.message || "Có lỗi xảy ra";
+      toast.error(`Xóa thất bại: ${errorMessage}`);
     }
   };
 
