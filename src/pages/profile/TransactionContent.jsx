@@ -49,26 +49,6 @@ const formatDate = (dateString) => {
   });
 };
 
-// Format ngày hẹn
-// Format ngày hẹn giao dịch - CÓ GIỜ + đẹp tiếng Việt
-const formatAppointmentDate = (dateString) => {
-  if (!dateString) return "Chưa xác định";
-
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "Chưa xác định";
-
-  const formatted = date.toLocaleString("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  return formatted.replace(", ", " lúc ");
-};
-
 // Tag trạng thái
 const TransactionStatusTag = ({ status }) => {
   const config = {
@@ -76,7 +56,16 @@ const TransactionStatusTag = ({ status }) => {
     PENDING: { text: "Đang xử lý", icon: Clock, color: "#f59e0b" },
     CANCELLED: { text: "Đã hủy", icon: XCircle, color: "#6b7280" },
     FAILED: { text: "Thất bại", icon: XCircle, color: "#ef4444" },
-  }[status] || { text: status || "Không rõ", icon: AlertCircle, color: "#6b7280" };
+    DA_THANH_TOAN: {
+      text: "Đã thanh toán",
+      icon: CheckCircle,
+      color: "#10b981",
+    },
+  }[status] || {
+    text: status || "Không rõ",
+    icon: AlertCircle,
+    color: "#6b7280",
+  };
 
   const Icon = config.icon;
   return (
@@ -94,10 +83,18 @@ const TransactionStatusTag = ({ status }) => {
 const TransactionTypeTag = ({ type }) => {
   const config = {
     DEPOSIT: { text: "Đặt cọc", icon: Coins, color: "#3b82f6" },
-    FINAL_PAYMENT: { text: "Thanh toán cuối", icon: CreditCard, color: "#10b981" },
+    FINAL_PAYMENT: {
+      text: "Thanh toán cuối",
+      icon: CreditCard,
+      color: "#10b981",
+    },
     REFUND: { text: "Hoàn tiền", icon: RefreshCw, color: "#f97316" },
     COMMISSION: { text: "Hoa hồng", icon: Percent, color: "#8b5cf6" },
-    BATTERY_PAYMENT: { text: "Thanh toán pin", icon: Battery, color: "#06b6d4" },
+    BATTERY_PAYMENT: {
+      text: "Thanh toán pin",
+      icon: Battery,
+      color: "#06b6d4",
+    },
     PACKAGE_PURCHASE: { text: "Mua gói", icon: Package, color: "#eab308" },
   }[type] || { text: type || "Khác", icon: Receipt, color: "#6b7280" };
 
@@ -124,7 +121,6 @@ export default function TransactionContent() {
 
   const [transactionData, setTransactionData] = useState(null);
   const [orderInfo, setOrderInfo] = useState(null);
-  const [productInfo, setProductInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const colors = {
@@ -154,26 +150,12 @@ export default function TransactionContent() {
         }
 
         if (orderRes?.status === "success") {
-          const order = orderRes.data || orderRes.order || orderRes;
+          const order = orderRes.order || orderRes.data || orderRes;
           setOrderInfo(order);
-
-          // Lấy productId từ order
-          const productId = order?.details?.[0]?.products?.productid;
-          if (productId) {
-            try {
-              const productRes = await get(`api/public/products/${productId}`);
-              if (productRes?.status === "success") {
-                setProductInfo(productRes.product || productRes);
-              }
-            } catch (err) {
-              console.warn("Không tải được thông tin sản phẩm:", err);
-              // Không toast lỗi vì không ảnh hưởng chính
-            }
-          }
         }
       } catch (err) {
         console.error("Lỗi tải dữ liệu:", err);
-        toast.error("Đã có lỗi xảy ra khi tải thông tin");
+        toast.error("Đã có lỗi xảy ra khi tải thông tin đơn hàng");
       } finally {
         setLoading(false);
       }
@@ -201,16 +183,21 @@ export default function TransactionContent() {
     );
   }
 
-  if (!transactionData || !orderInfo) {
+  if (!orderInfo) {
     return (
       <div className="text-center py-20">
         <Receipt className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-        <p className="text-xl text-gray-600 dark:text-gray-400">Không tìm thấy đơn hàng</p>
+        <p className="text-xl text-gray-600 dark:text-gray-400">
+          Không tìm thấy đơn hàng
+        </p>
       </div>
     );
   }
 
-  const { allTransactions = [] } = transactionData;
+  const { allTransactions = [] } = transactionData || {};
+  const detail = orderInfo.details?.[0];
+  const product = detail?.products;
+  const isBattery = product?.type === "Battery";
 
   const totalSuccessfulDeposit = allTransactions
     .filter((t) => t.transactionType === "DEPOSIT" && t.status === "SUCCESS")
@@ -220,17 +207,25 @@ export default function TransactionContent() {
     .filter((t) => t.transactionType === "REFUND" && t.status === "SUCCESS")
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
-  const appointmentDate = orderInfo.appointmentDate;
-  const shippingAddress = orderInfo.shippingaddress || "Chưa có địa chỉ";
-
-  const sellerDetail = orderInfo?.details?.[0]?.products?.users;
-  const seller = sellerDetail
+  const seller = product?.users
     ? {
-        name: sellerDetail.displayname || "Người bán",
-        phone: sellerDetail.phone || "—",
-        email: sellerDetail.email || "—",
+        name: product.users.displayname || "Người bán",
+        phone: product.users.phone || "—",
+        email: product.users.email || "—",
       }
     : { name: "Không xác định", phone: "—", email: "—" };
+
+  // Parse specs thành object để hiển thị đẹp
+  const parseSpecs = (specsString) => {
+    if (!specsString) return [];
+    return specsString.split(", ").map((item) => {
+      const [key, ...valueParts] = item.split(": ");
+      const value = valueParts.join(": ");
+      return { key: key.trim(), value: value?.trim() || "—" };
+    });
+  };
+
+  const specsList = product?.specs ? parseSpecs(product.specs) : [];
 
   return (
     <div className="min-h-screen pb-16">
@@ -255,7 +250,7 @@ export default function TransactionContent() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        {/* Header - ĐÃ SỬA LỖI CHÍNH */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
           <AuroraText
             text={`Đơn hàng #${orderId}`}
@@ -268,7 +263,9 @@ export default function TransactionContent() {
             className="flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm transition-all hover:scale-105 shadow-lg backdrop-blur-sm"
             style={{
               background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
-              border: `1px solid ${isDark ? "rgba(239,68,68,0.3)" : "rgba(59,130,246,0.3)"}`,
+              border: `1px solid ${
+                isDark ? "rgba(239,68,68,0.3)" : "rgba(59,130,246,0.3)"
+              }`,
               color: isDark ? "#e5e7eb" : "#1f2937",
             }}
           >
@@ -277,215 +274,225 @@ export default function TransactionContent() {
           </button>
         </div>
 
-        {/* Thông tin xe - An toàn khi chưa load */}
-        {/* THÔNG TIN SẢN PHẨM - TỰ ĐỘNG PHÁT HIỆN XE HAY PIN */}
-{productInfo ? (
-  <div className="mb-10">
-    {/* Tiêu đề động: Xe điện hay Pin */}
-    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-      {productInfo.type === "Battery" ? (
-        <>
-          <Battery className="w-8 h-8 text-cyan-500" />
-          Thông tin pin
-        </>
-      ) : (
-        <>
-          <Car className="w-8 h-8 text-blue-500" />
-          Thông tin xe
-        </>
-      )}
-    </h3>
-
-    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Hình ảnh */}
-        <div className="lg:col-span-1">
-          {productInfo.images?.[0] ? (
-            <img
-              src={productInfo.images[0]}
-              alt={productInfo.productname}
-              className="w-full h-64 object-cover rounded-2xl shadow-lg"
-            />
-          ) : (
-            <div className="bg-gray-200 dark:bg-gray-700 border-2 border-dashed rounded-2xl w-full h-64 flex items-center justify-center">
-              {productInfo.type === "Battery" ? (
-                <Battery className="w-16 h-16 text-gray-400" />
-              ) : (
-                <Car className="w-16 h-16 text-gray-400" />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Thông tin chi tiết */}
-        <div className="lg:col-span-2 space-y-5">
-          <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {productInfo.productname || "Không có tên sản phẩm"}
-          </h4>
-          <p className="text-lg text-emerald-600 dark:text-emerald-400 font-semibold">
-            {formatCurrency(productInfo.cost)}
-          </p>
-
-          {/* Thông tin động theo loại sản phẩm */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {productInfo.type === "Battery" ? (
+        {/* THÔNG TIN SẢN PHẨM */}
+        <div className="mb-10">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+            {isBattery ? (
               <>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Dung lượng:</span>
-                  <span className="font-semibold text-cyan-600 dark:text-cyan-400">
-                    {productInfo.brandInfo?.capacity || "—"} kWh
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Thương hiệu:</span>
-                  <span className="font-semibold">
-                    {productInfo.brandInfo?.brand || "—"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Model:</span>
-                  <span className="font-semibold">{productInfo.model || "—"}</span>
-                </div>
-                {/* <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Bảo hành:</span>
-                  <span className="font-semibold text-purple-600">
-                    {productInfo.warrantyMonths ? `${productInfo.warrantyMonths} tháng` : "—"}
-                  </span>
-                </div> */}
+                <Battery className="w-8 h-8 text-cyan-500" />
+                Thông tin pin
               </>
             ) : (
               <>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Biển số:</span>
-                  <span className="font-semibold">
-                    {productInfo.brandInfo?.licensePlate || "—"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Năm sản xuất:</span>
-                  <span className="font-semibold">
-                    {productInfo.brandInfo?.year || "—"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Hãng xe:</span>
-                  <span className="font-semibold">
-                    {productInfo.brandInfo?.brand || "—"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Model:</span>
-                  <span className="font-semibold">{productInfo.model || "—"}</span>
-                </div>
+                <Car className="w-8 h-8 text-blue-500" />
+                Thông tin xe
               </>
             )}
-          </div>
+          </h3>
 
-          {/* Mô tả */}
-          {productInfo.description && (
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                Mô tả chi tiết
-              </p>
-              <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
-                {productInfo.description}
-              </p>
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Hình ảnh */}
+              <div className="lg:col-span-1">
+                {product?.imgs?.[0]?.url ? (
+                  <img
+                    src={product.imgs[0].url}
+                    alt={product.productname}
+                    className="w-full h-64 object-cover rounded-2xl shadow-lg"
+                  />
+                ) : (
+                  <div className="bg-gray-200 dark:bg-gray-700 border-2 border-dashed rounded-2xl w-full h-64 flex items-center justify-center">
+                    {isBattery ? (
+                      <Battery className="w-16 h-16 text-gray-400" />
+                    ) : (
+                      <Car className="w-16 h-16 text-gray-400" />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Thông tin chi tiết */}
+              <div className="lg:col-span-2 space-y-6">
+                <div>
+                  <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {product?.productname || "Không có tên sản phẩm"}
+                  </h4>
+                  <p className="text-lg text-emerald-600 dark:text-emerald-400 font-semibold mt-2">
+                    {formatCurrency(product?.cost)}
+                  </p>
+                </div>
+
+                {/* Thông số chính */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {isBattery ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Dung lượng:
+                        </span>
+                        <span className="font-semibold text-cyan-600 dark:text-cyan-400">
+                          {product.brandbattery?.capacity || "—"} kWh
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Điện áp:
+                        </span>
+                        <span className="font-semibold text-cyan-600 dark:text-cyan-400">
+                          {product.brandbattery?.voltage || "—"}V
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Thương hiệu:
+                        </span>
+                        <span className="font-semibold">
+                          {product.brandbattery?.brand || product.model || "—"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Tình trạng:
+                        </span>
+                        <span className="font-semibold text-green-600 dark:text-green-400">
+                          {product.brandbattery?.condition || "like new"}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Model:
+                        </span>
+                        <span className="font-semibold">
+                          {product?.model || "—"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Hãng xe:
+                        </span>
+                        <span className="font-semibold">
+                          {product?.brandcars?.brand || "—"}
+                        </span>
+                      </div>
+                      {/* THÊM DÒNG NÀY – NĂM SẢN XUẤT */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Năm sản xuất:
+                        </span>
+                        <span className="font-semibold text-orange-600 dark:text-orange-400">
+                          {product?.brandcars?.year > 0
+                            ? product.brandcars.year
+                            : "—"}
+                        </span>
+                      </div>
+                      {/* Có thể thêm dòng trống hoặc giữ nguyên 4 ô nếu muốn đều */}
+                      <div></div>
+                    </>
+                  )}
+                </div>
+
+                {/* Mô tả */}
+                {product?.description && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                      Mô tả
+                    </p>
+                    <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
+                      {product.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Thông số kỹ thuật chi tiết - HIỂN THỊ CHO CẢ PIN VÀ XE */}
+                {!isBattery && specsList.length > 0 && (
+                  <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl border border-blue-200/50 dark:border-blue-800/50">
+                    <p className="text-sm font-bold text-blue-700 dark:text-blue-400 mb-4 flex items-center gap-2">
+                      <Package className="w-5 h-5" />
+                      Thông số kỹ thuật chi tiết
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {specsList.map((spec, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center py-3 px-4 bg-white/60 dark:bg-gray-800/60 rounded-xl border border-blue-100 dark:border-blue-800/40"
+                        >
+                          <span className="font-medium text-gray-700 dark:text-gray-300">
+                            {spec.key}
+                          </span>
+                          <span className="font-bold text-blue-600 dark:text-blue-400 ml-4">
+                            {spec.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-) : (
-  <div className="mb-10">
-    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
-      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-        Đang tải thông tin sản phẩm...
-      </p>
-    </div>
-  </div>
-)}
-
-      {/* 3 ô thông tin - ĐÚNG Ý BẠN: GIỜ TO + NGÀY BÊN DƯỚI */}
-<div className={`grid grid-cols-1 ${productInfo?.type === "Battery" ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6 mb-10`}>
-
-  {/* Ô 1: Địa chỉ (riêng biệt) - luôn hiện */}
-  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
-    <div className="flex items-start gap-4">
-      <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
-        <MapPin className="w-6 h-6 text-white" />
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
-          {productInfo?.type === "Battery" ? "Địa chỉ nhận hàng" : "Địa chỉ giao dịch"}
-        </p>
-        <p className="text-base font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
-          {shippingAddress}
-        </p>
-      </div>
-    </div>
-  </div>
-
-  {/* Ô 2: Ngày hẹn giao dịch - CHỈ HIỆN KHI LÀ ĐƠN XE, ĐỊNH DẠNG ĐẸP */}
-  {productInfo?.type !== "Battery" && appointmentDate && (
-    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
-      <div className="flex items-start gap-4">
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
-          <Truck className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3">
-            Ngày hẹn giao dịch
-          </p>
-          {/* GIỜ TO */}
-          <p className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">
-            {new Date(appointmentDate).toLocaleTimeString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-          {/* NGÀY BÊN DƯỚI */}
-          <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mt-1">
-            {new Date(appointmentDate).toLocaleDateString("vi-VN", {
-              weekday: "long",
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })}
-          </p>
-        </div>
-      </div>
-    </div>
-  )}
-
-  {/* Ô 3: Người bán / Nhà cung cấp */}
-  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
-    <div className="flex items-start gap-4">
-      <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg">
-        <Store className="w-6 h-6 text-white" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
-          {productInfo?.type === "Battery" ? "Nhà cung cấp" : "Thông tin người bán"}
-        </p>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <UserCircle2 className="w-5 h-5 text-gray-500" />
-            <span className="font-medium text-gray-800 dark:text-gray-200">{seller.name}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Phone className="w-5 h-5 text-gray-500" />
-            <span className="text-gray-700 dark:text-gray-300">{seller.phone}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Mail className="w-5 h-5 text-gray-500" />
-            <span className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">{seller.email}</span>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
+
+        {/* 3 ô thông tin */}
+        <div
+          className={`grid grid-cols-1 ${
+            isBattery ? "md:grid-cols-2" : "md:grid-cols-3"
+          } gap-6 mb-10`}
+        >
+          {/* Địa chỉ */}
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
+                  {isBattery ? "Địa chỉ nhận hàng" : "Địa chỉ giao dịch"}
+                </p>
+                <p className="text-base font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
+                  {orderInfo.shippingaddress || "Chưa có địa chỉ"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Người bán */}
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-7 border border-gray-200 dark:border-gray-800 shadow-xl">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg">
+                <Store className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
+                  Thông tin người bán
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <UserCircle2 className="w-5 h-5 text-gray-500" />
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                      {seller.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-5 h-5 text-gray-500" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {seller.phone}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-gray-500" />
+                    <span className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">
+                      {seller.email}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Tổng quan tài chính */}
         <div className="mb-10">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
@@ -494,19 +501,39 @@ export default function TransactionContent() {
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { label: "Tổng thanh toán", value: orderInfo.totalfinal || 0, gradient: "from-blue-500 to-blue-600" },
-              { label: "Tiền hàng", value: orderInfo.totalamount || 0, gradient: "from-emerald-500 to-emerald-600" },
-              { label: "Đã đặt cọc", value: totalSuccessfulDeposit, gradient: "from-amber-500 to-amber-600" },
-              { label: "Hoàn tiền", value: totalSuccessfulRefund, gradient: "from-orange-500 to-orange-600" },
+              {
+                label: "Tổng thanh toán",
+                value: orderInfo.totalfinal || 0,
+                gradient: "from-blue-500 to-blue-600",
+              },
+              {
+                label: "Tiền hàng",
+                value: orderInfo.totalamount || 0,
+                gradient: "from-emerald-500 to-emerald-600",
+              },
+              {
+                label: "Phí vận chuyển",
+                value: orderInfo.shippingfee || 0,
+                gradient: "from-purple-500 to-purple-600",
+              },
+              {
+                label: "Đã đặt cọc",
+                value: totalSuccessfulDeposit,
+                gradient: "from-amber-500 to-amber-600",
+              },
             ].map((item, i) => (
               <div
                 key={i}
                 className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl transition-all"
               >
-                <div className={`p-3 rounded-2xl bg-gradient-to-br ${item.gradient} w-fit mb-4 shadow-lg`}>
+                <div
+                  className={`p-3 rounded-2xl bg-gradient-to-br ${item.gradient} w-fit mb-4 shadow-lg`}
+                >
                   <DollarSign className="w-7 h-7 text-white" />
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{item.label}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {item.label}
+                </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(item.value)}
                 </p>
@@ -525,7 +552,9 @@ export default function TransactionContent() {
             {allTransactions.length === 0 ? (
               <div className="text-center py-16 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-800">
                 <Receipt className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <p className="text-lg text-gray-600 dark:text-gray-400">Chưa có giao dịch nào</p>
+                <p className="text-lg text-gray-600 dark:text-gray-400">
+                  Chưa có giao dịch nào
+                </p>
               </div>
             ) : (
               allTransactions.map((t) => (
@@ -541,7 +570,13 @@ export default function TransactionContent() {
                       </p>
                     </div>
                     <div className="lg:col-span-2">
-                      <p className={`text-2xl font-bold ${t.status === "SUCCESS" ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
+                      <p
+                        className={`text-2xl font-bold ${
+                          t.status === "SUCCESS"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-gray-500"
+                        }`}
+                      >
                         {formatCurrency(t.amount)}
                       </p>
                     </div>
@@ -551,11 +586,6 @@ export default function TransactionContent() {
                           <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
                             <CreditCard className="w-3.5 h-3.5" />
                             {t.method}
-                          </span>
-                        )}
-                        {t.bankCode && (
-                          <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                            {t.bankCode}
                           </span>
                         )}
                       </div>
@@ -569,12 +599,6 @@ export default function TransactionContent() {
                           <Calendar className="w-4 h-4" />
                           {formatDate(t.createdAt)}
                         </p>
-                        {t.paymentDate && (
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
-                            <CheckCircle className="w-4 h-4" />
-                            {formatDate(t.paymentDate)}
-                          </p>
-                        )}
                       </div>
                     </div>
                   </div>
