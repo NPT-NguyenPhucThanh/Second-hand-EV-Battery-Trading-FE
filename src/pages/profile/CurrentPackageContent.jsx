@@ -96,12 +96,7 @@ const PackageCard = ({
         </Tag>
       </div>
 
-      <div className="mt-4 flex gap-2">
-        <Button type="primary" size="small" disabled={isExpired}>
-          Gia hạn
-        </Button>
-        <Button size="small">Xem chi tiết</Button>
-      </div>
+      
     </div>
   );
 };

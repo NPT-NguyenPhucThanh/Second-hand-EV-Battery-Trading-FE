@@ -29,15 +29,40 @@ const formatDate = (dateString) => {
 };
 
 const ProductStatusTag = ({ status }) => {
-  const map = {
+  const statusMap = {
+    // Trạng thái đang hoạt động
     DANG_BAN: { text: "Đang bán", color: "success" },
-    CHO_DUYET: { text: "Chờ duyệt", color: "processing" },
-    CHO_KIEM_DUYET: { text: "Chờ kiểm", color: "warning" },
+    CHO_THANH_TOAN: { text: "Chờ thanh toán", color: "orange" },
+    CHO_DAT_COC: { text: "Chờ đặt cọc 10%", color: "gold" },
+    CHO_XAC_NHAN: { text: "Chờ xác nhận", color: "processing" },
+    DA_DAT_COC: { text: "Đã đặt cọc 10%", color: "lime" },
+    CHO_DUYET: { text: "Chờ manager duyệt", color: "blue" },
+    DA_DUYET: { text: "Đã duyệt - Chờ thanh toán cuối", color: "cyan" },
+    DA_THANH_TOAN: { text: "Đã thanh toán đầy đủ", color: "green" },
+    DANG_VAN_CHUYEN: { text: "Đang vận chuyển", color: "purple" },
+    DA_GIAO: { text: "Đã giao - Chờ xác nhận", color: "magenta" },
+
+    // Trạng thái hoàn tất / lỗi
+    DA_HOAN_TAT: { text: "Hoàn tất", color: "green" },
     BI_TU_CHOI: { text: "Bị từ chối", color: "error" },
+    TRANH_CHAP: { text: "Tranh chấp", color: "warning" },
+    DISPUTE_RESOLVED: { text: "Đã giải quyết tranh chấp", color: "geekblue" },
+    RESOLVED_WITH_REFUND: { text: "Giải quyết - Có hoàn tiền", color: "volcano" },
+    DA_HUY: { text: "Đã hủy", color: "default" },
+    THAT_BAI: { text: "Thanh toán thất bại", color: "red" },
+
+    // Tương thích cũ
+    CHO_KIEM_DUYET: { text: "Chờ kiểm", color: "warning" },
     DA_BAN: { text: "Đã bán", color: "default" },
   };
-  const item = map[status] || { text: status, color: "default" };
-  return <Tag color={item.color}>{item.text}</Tag>;
+
+  const config = statusMap[status] || { text: status || "Không xác định", color: "default" };
+
+  return (
+    <Tag color={config.color} className="font-medium text-xs px-3 py-1 rounded-full">
+      {config.text}
+    </Tag>
+  );
 };
 
 export default function MySellingContent() {
@@ -167,33 +192,7 @@ export default function MySellingContent() {
   // === BẢNG ĐANG BÁN ===
   const sellingColumns = [
     ...baseColumns,
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_, r) => (
-        <Space size="small">
-          <Button type="link" size="small" className="text-blue-600">
-            Xem
-          </Button>
-          <Button type="link" size="small">
-            Sửa
-          </Button>
-          {r.type === "Battery" && (
-            <Popconfirm
-              title="Gỡ sản phẩm này?"
-              onConfirm={() => handleDelete(r.productid)}
-              okText="Gỡ"
-              cancelText="Hủy"
-            >
-              <Button type="link" size="small" danger>
-                Gỡ
-              </Button>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
-      width: 160,
-    },
+    
   ];
 
   // === BẢNG KHÁC ===
@@ -206,23 +205,7 @@ export default function MySellingContent() {
       render: (s) => <ProductStatusTag status={s} />,
       width: 130,
     },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_, r) => (
-        <Space size="small">
-          <Button type="link" size="small" className="text-blue-600">
-            Xem
-          </Button>
-          {r.type === "Battery" && (
-            <Button type="link" size="small" disabled>
-              Gỡ
-            </Button>
-          )}
-        </Space>
-      ),
-      width: 120,
-    },
+   
   ];
 
   if (loading) {
