@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Spin, Empty, Tabs, Tag, Table, Tooltip, Select } from "antd";
+import { Spin, Empty, Tabs, Tag, Table,  Tooltip, Select } from "antd";
 import { get } from "../../utils/api";
 import { useTheme } from "../../contexts/ThemeContext";
 
@@ -25,7 +25,7 @@ const formatDate = (dateString) => {
   });
 };
 
-// Ẩn email (giữ nguyên)
+// Ẩn một phần email
 const maskEmail = (email) => {
   if (!email) return "—";
   const [local, domain] = email.split("@");
@@ -33,7 +33,7 @@ const maskEmail = (email) => {
   return local.length > 3 ? `${local.slice(0, 3)}...@${domain}` : email;
 };
 
-// TAG TRẠNG THÁI ĐẦY ĐỦ 16 LOẠI - ĐẸP NHƯ SÀN TMĐT
+// Tag trạng thái đẹp như sàn TMĐT
 const OrderStatusTag = ({ status }) => {
   const statusMap = {
     CHO_THANH_TOAN: { text: "Chờ thanh toán", color: "orange" },
@@ -101,7 +101,7 @@ export default function ViewMyProductContent() {
                   email: order.users?.email || "—",
                 },
               }))
-              .sort((a, b) => new Date(b.createdat) - new Date(a.createdat)); // Mới nhất lên đầu
+              .sort((a, b) => new Date(b.createdat) - new Date(a.createdat));
           }
           return [];
         };
@@ -120,7 +120,7 @@ export default function ViewMyProductContent() {
     fetchOrders();
   }, []);
 
-  // Lọc đơn hàng theo trạng thái
+  // Lọc theo trạng thái
   const filterOrders = (orders, filter) => {
     if (filter === "ALL") return orders;
     return orders.filter((order) => order.status === filter);
@@ -129,7 +129,7 @@ export default function ViewMyProductContent() {
   const filteredCarOrders = filterOrders(carOrders, carFilter);
   const filteredBatteryOrders = filterOrders(batteryOrders, batteryFilter);
 
-  // Danh sách trạng thái đầy đủ cho bộ lọc
+  // Danh sách trạng thái cho Select
   const statusOptions = [
     { value: "ALL", label: "Tất cả trạng thái" },
     { value: "CHO_THANH_TOAN", label: "Chờ thanh toán" },
@@ -150,8 +150,8 @@ export default function ViewMyProductContent() {
     { value: "THAT_BAI", label: "Thanh toán thất bại" },
   ];
 
-  // Cột bảng
-  const columns = [
+  // Hàm tạo columns động theo loại sản phẩm
+  const getColumns = (addressTitle) => [
     {
       title: "STT",
       key: "index",
@@ -163,6 +163,7 @@ export default function ViewMyProductContent() {
     {
       title: "Người mua",
       key: "buyer",
+      width: 180,
       render: (_, record) => {
         const b = record.buyer;
         return (
@@ -175,43 +176,42 @@ export default function ViewMyProductContent() {
           </div>
         );
       },
-      width: 180,
     },
     {
-      title: "Địa chỉ giao",
+      title: <span className="font-semibold">{addressTitle}</span>,
       dataIndex: "shippingaddress",
       key: "address",
+      width: 220,
       render: (addr) => (
         <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2" title={addr}>
           {addr || "—"}
         </p>
       ),
-      width: 200,
     },
     {
       title: "Tổng tiền",
       dataIndex: "totalfinal",
       key: "total",
+      width: 140,
       render: (value) => (
         <span className="font-bold text-green-600 dark:text-green-400">
           {formatCurrency(value)}
         </span>
       ),
-      width: 140,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => <OrderStatusTag status={status} />,
       width: 180,
+      render: (status) => <OrderStatusTag status={status} />,
     },
     {
       title: "Ngày đặt",
       dataIndex: "createdat",
       key: "date",
-      render: (date) => <span className="text-xs text-gray-500">{formatDate(date)}</span>,
       width: 150,
+      render: (date) => <span className="text-xs text-gray-500">{formatDate(date)}</span>,
     },
   ];
 
@@ -225,13 +225,13 @@ export default function ViewMyProductContent() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen py-6">
       <h2 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">
         Đơn Hàng Của Tôi
       </h2>
 
       <Tabs defaultActiveKey="cars" type="card" size="large" className="custom-tabs">
-        {/* TAB XE */}
+        {/* === TAB XE ĐIỆN === */}
         <TabPane
           tab={
             <span className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export default function ViewMyProductContent() {
             <Select
               value={carFilter}
               onChange={setCarFilter}
-              style={{ width: 280 }}
+              style={{ width: 300 }}
               placeholder="Lọc theo trạng thái"
               size="large"
             >
@@ -259,27 +259,27 @@ export default function ViewMyProductContent() {
           {filteredCarOrders.length > 0 ? (
             <Table
               dataSource={filteredCarOrders}
-              columns={columns}
+              columns={getColumns("Địa chỉ giao dịch")} // Xe: Giao dịch
               rowKey="key"
               pagination={{ pageSize: 8 }}
               scroll={{ x: 1200 }}
               bordered
               size="middle"
-              className="shadow-lg rounded-lg"
+              className="shadow-lg rounded-lg overflow-hidden"
             />
           ) : (
             <Empty
-              description="Chưa có đơn hàng xe nào"
+              description="Chưa có đơn hàng xe điện nào"
               className="py-20"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           )}
         </TabPane>
 
-        {/* TAB PIN */}
+        {/* === TAB PIN === */}
         <TabPane
           tab={
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap- gap-2">
               Pin ({filteredBatteryOrders.length})
             </span>
           }
@@ -289,7 +289,7 @@ export default function ViewMyProductContent() {
             <Select
               value={batteryFilter}
               onChange={setBatteryFilter}
-              style={{ width: 280 }}
+              style={{ width: 300 }}
               placeholder="Lọc theo trạng thái"
               size="large"
             >
@@ -304,13 +304,13 @@ export default function ViewMyProductContent() {
           {filteredBatteryOrders.length > 0 ? (
             <Table
               dataSource={filteredBatteryOrders}
-              columns={columns}
+              columns={getColumns("Địa chỉ giao hàng")} // Pin: Giao hàng
               rowKey="key"
               pagination={{ pageSize: 8 }}
               scroll={{ x: 1200 }}
               bordered
               size="middle"
-              className="shadow-lg rounded-lg"
+              className="shadow-lg rounded-lg overflow-hidden"
             />
           ) : (
             <Empty
