@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Spin, Empty, Tabs, Tag, Table,  Tooltip, Select } from "antd";
+import { Spin, Empty, Tabs, Tag, Table, Tooltip, Select } from "antd";
 import { get } from "../../utils/api";
 import { useTheme } from "../../contexts/ThemeContext";
 
@@ -25,7 +25,7 @@ const formatDate = (dateString) => {
   });
 };
 
-// Ẩn một phần email
+// Ẩn email
 const maskEmail = (email) => {
   if (!email) return "—";
   const [local, domain] = email.split("@");
@@ -33,7 +33,7 @@ const maskEmail = (email) => {
   return local.length > 3 ? `${local.slice(0, 3)}...@${domain}` : email;
 };
 
-// Tag trạng thái đẹp như sàn TMĐT
+// Tag trạng thái đẹp
 const OrderStatusTag = ({ status }) => {
   const statusMap = {
     CHO_THANH_TOAN: { text: "Chờ thanh toán", color: "orange" },
@@ -67,9 +67,7 @@ export default function ViewMyProductContent() {
   const [carOrders, setCarOrders] = useState([]);
   const [batteryOrders, setBatteryOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isDark } = useTheme();
 
-  // Bộ lọc trạng thái
   const [carFilter, setCarFilter] = useState("ALL");
   const [batteryFilter, setBatteryFilter] = useState("ALL");
 
@@ -87,20 +85,26 @@ export default function ViewMyProductContent() {
         const processOrders = (res) => {
           if (res.status === "success" && Array.isArray(res.orders)) {
             return res.orders
-              .map((order) => ({
-                key: order.orderid,
-                orderid: order.orderid,
-                totalfinal: order.totalfinal,
-                shippingaddress: order.shippingaddress,
-                paymentmethod: order.paymentmethod,
-                createdat: order.createdat,
-                status: order.status,
-                buyer: {
-                  name: order.users?.username || "Khách vãng lai",
-                  phone: order.users?.phone || "—",
-                  email: order.users?.email || "—",
-                },
-              }))
+              .map((order) => {
+                const productName =
+                  order.details?.[0]?.products?.productname || "Sản phẩm không xác định";
+
+                return {
+                  key: order.orderid,
+                  orderid: order.orderid,
+                  productName,
+                  totalfinal: order.totalfinal,
+                  shippingaddress: order.shippingaddress,
+                  paymentmethod: order.paymentmethod,
+                  createdat: order.createdat,
+                  status: order.status,
+                  buyer: {
+                    name: order.users?.displayname || order.users?.username || "Khách vãng lai",
+                    phone: order.users?.phone || "—",
+                    email: order.users?.email || "—",
+                  },
+                };
+              })
               .sort((a, b) => new Date(b.createdat) - new Date(a.createdat));
           }
           return [];
@@ -120,7 +124,6 @@ export default function ViewMyProductContent() {
     fetchOrders();
   }, []);
 
-  // Lọc theo trạng thái
   const filterOrders = (orders, filter) => {
     if (filter === "ALL") return orders;
     return orders.filter((order) => order.status === filter);
@@ -129,10 +132,9 @@ export default function ViewMyProductContent() {
   const filteredCarOrders = filterOrders(carOrders, carFilter);
   const filteredBatteryOrders = filterOrders(batteryOrders, batteryFilter);
 
-  // Danh sách trạng thái cho Select
   const statusOptions = [
     { value: "ALL", label: "Tất cả trạng thái" },
-    { value: "CHO_THANH_TOAN", label: "Chờ thanh toán" },
+    { value: "CHO_THANH_THANH_TOAN", label: "Chờ thanh toán" },
     { value: "CHO_DAT_COC", label: "Chờ đặt cọc 10%" },
     { value: "CHO_XAC_NHAN", label: "Chờ xác nhận" },
     { value: "DA_DAT_COC", label: "Đã đặt cọc 10%" },
@@ -150,7 +152,7 @@ export default function ViewMyProductContent() {
     { value: "THAT_BAI", label: "Thanh toán thất bại" },
   ];
 
-  // Hàm tạo columns động theo loại sản phẩm
+  // Columns động
   const getColumns = (addressTitle) => [
     {
       title: "STT",
@@ -158,6 +160,16 @@ export default function ViewMyProductContent() {
       width: 70,
       render: (_, __, index) => (
         <span className="font-bold text-blue-600 dark:text-blue-400">#{index + 1}</span>
+      ),
+    },
+    {
+      title: "Sản phẩm",
+      key: "product",
+      width: 260,
+      render: (_, record) => (
+        <div className="font-medium text-gray-900 dark:text-white line-clamp-2">
+          {record.productName}
+        </div>
       ),
     },
     {
@@ -171,7 +183,7 @@ export default function ViewMyProductContent() {
             <p className="font-semibold text-gray-900 dark:text-white">{b.name}</p>
             <p className="text-gray-600 dark:text-gray-400 text-xs">Phone: {b.phone}</p>
             <Tooltip title={b.email}>
-              <p className="text-gray-500 text-xs truncate w-40">{maskEmail(b.email)}</p>
+              <p className="text-gray-500 text-xs truncate w-36">{maskEmail(b.email)}</p>
             </Tooltip>
           </div>
         );
@@ -181,7 +193,7 @@ export default function ViewMyProductContent() {
       title: <span className="font-semibold">{addressTitle}</span>,
       dataIndex: "shippingaddress",
       key: "address",
-      width: 220,
+      width: 240,
       render: (addr) => (
         <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2" title={addr}>
           {addr || "—"}
@@ -189,10 +201,10 @@ export default function ViewMyProductContent() {
       ),
     },
     {
-      title: "Tổng tiền",
+      title: "Tổng tiền", // ĐÃ SỬA LỖI Ở ĐÂY
       dataIndex: "totalfinal",
       key: "total",
-      width: 140,
+      width: 150,
       render: (value) => (
         <span className="font-bold text-green-600 dark:text-green-400">
           {formatCurrency(value)}
@@ -230,14 +242,10 @@ export default function ViewMyProductContent() {
         Đơn Hàng Của Tôi
       </h2>
 
-      <Tabs defaultActiveKey="cars" type="card" size="large" className="custom-tabs">
-        {/* === TAB XE ĐIỆN === */}
+      <Tabs defaultActiveKey="cars" type="card" size="large">
+        {/* TAB XE */}
         <TabPane
-          tab={
-            <span className="flex items-center gap-2">
-              Xe điện ({filteredCarOrders.length})
-            </span>
-          }
+          tab={<span className="flex items-center gap-2">Xe điện ({filteredCarOrders.length})</span>}
           key="cars"
         >
           <div className="mb-6 flex justify-end">
@@ -259,30 +267,22 @@ export default function ViewMyProductContent() {
           {filteredCarOrders.length > 0 ? (
             <Table
               dataSource={filteredCarOrders}
-              columns={getColumns("Địa chỉ giao dịch")} // Xe: Giao dịch
+              columns={getColumns("Địa chỉ giao dịch")}
               rowKey="key"
               pagination={{ pageSize: 8 }}
-              scroll={{ x: 1200 }}
+              scroll={{ x: 1400 }}
               bordered
               size="middle"
               className="shadow-lg rounded-lg overflow-hidden"
             />
           ) : (
-            <Empty
-              description="Chưa có đơn hàng xe điện nào"
-              className="py-20"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            <Empty description="Chưa có đơn hàng xe điện nào" className="py-20" />
           )}
         </TabPane>
 
-        {/* === TAB PIN === */}
+        {/* TAB PIN */}
         <TabPane
-          tab={
-            <span className="flex items-center gap- gap-2">
-              Pin ({filteredBatteryOrders.length})
-            </span>
-          }
+          tab={<span className="flex items-center gap-2">Pin ({filteredBatteryOrders.length})</span>}
           key="batteries"
         >
           <div className="mb-6 flex justify-end">
@@ -304,20 +304,16 @@ export default function ViewMyProductContent() {
           {filteredBatteryOrders.length > 0 ? (
             <Table
               dataSource={filteredBatteryOrders}
-              columns={getColumns("Địa chỉ giao hàng")} // Pin: Giao hàng
+              columns={getColumns("Địa chỉ giao hàng")}
               rowKey="key"
               pagination={{ pageSize: 8 }}
-              scroll={{ x: 1200 }}
+              scroll={{ x: 1400 }}
               bordered
               size="middle"
               className="shadow-lg rounded-lg overflow-hidden"
             />
           ) : (
-            <Empty
-              description="Chưa có đơn hàng pin nào"
-              className="py-20"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            <Empty description="Chưa có đơn hàng pin nào" className="py-20" />
           )}
         </TabPane>
       </Tabs>
